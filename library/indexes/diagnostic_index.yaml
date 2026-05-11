@@ -1,0 +1,18 @@
+schema_version: 1
+diagnostics:
+  vivado.tcl_command_not_found:
+    title: Vivado TCL command not found
+    domain: fpga
+    tool: vivado
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Diagnose version mismatch, missing design state, or incorrect Vivado command spelling.
+    match_hints:
+      - invalid command name
+      - unknown option
+      - command not found
+    detail_path: sources/diagnostic_playbooks/vivado_tcl_command_not_found.md
+    tags:
+      - vivado
+      - tcl
+      - version
+      - diagnostic

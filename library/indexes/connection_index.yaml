@@ -1,0 +1,14 @@
+schema_version: 1
+connections:
+  fpga.clock_reset_baseline:
+    title: FPGA clock and reset baseline
+    domain: fpga
+    category: schematic_pattern
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Baseline checklist for clock and reset connectivity during FPGA prototype bring-up.
+    detail_path: sources/schematic_patterns/fpga_clock_reset_baseline.md
+    tags:
+      - fpga
+      - schematic
+      - clock
+      - reset

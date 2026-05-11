@@ -10,4 +10,5 @@
 *.svh text eol=lf
 *.do text eol=lf
 *.tcl text eol=lf
+*.sql text eol=lf
 *.ps1 text eol=crlf

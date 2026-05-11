@@ -9,6 +9,7 @@ from pathlib import Path
 from .artifacts import ensure_output_dirs
 from .config import load_project, load_workspace, validate_config
 from .doctor import run_doctor
+from .library import build_library, format_detail, format_toc, get_entry, query_diagnostics, query_toc
 from .pipeline import build_pipeline, format_pipeline
 from .reports import write_config_run_report
 from .scaffold import create_project
@@ -51,6 +52,34 @@ def build_parser() -> argparse.ArgumentParser:
 
     ensure_parser = subparsers.add_parser("ensure-output", help="Ensure canonical 05_Output directories exist.")
     ensure_parser.add_argument("--project", required=True, help="Project path.")
+
+    library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
+    library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+
+    toc_parser = subparsers.add_parser("get-workflow-toc", help="List library entries for a workflow or context.")
+    toc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    toc_parser.add_argument("--flow", help="Flow ID, for example fpga.timing_analysis.")
+    toc_parser.add_argument("--node", help="Workflow node, for example 04_Loop3_FPGA_Prototype.")
+    toc_parser.add_argument("--tool", help="Tool name, for example vivado.")
+    toc_parser.add_argument("--stage", help="Stage name, for example implementation.")
+    toc_parser.add_argument("--domain", help="Library domain, for example fpga or rtl_templates.")
+
+    command_parser = subparsers.add_parser("get-command-detail", help="Read a command detail entry by ID.")
+    command_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    command_parser.add_argument("--id", required=True, help="Command entry ID.")
+
+    template_parser = subparsers.add_parser("get-template-detail", help="Read a template detail entry by ID.")
+    template_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    template_parser.add_argument("--id", required=True, help="Template entry ID.")
+
+    detail_parser = subparsers.add_parser("get-library-detail", help="Read any library detail entry by ID.")
+    detail_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    detail_parser.add_argument("--id", required=True, help="Library entry ID.")
+
+    diagnostic_parser = subparsers.add_parser("get-diagnostic-candidates", help="List diagnostic library entries.")
+    diagnostic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    diagnostic_parser.add_argument("--tool", help="Tool name, for example vivado.")
+    diagnostic_parser.add_argument("--text", help="Error text or log excerpt to match.")
 
     return parser
 
@@ -95,6 +124,43 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ensure-output":
             result = ensure_output_dirs(Path(args.project))
             for line in result.messages:
+                print(line)
+            return 0
+        if args.command == "library-build":
+            db_path = build_library(Path(args.workspace))
+            print(f"library: {db_path}")
+            print("library build: PASS")
+            return 0
+        if args.command == "get-workflow-toc":
+            entries = query_toc(
+                Path(args.workspace),
+                flow=args.flow,
+                node=args.node,
+                tool=args.tool,
+                stage=args.stage,
+                domain=args.domain,
+            )
+            for line in format_toc(entries):
+                print(line)
+            return 0
+        if args.command == "get-command-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id, expected_kind="command")
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-template-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id, expected_kind="template")
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-library-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id)
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-diagnostic-candidates":
+            entries = query_diagnostics(Path(args.workspace), tool=args.tool, text=args.text)
+            for line in format_toc(entries):
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary

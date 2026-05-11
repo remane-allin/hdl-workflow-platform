@@ -1,0 +1,29 @@
+schema_version: 1
+commands:
+  vivado.report_timing_summary:
+    title: report_timing_summary
+    workflow_id: fpga.timing_analysis
+    domain: fpga
+    tool: vivado
+    vendor: xilinx
+    workflow_node: 04_Loop3_FPGA_Prototype
+    stage: implementation
+    versions:
+      tested:
+        - "2023.2"
+        - "2024.1"
+      min: "2020.2"
+      max: null
+    short_description: Generate a post-synthesis or post-implementation timing summary report.
+    use_when:
+      - Need WNS, TNS, and failing path summary.
+      - Need timing evidence for Loop3 reports.
+    avoid_when:
+      - No synthesized or implemented design is open.
+    detail_path: sources/fpga_tcl/vivado/report_timing_summary.md
+    official_refs:
+      - xilinx.ug835
+    tags:
+      - timing
+      - report
+      - signoff

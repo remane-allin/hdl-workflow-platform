@@ -1,0 +1,30 @@
+schema_version: 1
+flows:
+  fpga.timing_analysis:
+    title: FPGA timing analysis
+    domain: fpga
+    workflow_node: 04_Loop3_FPGA_Prototype
+    stage: implementation
+    short_description: Find commands and references for timing analysis after synthesis or implementation.
+    tags:
+      - fpga
+      - timing
+      - reports
+  fpga.bitstream_generation:
+    title: FPGA bitstream generation
+    domain: fpga
+    workflow_node: 04_Loop3_FPGA_Prototype
+    stage: bitstream
+    short_description: Find commands and references for bitstream generation and handoff checks.
+    tags:
+      - fpga
+      - bitstream
+  rtl.template_selection:
+    title: RTL template selection
+    domain: rtl_templates
+    workflow_node: 02_Loop1_RTL_TB
+    stage: implementation
+    short_description: Find reusable RTL templates by structure, interface, or design pattern.
+    tags:
+      - rtl
+      - templates

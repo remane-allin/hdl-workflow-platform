@@ -22,6 +22,7 @@ HDL projects often become hard to maintain when source files, generated files, r
 ```text
 config/      Global rules and project configuration templates
 engine/      Python CLI and PowerShell hooks for workflow validation
+library/     Agent-facing RTL template and FPGA reference retrieval library
 skills/      HDL workflow skill definitions for AI-assisted work
 templates/   Standard HDL project skeleton
 projects/    Local project workspace, ignored for concrete project contents
@@ -69,6 +70,31 @@ python -m hdlflow.cli plan --project ..\projects\<project_name>
 python -m hdlflow.cli run-config --workspace .. --project ..\projects\<project_name>
 python -m hdlflow.cli ensure-output --project ..\projects\<project_name>
 ```
+
+## Agent Library
+
+The `library/` directory stores reusable RTL templates and FPGA reference material for automated loops.
+
+The intended agent flow is:
+
+```text
+get-workflow-toc -> select entry ID -> get-command-detail or get-template-detail
+```
+
+Build the local SQLite index:
+
+```powershell
+python -m hdlflow.cli library-build --workspace ..
+```
+
+Query FPGA timing commands:
+
+```powershell
+python -m hdlflow.cli get-workflow-toc --workspace .. --flow fpga.timing_analysis --tool vivado
+python -m hdlflow.cli get-command-detail --workspace .. --id vivado.report_timing_summary
+```
+
+UG PDFs belong under `library/files/fpga_ug_pdfs/`, not under project requirement folders. Large PDF files and generated SQLite databases are local-only by default.
 
 ## Configuration Model
 

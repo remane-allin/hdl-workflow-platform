@@ -1,0 +1,20 @@
+schema_version: 1
+documents:
+  xilinx.ug835:
+    title: Vivado Design Suite Tcl Command Reference Guide
+    domain: fpga
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2023.2"
+        - "2024.1"
+    short_description: Official Vivado Tcl command reference.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/fpga_ug_mineru/xilinx_ug835
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vivado
+      - tcl
+      - official_ug

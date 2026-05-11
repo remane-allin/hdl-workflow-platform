@@ -1,0 +1,14 @@
+schema_version: 1
+templates:
+  rtl.module_header:
+    title: RTL module header template
+    domain: rtl_templates
+    category: module_structure
+    language: systemverilog
+    workflow_node: 02_Loop1_RTL_TB
+    short_description: Standard module header and port declaration pattern for new RTL files.
+    detail_path: sources/rtl_templates/module_header.md
+    tags:
+      - rtl
+      - style
+      - module

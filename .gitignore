@@ -37,6 +37,17 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Local generated library database and large uploaded source files.
+library/.local/
+library/files/**/*.pdf
+library/files/**/*.zip
+library/files/**/*.tar
+library/files/**/*.tar.gz
+library/files/**/*.7z
+library/parsed/**/images/
+library/parsed/**/*.pdf
+library/parsed/**/*.zip
+
 # Local workflow runtime state
 .omx/
 .codex/skills/
