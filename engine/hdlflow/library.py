@@ -94,6 +94,7 @@ def build_library(workspace: Path) -> Path:
                 )
         _import_fpga_io_tables(conn, library_root)
         _import_fpga_schematics(conn, library_root)
+        _import_fpga_hardware_guides(conn, library_root)
     return db_path
 
 
@@ -311,6 +312,71 @@ def query_fpga_schematic_nets(
     return [dict(zip(keys, row)) for row in rows]
 
 
+def query_fpga_hardware_resources(
+    workspace: Path,
+    *,
+    guide_id: str | None = None,
+    signal: str | None = None,
+    interface: str | None = None,
+    package_pin: str | None = None,
+    mio_pin: str | None = None,
+    keyword: str | None = None,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    if guide_id:
+        clauses.append("guide_id = ?")
+        params.append(guide_id)
+    if signal:
+        clauses.append("(signal_name LIKE ? OR aliases LIKE ?)")
+        params.extend([f"%{signal}%", f"%{signal}%"])
+    if interface:
+        clauses.append("interface = ?")
+        params.append(interface)
+    if package_pin:
+        clauses.append("package_pin = ?")
+        params.append(package_pin.upper())
+    if mio_pin:
+        clauses.append("mio_pin = ?")
+        params.append(_normalize_mio(mio_pin))
+    if keyword:
+        clauses.append("(description LIKE ? OR resource_group LIKE ? OR io_table_links LIKE ? OR schematic_links LIKE ?)")
+        params.extend([f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"])
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT guide_id, domain, source_table, resource_group, signal_name,
+               aliases, direction, package_pin, mio_pin, interface, description,
+               io_table_links, schematic_links, source_section, source_file
+        FROM fpga_hardware_resources
+        {where}
+        ORDER BY guide_id, domain, interface, signal_name
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = [
+        "guide_id",
+        "domain",
+        "source_table",
+        "resource_group",
+        "signal_name",
+        "aliases",
+        "direction",
+        "package_pin",
+        "mio_pin",
+        "interface",
+        "description",
+        "io_table_links",
+        "schematic_links",
+        "source_section",
+        "source_file",
+    ]
+    return [_decode_resource_links(dict(zip(keys, row))) for row in rows]
+
+
 def format_toc(entries: list[LibraryEntry]) -> list[str]:
     if not entries:
         return ["no matching library entries"]
@@ -386,6 +452,38 @@ def format_schematic_nets(rows: list[dict[str, Any]]) -> list[str]:
                     str(row.get("bank") or ""),
                     str(row.get("source_sheet") or ""),
                     str(row.get("confidence") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def format_hardware_resources(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching FPGA hardware resources"]
+    lines = [
+        "guide_id | signal | alias | domain | dir | pin | interface | io_link | schematic_link | description"
+    ]
+    lines.append("--- | --- | --- | --- | --- | --- | --- | --- | --- | ---")
+    for row in rows:
+        io_link = _format_first_io_link(row.get("io_table_links") or [])
+        sch_link = _format_first_schematic_link(row.get("schematic_links") or [])
+        pin = str(row.get("package_pin") or row.get("mio_pin") or "")
+        aliases = row.get("aliases") or []
+        alias = ",".join(str(item) for item in aliases[:4]) if isinstance(aliases, list) else str(aliases)
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("guide_id") or ""),
+                    str(row.get("signal_name") or ""),
+                    alias,
+                    str(row.get("domain") or ""),
+                    str(row.get("direction") or ""),
+                    pin,
+                    str(row.get("interface") or ""),
+                    io_link,
+                    sch_link,
+                    str(row.get("description") or ""),
                 ]
             )
         )
@@ -530,6 +628,75 @@ def _import_fpga_schematics(conn: sqlite3.Connection, library_root: Path) -> Non
             )
 
 
+def _import_fpga_hardware_guides(conn: sqlite3.Connection, library_root: Path) -> None:
+    parsed_root = library_root / "parsed" / "fpga_ug_mineru"
+    if not parsed_root.is_dir():
+        return
+    for metadata_path in parsed_root.glob("*/*/metadata.json"):
+        parsed_dir = metadata_path.parent
+        resources_path = parsed_dir / "resources.json"
+        if not resources_path.is_file():
+            continue
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        resources_data = json.loads(resources_path.read_text(encoding="utf-8"))
+        guide_id = str(metadata.get("guide_id") or "")
+        if not guide_id:
+            continue
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO fpga_hardware_guides (
+                guide_id, title, source_file, source_type, parser,
+                page_count, chapter, chapter_title, resource_count,
+                section_count, linked_io_count, linked_schematic_count,
+                parsed_dir
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                guide_id,
+                str(metadata.get("title") or ""),
+                str(metadata.get("source_file") or ""),
+                str(metadata.get("source_type") or ""),
+                str(metadata.get("parser") or ""),
+                metadata.get("page_count"),
+                str(metadata.get("chapter") or ""),
+                str(metadata.get("chapter_title") or ""),
+                metadata.get("resource_count"),
+                metadata.get("section_count"),
+                metadata.get("linked_io_count"),
+                metadata.get("linked_schematic_count"),
+                str(parsed_dir.relative_to(library_root)).replace("\\", "/"),
+            ),
+        )
+        for resource in resources_data.get("resources", []):
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO fpga_hardware_resources (
+                    guide_id, domain, source_table, resource_group,
+                    signal_name, aliases, direction, package_pin, mio_pin,
+                    interface, description, io_table_links, schematic_links,
+                    source_section, source_file
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    guide_id,
+                    str(resource.get("domain") or ""),
+                    str(resource.get("source_table") or ""),
+                    str(resource.get("group") or ""),
+                    str(resource.get("signal_name") or ""),
+                    json.dumps(resource.get("aliases") or [], ensure_ascii=False),
+                    str(resource.get("direction") or ""),
+                    str(resource.get("package_pin") or ""),
+                    str(resource.get("mio_pin") or ""),
+                    str(resource.get("interface") or ""),
+                    str(resource.get("description") or ""),
+                    json.dumps(resource.get("io_table_links") or [], ensure_ascii=False),
+                    json.dumps(resource.get("schematic_links") or [], ensure_ascii=False),
+                    str(resource.get("source_section") or ""),
+                    str(resource.get("source_file") or ""),
+                ),
+            )
+
+
 def _entry_from_mapping(entry_id: str, kind: str, raw: dict[str, Any], source_index: str) -> LibraryEntry:
     return LibraryEntry(
         id=entry_id,
@@ -592,3 +759,48 @@ def _join_pin(connector: Any, pin: Any) -> str:
     if not connector:
         return str(pin)
     return f"{connector}_{pin}"
+
+
+def _decode_resource_links(row: dict[str, Any]) -> dict[str, Any]:
+    for key in ("aliases", "io_table_links", "schematic_links"):
+        value = row.get(key)
+        if isinstance(value, str):
+            try:
+                row[key] = json.loads(value)
+            except json.JSONDecodeError:
+                row[key] = []
+    return row
+
+
+def _format_first_io_link(links: list[dict[str, Any]]) -> str:
+    if not links:
+        return ""
+    link = links[0]
+    connector = _join_pin(link.get("connector"), link.get("connector_pin"))
+    signal = str(link.get("signal_name") or "")
+    bank = str(link.get("bank") or "")
+    return "/".join(item for item in [signal, connector, bank] if item)
+
+
+def _format_first_schematic_link(links: list[dict[str, Any]]) -> str:
+    if not links:
+        return ""
+    link = links[0]
+    net = str(link.get("net_name") or "")
+    schematic_pin = _join_pin(link.get("schematic_connector"), link.get("schematic_connector_pin"))
+    core_pin = _join_pin(link.get("core_connector"), link.get("core_connector_pin"))
+    return "/".join(item for item in [net, schematic_pin, core_pin] if item)
+
+
+def _normalize_mio(value: Any) -> str:
+    text = str(value or "").upper()
+    if text.startswith("MIO"):
+        suffix = text[3:]
+    elif text.startswith("MI"):
+        suffix = text[2:]
+    else:
+        suffix = text
+    number = "".join(char for char in suffix if char.isdigit())
+    if number:
+        return f"MIO{int(number)}"
+    return text

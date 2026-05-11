@@ -1,0 +1,16 @@
+{
+  "notes": [
+    {
+      "topic": "device_part",
+      "summary": "ZYNQ-7020 core board uses XC7Z020CLG400-2; ZYNQ-7010 core board uses XC7Z010CLG400-1."
+    },
+    {
+      "topic": "bank13",
+      "summary": "BANK13/J4 expansion is only available on the ZYNQ-7020 core board."
+    },
+    {
+      "topic": "pudc_b",
+      "summary": "B34_L3_P is PUDC_B and must be tied to VCCO_34 or GND through 1K ohm or less; do not leave it floating during configuration."
+    }
+  ]
+}

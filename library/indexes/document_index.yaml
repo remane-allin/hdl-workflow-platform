@@ -18,3 +18,23 @@ documents:
       - vivado
       - tcl
       - official_ug
+  alientek.navigator_zynq_fpga_dev_guide_v3_3_ch5:
+    title: Navigator ZYNQ FPGA Development Guide V3.3 Chapter 5
+    domain: fpga
+    vendor: alientek
+    doc_type: board_guide
+    versions:
+      indexed:
+        - "3.3"
+    short_description: Hardware resources chapter indexed for board resources, IO table links, and schematic links.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/fpga_ug_mineru/navigator_zynq_fpga_dev_guide/v3_3
+    detail_path: sources/hardware_guides/navigator_zynq_fpga_dev_guide_v3_3_ch5.md
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - zynq
+      - hardware_resources
+      - io
+      - schematic
+      - board_guide

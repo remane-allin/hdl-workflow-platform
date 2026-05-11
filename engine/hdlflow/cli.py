@@ -12,11 +12,13 @@ from .doctor import run_doctor
 from .library import (
     build_library,
     format_detail,
+    format_hardware_resources,
     format_io_pins,
     format_schematic_nets,
     format_toc,
     get_entry,
     query_diagnostics,
+    query_fpga_hardware_resources,
     query_fpga_io_pins,
     query_fpga_schematic_nets,
     query_toc,
@@ -109,6 +111,16 @@ def build_parser() -> argparse.ArgumentParser:
     schematic_parser.add_argument("--category", help="Net category, for example clock or reset.")
     schematic_parser.add_argument("--connector", help="Schematic or core connector name, for example J2 or X3.")
     schematic_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
+
+    hw_parser = subparsers.add_parser("get-fpga-hardware-resource", help="Query FPGA hardware guide resources.")
+    hw_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    hw_parser.add_argument("--guide-id", help="Hardware guide ID.")
+    hw_parser.add_argument("--signal", help="Signal or alias substring, for example PL_LED0 or led[0].")
+    hw_parser.add_argument("--interface", help="Interface name, for example hdmi or rgb_lcd.")
+    hw_parser.add_argument("--package-pin", help="FPGA package pin, for example H15.")
+    hw_parser.add_argument("--mio-pin", help="PS MIO pin, for example MIO7.")
+    hw_parser.add_argument("--keyword", help="Keyword in description, group, or cross references.")
+    hw_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
 
     return parser
 
@@ -216,6 +228,20 @@ def main(argv: list[str] | None = None) -> int:
                 limit=args.limit,
             )
             for line in format_schematic_nets(rows):
+                print(line)
+            return 0
+        if args.command == "get-fpga-hardware-resource":
+            rows = query_fpga_hardware_resources(
+                Path(args.workspace),
+                guide_id=args.guide_id,
+                signal=args.signal,
+                interface=args.interface,
+                package_pin=args.package_pin,
+                mio_pin=args.mio_pin,
+                keyword=args.keyword,
+                limit=args.limit,
+            )
+            for line in format_hardware_resources(rows):
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary

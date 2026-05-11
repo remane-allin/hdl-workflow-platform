@@ -52,6 +52,7 @@ library/files/fpga_schematics/**/*.pdf
 library/files/fpga_schematics/**/*.zip
 library/parsed/**/images/
 library/parsed/**/mineru_raw/
+library/parsed/**/mineru_extract/
 library/parsed/**/text_raw/
 library/parsed/**/*.pdf
 library/parsed/**/*.zip

@@ -1,0 +1,280 @@
+{
+  "sections": [
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.1",
+      "title": "5.1 领航者 ZYNQ 的 IO 分配",
+      "line_hint": 13
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.1.1",
+      "title": "5.1.1 PL 端的 IO 分配",
+      "line_hint": 19
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.1.2",
+      "title": "5.1.2 PS 端的 IO 分配",
+      "line_hint": 72
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2",
+      "title": "5.2 开发板底板原理图详解",
+      "line_hint": 121
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.1",
+      "title": "5.2.1 底板电源",
+      "line_hint": 123
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.2",
+      "title": "5.2.2 ZYNQ 启动模式",
+      "line_hint": 172
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.3",
+      "title": "5.2.3 有源蜂鸣器",
+      "line_hint": 189
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.4",
+      "title": "5.2.4 PL LED",
+      "line_hint": 200
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.5",
+      "title": "5.2.5 PS LED",
+      "line_hint": 209
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.6",
+      "title": "5.2.6 PL 按键",
+      "line_hint": 218
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.7",
+      "title": "5.2.7 PS 按键",
+      "line_hint": 227
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.8",
+      "title": "5.2.8 电容触摸按键",
+      "line_hint": 236
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.9",
+      "title": "5.2.9 14-Pin JTAG 接口",
+      "line_hint": 254
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.10",
+      "title": "5.2.10 USB 串口",
+      "line_hint": 263
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.11",
+      "title": "5.2.11 RS232 接口",
+      "line_hint": 304
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.12",
+      "title": "5.2.12 RS485 接口",
+      "line_hint": 325
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.13",
+      "title": "5.2.13 RGB LCD 模块接口",
+      "line_hint": 343
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.14",
+      "title": "5.2.14 XADC 接口",
+      "line_hint": 360
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.15",
+      "title": "5.2.15 OLED/摄像头模块接口",
+      "line_hint": 370
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.16",
+      "title": "5.2.16 EEPROM",
+      "line_hint": 379
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.17",
+      "title": "5.2.17 实时时钟",
+      "line_hint": 395
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.18",
+      "title": "5.2.18 ATK 模块接口",
+      "line_hint": 413
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.19",
+      "title": "5.2.19 I2S 音频编解码",
+      "line_hint": 426
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.20",
+      "title": "5.2.20 HDMI 接口",
+      "line_hint": 448
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.21",
+      "title": "5.2.21 PL 端千兆以太网接口（RJ45）",
+      "line_hint": 482
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.22",
+      "title": "5.2.22 USB 2.0 接口",
+      "line_hint": 505
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.23",
+      "title": "5.2.23 Micro SD 卡接口",
+      "line_hint": 537
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.24",
+      "title": "5.2.24 CAN 接口",
+      "line_hint": 559
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.2.25",
+      "title": "5.2.25 IO 扩展口",
+      "line_hint": 575
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3",
+      "title": "5.3 开发板核心板原理图详解",
+      "line_hint": 589
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.1",
+      "title": "5.3.1 核心板电源",
+      "line_hint": 591
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.2",
+      "title": "5.3.2 ZYNQ 主控芯片",
+      "line_hint": 673
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.3",
+      "title": "5.3.3 DDR3 SDRAM 存储器",
+      "line_hint": 747
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.4",
+      "title": "5.3.4 6-Pin JTAG 接口",
+      "line_hint": 780
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.5",
+      "title": "5.3.5 PS 复位按键",
+      "line_hint": 798
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.6",
+      "title": "5.3.6 PL LED",
+      "line_hint": 808
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.7",
+      "title": "5.3.7 PS LED",
+      "line_hint": 815
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.8",
+      "title": "5.3.8 PL 时钟输入",
+      "line_hint": 822
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.9",
+      "title": "5.3.9 PS 时钟输入",
+      "line_hint": 831
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.10",
+      "title": "5.3.10 PL 配置状态指示灯",
+      "line_hint": 844
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.11",
+      "title": "5.3.11 PS 端千兆以太网",
+      "line_hint": 851
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.12",
+      "title": "5.3.12 QSPI FLASH",
+      "line_hint": 877
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.3.13",
+      "title": "5.3.13 eMMC",
+      "line_hint": 893
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.4",
+      "title": "5.4 开发板使用注意事项",
+      "line_hint": 908
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5.5",
+      "title": "5.5 ZYNQ 的学习方法",
+      "line_hint": 920
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "section_id": "5、ZYNQ",
+      "title": "5、ZYNQ PS 的学习",
+      "line_hint": 940
+    }
+  ]
+}

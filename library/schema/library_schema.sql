@@ -105,3 +105,44 @@ CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_normalized ON fpga_schematic_
 CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_interface ON fpga_schematic_nets(interface);
 CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_category ON fpga_schematic_nets(category);
 CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_connector ON fpga_schematic_nets(schematic_connector);
+
+CREATE TABLE IF NOT EXISTS fpga_hardware_guides (
+    guide_id TEXT PRIMARY KEY,
+    title TEXT,
+    source_file TEXT,
+    source_type TEXT,
+    parser TEXT,
+    page_count INTEGER,
+    chapter TEXT,
+    chapter_title TEXT,
+    resource_count INTEGER,
+    section_count INTEGER,
+    linked_io_count INTEGER,
+    linked_schematic_count INTEGER,
+    parsed_dir TEXT
+);
+
+CREATE TABLE IF NOT EXISTS fpga_hardware_resources (
+    guide_id TEXT NOT NULL,
+    domain TEXT,
+    source_table TEXT,
+    resource_group TEXT,
+    signal_name TEXT NOT NULL,
+    aliases TEXT,
+    direction TEXT,
+    package_pin TEXT,
+    mio_pin TEXT,
+    interface TEXT,
+    description TEXT,
+    io_table_links TEXT,
+    schematic_links TEXT,
+    source_section TEXT,
+    source_file TEXT,
+    PRIMARY KEY (guide_id, signal_name, package_pin, mio_pin, description)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_signal ON fpga_hardware_resources(signal_name);
+CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_aliases ON fpga_hardware_resources(aliases);
+CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_interface ON fpga_hardware_resources(interface);
+CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_package_pin ON fpga_hardware_resources(package_pin);
+CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_mio_pin ON fpga_hardware_resources(mio_pin);

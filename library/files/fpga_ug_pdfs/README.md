@@ -17,3 +17,5 @@ intel_quartus_pro_user_guide_timing_analyzer_24_1.pdf
 ```
 
 PDF files in this directory are ignored by Git. For 600-page guides, parse them into chunked MinerU output under `library/parsed/fpga_ug_mineru/<doc_id>/<version>/`, then index only the useful topics.
+
+Use MinerU `extract` for library PDFs so table/image/page metadata stay stable for cross-indexing.
