@@ -12,3 +12,16 @@ connections:
       - schematic
       - clock
       - reset
+  fpga.io_table_review:
+    title: FPGA IO table review
+    domain: fpga
+    category: schematic_pattern
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Review FPGA IO tables for pin names, banks, voltages, constraints, and board connections.
+    detail_path: sources/schematic_patterns/fpga_io_table_review.md
+    tags:
+      - fpga
+      - io
+      - pins
+      - schematic
+      - constraints

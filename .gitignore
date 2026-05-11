@@ -44,6 +44,10 @@ library/files/**/*.zip
 library/files/**/*.tar
 library/files/**/*.tar.gz
 library/files/**/*.7z
+library/files/fpga_io_tables/**/*.xlsx
+library/files/fpga_io_tables/**/*.xls
+library/files/fpga_io_tables/**/*.csv
+library/files/fpga_io_tables/**/*.tsv
 library/parsed/**/images/
 library/parsed/**/*.pdf
 library/parsed/**/*.zip
