@@ -5,6 +5,22 @@ project:
   description: change_me
   simulator: modelsim
   project_memory_scope: project_local_only
+gate_policy:
+  default_level: develop
+  final_required_level: release
+memory:
+  index: memory/index.yaml
+  active_versions: memory/active_versions.md
+  transient_keep_latest_iterations: 3
+  recovery:
+    checkpoints: memory/recovery/checkpoints
+    rollback_manifests: memory/recovery/rollback_manifests
+    failure_records: memory/recovery/failure_records
+change_control:
+  requests: change_control/requests
+  impact_analysis: change_control/impact_analysis
+  approvals: change_control/approvals
+  trace_updates: change_control/trace_updates
 pipeline_expected:
   - 00_SPEC
   - 01_DocParse

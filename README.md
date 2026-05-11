@@ -11,6 +11,9 @@ HDL projects often become hard to maintain when source files, generated files, r
 - Global rules live in one configuration tree.
 - Each project instance lives under its own project directory.
 - Pipeline stages are numbered and ordered.
+- Memory records are indexed and separated into permanent archive, local transient notes, and recovery evidence.
+- Design changes use a controlled request, impact, approval, and trace-update flow.
+- Gate rules can distinguish debug, develop, and release levels.
 - Runtime outputs stay disposable.
 - Final deliverables stay in one canonical output area.
 
@@ -70,6 +73,7 @@ python -m hdlflow.cli ensure-output --project ..\projects\<project_name>
 ## Configuration Model
 
 - `config/global/` holds shared workspace rules.
+- `config/global/gates/gate_levels.yaml` defines debug, develop, and release gate levels.
 - `config/templates/project/project_config.yaml` defines the default project configuration shape.
 - Local project configs should be created under `config/projects/<project_name>/`.
 - A pipeline node is active when its configuration section exists and passes validation.

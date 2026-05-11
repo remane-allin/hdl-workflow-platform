@@ -1,4 +1,6 @@
 schema_version: 1
+default_level: develop
+final_required_level: release
 gates:
   entry:
     required:

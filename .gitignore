@@ -20,6 +20,11 @@ config/projects/*/
 !config/projects/
 !config/projects/README.md
 
+# Project-local memory that should stay outside permanent history.
+projects/*/memory/transient/**
+projects/*/memory/**/transient/**
+projects/*/_archive/memory_history/**
+
 # Local/vendor source documents and parser extracts.
 # Review source-document redistribution rights before publishing these.
 projects/*/00_SPEC/raw_docs/*.pdf
@@ -38,7 +43,7 @@ __pycache__/
 
 # Local audit and migration notes
 *_AUDIT.md
-archive/
+/archive/
 
 # Local editor files
 .vscode/

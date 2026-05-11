@@ -46,6 +46,7 @@ def _personalize_project(project_path: Path, config_path: Path, name: str) -> No
     for path in [
         config_path,
         project_path / "05_Output" / "manifest.yaml",
+        project_path / "memory" / "index.yaml",
     ]:
         if not path.exists():
             continue

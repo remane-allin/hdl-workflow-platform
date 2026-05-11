@@ -1,0 +1,29 @@
+schema_version: 1
+levels:
+  debug:
+    intent: fast local diagnosis
+    allow_final_delivery: false
+    required_policy: minimal
+    thresholds:
+      code_coverage_percent: null
+      functional_coverage_percent: null
+      requirement_coverage_percent: null
+  develop:
+    intent: normal implementation iteration
+    allow_final_delivery: false
+    required_policy: project_default
+    thresholds:
+      code_coverage_percent: 80
+      functional_coverage_percent: 80
+      requirement_coverage_percent: 100
+  release:
+    intent: final signoff and delivery
+    allow_final_delivery: true
+    required_policy: strict
+    thresholds:
+      code_coverage_percent: 90
+      functional_coverage_percent: 90
+      requirement_coverage_percent: 100
+final_delivery:
+  required_level: release
+  reject_non_release_artifacts: true
