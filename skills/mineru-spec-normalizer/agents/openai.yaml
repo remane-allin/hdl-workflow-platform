@@ -1,0 +1,7 @@
+interface:
+  display_name: "MinerU Spec Normalizer"
+  short_description: "Convert raw docs into stable YAML specs for HDL work."
+  default_prompt: "Use $mineru-spec-normalizer to ingest the project datasheet and refresh the normalized HDL spec files."
+
+policy:
+  allow_implicit_invocation: true

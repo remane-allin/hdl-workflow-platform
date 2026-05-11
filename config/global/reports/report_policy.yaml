@@ -1,0 +1,13 @@
+schema_version: 1
+report_policy:
+  authoritative_reports_root: 05_Output/reports
+  node_report_dirs_policy: disabled
+  reports_generated_directly_to_output: true
+  required_reports:
+    - README.md
+    - final_audit_report.md
+    - requirement_trace_matrix.md
+    - manifest.yaml
+    - compliance_summary.md
+  report_time_format: ISO-8601
+  output_reports_root: 05_Output/reports

@@ -1,0 +1,46 @@
+{
+  "PreToolUse": [
+    {
+      "type": "command",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File engine\\hooks\\Invoke-HdlPreToolGuard.ps1 -WorkspaceRoot .",
+      "metadata": {
+        "owner": "test-hdl-workflow",
+        "version": "1.0.0",
+        "purpose": "destructive-command and legacy-workspace write guard"
+      }
+    }
+  ],
+  "SessionStart": [
+    {
+      "type": "command",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File engine\\hooks\\Invoke-HdlEntryGate.ps1 -WorkspaceRoot .",
+      "metadata": {
+        "owner": "test-hdl-workflow",
+        "version": "1.0.0",
+        "purpose": "restore Test HDL context"
+      }
+    }
+  ],
+  "PostToolUse": [
+    {
+      "type": "command",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File engine\\hooks\\Invoke-HdlPostToolSync.ps1 -WorkspaceRoot .",
+      "metadata": {
+        "owner": "test-hdl-workflow",
+        "version": "1.0.0",
+        "purpose": "sync Test HDL runtime state"
+      }
+    }
+  ],
+  "Stop": [
+    {
+      "type": "command",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File engine\\hooks\\Invoke-HdlStopCheckpoint.ps1 -WorkspaceRoot .",
+      "metadata": {
+        "owner": "test-hdl-workflow",
+        "version": "1.0.0",
+        "purpose": "write Test HDL checkpoint"
+      }
+    }
+  ]
+}

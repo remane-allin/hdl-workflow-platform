@@ -1,0 +1,111 @@
+schema_version: 1
+project:
+  name: change_me
+  owner: change_me
+  description: change_me
+  simulator: modelsim
+  project_memory_scope: project_local_only
+pipeline_expected:
+  - 00_SPEC
+  - 01_DocParse
+  - 02_Loop1_RTL_TB
+  - 03_Loop2_UVM_Verify
+  - 04_Loop3_FPGA_Prototype
+  - 05_Output
+nodes:
+  00_SPEC:
+    inputs:
+      raw_docs: 00_SPEC/raw_docs
+      requirements: 00_SPEC/requirements
+    gates:
+      exit:
+        - source_spec_available
+        - requirements_reviewed
+  01_DocParse:
+    inputs:
+      raw_docs: 00_SPEC/raw_docs
+      requirements: 00_SPEC/requirements
+    outputs:
+      mineru_raw: 01_DocParse/mineru_raw
+      structured_spec: 01_DocParse/structured_spec
+      req_decompose: 01_DocParse/req_decompose
+      trace_matrix: 01_DocParse/trace_matrix
+    gates:
+      exit:
+        - structured_spec_available
+        - requirement_decomposition_available
+        - trace_matrix_available
+  02_Loop1_RTL_TB:
+    inputs:
+      structured_spec: 01_DocParse/structured_spec
+      req_decompose: 01_DocParse/req_decompose
+      trace_matrix: 01_DocParse/trace_matrix
+      rtl: 05_Output/rtl
+      tb: 05_Output/tb
+    outputs:
+      reports: 05_Output/reports/loop1
+    runtime: 02_Loop1_RTL_TB/_runtime
+    gates:
+      exit:
+        - rtl_compile_zero_error
+        - directed_tb_regression_pass
+        - no_open_critical_or_major_bug
+        - requirement_trace_complete
+  03_Loop2_UVM_Verify:
+    inputs:
+      frozen_rtl: 05_Output/rtl
+      tb: 05_Output/tb
+      uvm: 05_Output/uvm
+      structured_spec: 01_DocParse/structured_spec
+      trace_matrix: 01_DocParse/trace_matrix
+    outputs:
+      bug_tracking: 03_Loop2_UVM_Verify/bug_tracking
+      coverage_tracking: 03_Loop2_UVM_Verify/coverage_tracking
+      reports: 05_Output/reports/loop2
+    runtime: 03_Loop2_UVM_Verify/_runtime
+    rtl_change_policy: controlled_loop1_patch_required
+    gates:
+      exit:
+        - uvm_compile_zero_error
+        - uvm_regression_pass
+        - zero_uvm_error
+        - zero_uvm_fatal
+        - assertion_no_failure
+        - bug_closure_pass
+        - requirement_trace_complete
+  04_Loop3_FPGA_Prototype:
+    inputs:
+      signed_rtl: 05_Output/rtl
+      fpga_sources: 05_Output/fpga
+    outputs:
+      fpga: 05_Output/fpga
+      reports: 05_Output/reports/loop3
+    runtime: 04_Loop3_FPGA_Prototype/_runtime
+    gates:
+      exit:
+        - implementation_report_available
+        - timing_report_available
+        - board_test_report_available
+  05_Output:
+    inputs:
+      loop1_reports: 05_Output/reports/loop1
+      loop2_reports: 05_Output/reports/loop2
+      loop3_reports: 05_Output/reports/loop3
+    outputs:
+      rtl: 05_Output/rtl
+      tb: 05_Output/tb
+      uvm: 05_Output/uvm
+      fpga: 05_Output/fpga
+      reports: 05_Output/reports
+    gates:
+      final:
+        - all_enabled_nodes_passed
+        - manifest_available
+        - final_audit_report_available
+versioning:
+  tag_on_final_gate_pass: false
+  record_tool_versions: true
+  record_skill_versions: true
+archive:
+  project_archive: _archive
+  runtime_cleanup_after_pass: true

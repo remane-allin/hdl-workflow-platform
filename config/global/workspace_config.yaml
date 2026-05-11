@@ -1,0 +1,20 @@
+schema_version: 1
+workspace: Test
+policy:
+  project_state_scope: project_local_only
+  main_flow: linear_pipeline
+  node_iteration: allowed
+  cross_node_change_control: required
+  output_write_policy: automated_or_signed_only
+  runtime_cleanup_policy: disposable
+paths:
+  projects_root: projects
+  templates_root: templates
+  archive_root: archive
+  config_root: config
+  global_rules_root: config/global
+  project_configs_root: config/projects
+  engine_root: engine
+inherits:
+  project_config_name: project_config.yaml
+  project_template: templates/project

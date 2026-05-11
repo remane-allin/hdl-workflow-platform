@@ -1,0 +1,7 @@
+interface:
+  display_name: "UVM Env And Test Build"
+  short_description: "Create spec-driven RKV-style UVM frameworks and tests."
+  default_prompt: "Use $uvm-env-and-test-build to generate or refactor a maintainable RKV-style UVM framework from the normalized spec."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "ModelSim Run Triage Debug"
+  short_description: "Run ModelSim loops and classify the next fix path."
+  default_prompt: "Use $modelsim-run-triage-debug to run the project regression and classify the resulting ModelSim failure or pass."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,14 @@
+schema_version: 1
+directory_rules:
+  node_prefix_format: two_digit_index
+  runtime_dir_name: _runtime
+  archive_dir_name: _archive
+  output_dir_name: 05_Output
+file_rules:
+  config_entry: config/projects/<project_name>/project_config.yaml
+  manifest: manifest.yaml
+  memory_index: CURRENT_STATE.md
+path_rules:
+  no_project_files_at_workspace_root: true
+  no_runtime_files_in_output: true
+  no_generated_files_in_00_SPEC: true

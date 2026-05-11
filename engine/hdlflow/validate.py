@@ -1,0 +1,57 @@
+"""Project layout validation."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+
+REQUIRED_PATHS = [
+    "memory/00_global/PROJECT_BRIEF.md",
+    "memory/00_global/CURRENT_STATE.md",
+    "00_SPEC/raw_docs",
+    "00_SPEC/requirements",
+    "01_DocParse/mineru_raw",
+    "01_DocParse/structured_spec",
+    "01_DocParse/req_decompose",
+    "01_DocParse/trace_matrix",
+    "02_Loop1_RTL_TB/sim",
+    "02_Loop1_RTL_TB/_runtime",
+    "03_Loop2_UVM_Verify/sim",
+    "03_Loop2_UVM_Verify/_runtime",
+    "03_Loop2_UVM_Verify/bug_tracking",
+    "03_Loop2_UVM_Verify/coverage_tracking",
+    "04_Loop3_FPGA_Prototype/scripts",
+    "04_Loop3_FPGA_Prototype/_runtime",
+    "05_Output/rtl",
+    "05_Output/tb",
+    "05_Output/uvm",
+    "05_Output/fpga",
+    "05_Output/reports",
+    "05_Output/manifest.yaml",
+    "_archive",
+]
+
+
+@dataclass(frozen=True)
+class ValidationResult:
+    ok: bool
+    messages: list[str]
+
+
+def validate_project(project_path: Path) -> ValidationResult:
+    project_path = project_path.resolve()
+    messages: list[str] = []
+
+    if not project_path.is_dir():
+        return ValidationResult(False, [f"missing project directory: {project_path}"])
+
+    missing = [rel for rel in REQUIRED_PATHS if not (project_path / rel).exists()]
+    if missing:
+        messages.append(f"FAIL: {project_path}")
+        messages.extend(f"missing: {rel}" for rel in missing)
+        return ValidationResult(False, messages)
+
+    messages.append(f"PASS: {project_path}")
+    messages.append(f"checked_paths: {len(REQUIRED_PATHS)}")
+    return ValidationResult(True, messages)

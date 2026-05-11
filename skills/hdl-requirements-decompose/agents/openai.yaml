@@ -1,0 +1,7 @@
+interface:
+  display_name: "HDL Requirements Decompose"
+  short_description: "Turn HDL specs into requirements, backlog items, and scored checklists."
+  default_prompt: "Use $hdl-requirements-decompose to split the normalized HDL spec into RTL-oriented requirements and executable backlog items."
+
+policy:
+  allow_implicit_invocation: true

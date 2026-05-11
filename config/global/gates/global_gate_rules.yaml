@@ -1,0 +1,44 @@
+schema_version: 1
+gates:
+  entry:
+    required:
+      - project_config_valid
+      - source_spec_available
+      - expected_nodes_declared
+  docparse_exit:
+    required:
+      - structured_spec_available
+      - requirement_decomposition_available
+      - trace_matrix_available
+  loop1_exit:
+    required:
+      - rtl_compile_zero_error
+      - directed_tb_regression_pass
+      - no_open_critical_or_major_bug
+      - requirement_trace_complete
+    thresholds:
+      line_coverage_percent: 80
+      branch_coverage_percent: 70
+  loop2_exit:
+    required:
+      - uvm_compile_zero_error
+      - uvm_regression_pass
+      - zero_uvm_error
+      - zero_uvm_fatal
+      - assertion_no_failure
+      - bug_closure_pass
+      - requirement_trace_complete
+    thresholds:
+      code_coverage_percent: 80
+      functional_coverage_percent: 80
+      requirement_coverage_percent: 100
+  loop3_exit:
+    required:
+      - synthesis_or_implementation_pass
+      - timing_report_available
+      - board_test_report_available
+  final:
+    required:
+      - all_enabled_nodes_passed
+      - manifest_available
+      - final_audit_report_available

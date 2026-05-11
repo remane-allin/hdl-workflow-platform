@@ -1,0 +1,9 @@
+schema_version: 1
+snapshot_policy:
+  create_before_node_execution: true
+  create_after_gate_pass: true
+  keep_pass_per_node: 3
+  keep_fail_per_node: 10
+  keep_final: true
+  archive_large_artifacts_by_path_and_hash: true
+

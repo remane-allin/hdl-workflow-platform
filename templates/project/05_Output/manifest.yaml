@@ -1,0 +1,23 @@
+schema_version: 1
+project: change_me
+output:
+  version:
+  generated_at:
+  signoff_owner:
+  source_origin:
+deliverables:
+  rtl: []
+  tb: []
+  uvm: []
+  fpga: []
+reports:
+  index:
+    - 05_Output/reports/README.md
+  audit_report:
+  trace_matrix:
+  compliance_summary:
+verification:
+  loop1_gate:
+  loop2_gate:
+  loop3_gate:
+  final_gate:

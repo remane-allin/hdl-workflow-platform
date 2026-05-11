@@ -1,0 +1,14 @@
+# Runtime outputs
+**/_runtime/
+**/work/
+**/transcript
+**/*.wlf
+**/*.vcd
+**/*.fst
+**/*.log
+
+# Tool cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+

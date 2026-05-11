@@ -1,0 +1,7 @@
+interface:
+  display_name: "RTL Architecture And Gen"
+  short_description: "Plan and implement RTL from normalized HDL specs."
+  default_prompt: "Use $rtl-architecture-and-gen to turn the normalized spec into a concrete RTL module plan and code changes."
+
+policy:
+  allow_implicit_invocation: true

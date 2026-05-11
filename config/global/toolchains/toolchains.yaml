@@ -1,0 +1,23 @@
+schema_version: 1
+toolchains:
+  mineru:
+    required: false
+    purpose: PDF/document parsing
+    version_policy: record_actual_version_in_project_memory
+  modelsim:
+    required: false
+    purpose: RTL, TB, and UVM simulation
+    version_policy: record_actual_version_in_project_memory
+  questa:
+    required: false
+    purpose: RTL, TB, and UVM simulation alternative
+    version_policy: record_actual_version_in_project_memory
+  vivado:
+    required: false
+    purpose: Loop3 FPGA implementation
+    version_policy: record_actual_version_in_project_memory
+  vitis:
+    required: false
+    purpose: Loop3 embedded software build
+    version_policy: record_actual_version_in_project_memory
+

@@ -1,0 +1,49 @@
+# Runtime and tool outputs
+**/_runtime/
+**/work/
+**/transcript
+**/*.wlf
+**/*.vcd
+**/*.fst
+**/*.log
+**/*.jou
+**/*.pb
+**/*.rpt.tmp
+*.statebak
+
+# Local project instances are not published from this platform repository.
+projects/*/
+!projects/
+!projects/README.md
+!projects/.gitkeep
+config/projects/*/
+!config/projects/
+!config/projects/README.md
+
+# Local/vendor source documents and parser extracts.
+# Review source-document redistribution rights before publishing these.
+projects/*/00_SPEC/raw_docs/*.pdf
+projects/*/01_DocParse/mineru_raw/**
+!projects/*/01_DocParse/mineru_raw/
+!projects/*/01_DocParse/mineru_raw/.gitkeep
+
+# Python/tool cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local workflow runtime state
+.omx/
+.codex/skills/
+
+# Local audit and migration notes
+*_AUDIT.md
+archive/
+
+# Local editor files
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# Concrete project deliverables live under ignored local project instances.

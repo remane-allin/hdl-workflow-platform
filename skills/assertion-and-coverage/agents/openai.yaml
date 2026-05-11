@@ -1,0 +1,7 @@
+interface:
+  display_name: "Assertion And Coverage"
+  short_description: "Add SVA and coverage closure on top of a stable HDL baseline."
+  default_prompt: "Use $assertion-and-coverage to add spec-derived assertions and close meaningful coverage gaps."
+
+policy:
+  allow_implicit_invocation: true

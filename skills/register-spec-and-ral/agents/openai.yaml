@@ -1,0 +1,7 @@
+interface:
+  display_name: "Register Spec And RAL"
+  short_description: "Stabilize CSR specs for RTL, RAL, and register generators."
+  default_prompt: "Use $register-spec-and-ral to validate the register map and prepare consistent RTL and UVM register artifacts."
+
+policy:
+  allow_implicit_invocation: true

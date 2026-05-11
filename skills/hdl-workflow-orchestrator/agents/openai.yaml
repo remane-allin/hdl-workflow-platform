@@ -1,0 +1,7 @@
+interface:
+  display_name: "HDL Workflow Orchestrator"
+  short_description: "Drive the local HDL flow from docs to RTL, UVM, and ModelSim."
+  default_prompt: "Use $hdl-workflow-orchestrator to determine the current HDL project stage and route the next step."
+
+policy:
+  allow_implicit_invocation: true
