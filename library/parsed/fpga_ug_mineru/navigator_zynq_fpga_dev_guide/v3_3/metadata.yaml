@@ -6,7 +6,7 @@ parser: mineru_open_api_extract+local_hardware_resource_normalizer
 page_count: 58
 chapter: 5
 chapter_title: Hardware Resources
-resource_count: 146
+resource_count: 148
 section_count: 46
 linked_io_count: 97
 linked_schematic_count: 93

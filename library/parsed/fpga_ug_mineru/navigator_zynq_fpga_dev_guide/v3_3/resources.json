@@ -4843,6 +4843,50 @@
       "schematic_links": [],
       "source_file": "library/files/fpga_ug_pdfs/领航者ZYNQ之FPGA开发指南V3.3.pdf",
       "source_section": "5.1.2"
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "domain": "ps",
+      "source_table": "section_5_3_3_ddr3_sdram",
+      "group": "DDR3 SDRAM",
+      "signal_name": "DDR3_SDRAM_7020",
+      "aliases": [
+        "DDR3",
+        "DDR3_7020",
+        "NT5CB256M16EP-DI",
+        "ZYNQ-7020 DDR3"
+      ],
+      "direction": "",
+      "package_pin": "",
+      "mio_pin": "",
+      "interface": "ddr3",
+      "description": "ZYNQ-7020 core board uses two 4Gbit DDR3 SDRAM devices, part number NT5CB256M16EP-DI, total capacity 8Gbit/1GB. The two devices form a 32-bit DDR3 system, max IO clock 533MHz, equivalent data rate 1066Mbps, connected to BANK502, powered at 1.35V.",
+      "io_table_links": [],
+      "schematic_links": [],
+      "source_file": "library/files/fpga_ug_pdfs/领航者ZYNQ之FPGA开发指南V3.3.pdf",
+      "source_section": "5.3.3"
+    },
+    {
+      "guide_id": "navigator_zynq_fpga_dev_guide.v3_3.chapter5",
+      "domain": "ps",
+      "source_table": "section_5_3_3_ddr3_sdram",
+      "group": "DDR3 SDRAM",
+      "signal_name": "DDR3_SDRAM_7010",
+      "aliases": [
+        "DDR3",
+        "DDR3_7010",
+        "NT5CB128M16IP-DI",
+        "ZYNQ-7010 DDR3"
+      ],
+      "direction": "",
+      "package_pin": "",
+      "mio_pin": "",
+      "interface": "ddr3",
+      "description": "ZYNQ-7010 core board uses two 2Gbit DDR3 SDRAM devices, part number NT5CB128M16IP-DI, total capacity 4Gbit/512MB. Capacity is half of the ZYNQ-7020 version.",
+      "io_table_links": [],
+      "schematic_links": [],
+      "source_file": "library/files/fpga_ug_pdfs/领航者ZYNQ之FPGA开发指南V3.3.pdf",
+      "source_section": "5.3.3"
     }
   ]
 }
