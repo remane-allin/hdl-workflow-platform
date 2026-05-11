@@ -39,3 +39,16 @@ connections:
       - pins
       - x3
       - x4
+  fpga.schematic_pdf_review:
+    title: FPGA schematic PDF review
+    domain: fpga
+    category: schematic_review
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Parse and review FPGA schematic PDFs for nets, interfaces, clocks, resets, power, and connector mapping.
+    detail_path: sources/schematic_patterns/fpga_schematic_pdf_review.md
+    tags:
+      - fpga
+      - schematic
+      - pdf
+      - nets
+      - board

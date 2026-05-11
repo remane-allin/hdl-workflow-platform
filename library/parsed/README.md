@@ -6,3 +6,4 @@ This area is separate from project document parsing. Do not place project requir
 
 - `fpga_ug_mineru/` - parsed FPGA UG output.
 - `fpga_io_tables/` - normalized FPGA IO tables and pin/bank summaries.
+- `fpga_schematics/` - parsed FPGA schematic PDFs and extracted nets/interfaces.

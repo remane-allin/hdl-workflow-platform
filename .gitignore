@@ -48,6 +48,8 @@ library/files/fpga_io_tables/**/*.xlsx
 library/files/fpga_io_tables/**/*.xls
 library/files/fpga_io_tables/**/*.csv
 library/files/fpga_io_tables/**/*.tsv
+library/files/fpga_schematics/**/*.pdf
+library/files/fpga_schematics/**/*.zip
 library/parsed/**/images/
 library/parsed/**/mineru_raw/
 library/parsed/**/*.pdf
