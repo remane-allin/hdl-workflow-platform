@@ -13,10 +13,12 @@ from .library import (
     build_library,
     format_detail,
     format_io_pins,
+    format_schematic_nets,
     format_toc,
     get_entry,
     query_diagnostics,
     query_fpga_io_pins,
+    query_fpga_schematic_nets,
     query_toc,
 )
 from .pipeline import build_pipeline, format_pipeline
@@ -98,6 +100,15 @@ def build_parser() -> argparse.ArgumentParser:
     io_parser.add_argument("--bank", help="Bank name, for example Bank35.")
     io_parser.add_argument("--category", help="Signal category, for example pl_io.")
     io_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
+
+    schematic_parser = subparsers.add_parser("get-fpga-schematic-nets", help="Query normalized FPGA schematic nets.")
+    schematic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    schematic_parser.add_argument("--schematic-id", help="Schematic ID.")
+    schematic_parser.add_argument("--net", help="Net name substring, for example SD_D2 or SD D2.")
+    schematic_parser.add_argument("--interface", help="Interface name, for example hdmi or sd_card.")
+    schematic_parser.add_argument("--category", help="Net category, for example clock or reset.")
+    schematic_parser.add_argument("--connector", help="Schematic or core connector name, for example J2 or X3.")
+    schematic_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
 
     return parser
 
@@ -192,6 +203,19 @@ def main(argv: list[str] | None = None) -> int:
                 limit=args.limit,
             )
             for line in format_io_pins(rows):
+                print(line)
+            return 0
+        if args.command == "get-fpga-schematic-nets":
+            rows = query_fpga_schematic_nets(
+                Path(args.workspace),
+                schematic_id=args.schematic_id,
+                net=args.net,
+                interface=args.interface,
+                category=args.category,
+                connector=args.connector,
+                limit=args.limit,
+            )
+            for line in format_schematic_nets(rows):
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary

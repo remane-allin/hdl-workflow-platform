@@ -1,0 +1,94 @@
+sheets:
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 1
+    title: Sheet 1
+    interfaces:
+      - camera
+      - can
+      - i2c
+      - jtag
+      - misc
+      - pl_key
+      - pl_led
+      - power
+      - ps_keys
+      - ps_led
+      - rgb_lcd
+      - rs485
+    net_count: 167
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 2
+    title: Sheet 2
+    interfaces:
+      - ethernet_phy
+      - misc
+      - power
+      - qspi
+      - sd_card
+    net_count: 27
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 3
+    title: Sheet 3
+    interfaces:
+      - can
+      - ethernet_phy
+      - ethernet_rgmii
+      - misc
+      - power
+    net_count: 45
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 4
+    title: Sheet 4
+    interfaces:
+      - hdmi
+      - i2c
+      - misc
+      - power
+    net_count: 20
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 5
+    title: Sheet 5
+    interfaces:
+      - camera
+      - can
+      - core_io
+      - ethernet_phy
+      - ethernet_rgmii
+      - hdmi
+      - i2c
+      - jtag
+      - misc
+      - pl_key
+      - pl_led
+      - power
+    net_count: 161
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 6
+    title: Sheet 6
+    interfaces:
+      - misc
+      - power
+      - uart
+    net_count: 3
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.
+  -
+    schematic_id: navigator_zynq_baseboard_schematic.v3_8
+    page: 7
+    title: Sheet 7
+    interfaces:
+      - misc
+      - power
+      - usb_otg
+    net_count: 7
+    summary: Auto-indexed sheet from PDF text layer; use PDF as source of truth for placement and visual connectivity.

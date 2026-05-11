@@ -1,0 +1,384 @@
+{
+  "interfaces": [
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "camera",
+      "net_count": 18,
+      "sample_nets": [
+        "CMOS",
+        "CMOS_D0",
+        "CMOS_D1",
+        "CMOS_D2",
+        "CMOS_D3",
+        "CMOS_D4",
+        "CMOS_D5",
+        "CMOS_D6",
+        "CMOS_D7",
+        "CMOS_HREF",
+        "CMOS_PCLK",
+        "CMOS_PWDN",
+        "CMOS_RESET",
+        "CMOS_SCL",
+        "CMOS_SDA",
+        "CMOS_VSYNC",
+        "CMOS_XCLK",
+        "CMOS_DO"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "can",
+      "net_count": 8,
+      "sample_nets": [
+        "CAN",
+        "CANH",
+        "CANL",
+        "CANRX",
+        "CAN_D",
+        "CAN_R",
+        "CAN_TX",
+        "CAN_RXT_PEN"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "core_io",
+      "net_count": 123,
+      "sample_nets": [
+        "B13_L11_N",
+        "B13_L11_P",
+        "B13_L12_N",
+        "B13_L12_P",
+        "B13_L13_N",
+        "B13_L13_P",
+        "B13_L14_N",
+        "B13_L14_P",
+        "B13_L15_N",
+        "B13_L15_P",
+        "B13_L16_N",
+        "B13_L16_P",
+        "B13_L17_N",
+        "B13_L17_P",
+        "B13_L18_N",
+        "B13_L18_P",
+        "B13_L19_N",
+        "B13_L19_P",
+        "B13_L20_N",
+        "B13_L20_P"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "ethernet_phy",
+      "net_count": 35,
+      "sample_nets": [
+        "PHY",
+        "PHY1",
+        "PHY1_AD0",
+        "PHY1_AD1",
+        "PHY1_MDI0",
+        "PHY1_MDI0_N",
+        "PHY1_MDI0_P",
+        "PHY1_MDI1_N",
+        "PHY1_MDI1_P",
+        "PHY1_MDI2",
+        "PHY1_MDI2_N",
+        "PHY1_MDI2_P",
+        "PHY1_MDI3",
+        "PHY1_MDI3_N",
+        "PHY1_MDI3_P",
+        "PHY2_MDI0_N",
+        "PHY2_MDI0_P",
+        "PHY2_MDI1_N",
+        "PHY2_MDI1_P",
+        "PHY2_MDI2_N"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "ethernet_rgmii",
+      "net_count": 13,
+      "sample_nets": [
+        "RGMII",
+        "RGMIIRXC",
+        "RGMII_RXCTL",
+        "RGMII_RXD0",
+        "RGMII_RXD1",
+        "RGMII_RXD2",
+        "RGMII_RXD3",
+        "RGMII_TXC",
+        "RGMII_TXCTL",
+        "RGMII_TXD0",
+        "RGMII_TXD1",
+        "RGMII_TXD2",
+        "RGMII_TXD3"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "hdmi",
+      "net_count": 18,
+      "sample_nets": [
+        "HDMI",
+        "HDMID2",
+        "HDMI_5V",
+        "HDMI_A",
+        "HDMI_CLK",
+        "HDMI_CLK_N",
+        "HDMI_CLK_P",
+        "HDMI_D0",
+        "HDMI_D0_N",
+        "HDMI_D0_P",
+        "HDMI_D1_N",
+        "HDMI_D1_P",
+        "HDMI_D2_N",
+        "HDMI_D2_P",
+        "HDMI_HPD",
+        "HDMI_HPD_LS",
+        "HDMI_SCL_LS",
+        "HDMI_SDA_LS"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "i2c",
+      "net_count": 3,
+      "sample_nets": [
+        "IIC2",
+        "IIC2_SCL",
+        "IIC2_SDA"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "jtag",
+      "net_count": 4,
+      "sample_nets": [
+        "FPGA_TCK",
+        "FPGA_TDI",
+        "FPGA_TDO",
+        "FPGA_TMS"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "misc",
+      "net_count": 50,
+      "sample_nets": [
+        "FPGA",
+        "PL_RESET",
+        "SDA",
+        "T10",
+        "T11",
+        "T20",
+        "TDI",
+        "TOUCH",
+        "TPAD",
+        "TX1",
+        "TX2",
+        "TX4",
+        "TXC",
+        "TXD",
+        "XADC_VN",
+        "XADC_VP",
+        "SDI",
+        "SDO",
+        "THERMAL",
+        "TX3"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "pl_key",
+      "net_count": 2,
+      "sample_nets": [
+        "PL_KEY0",
+        "PL_KEY1"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "pl_led",
+      "net_count": 2,
+      "sample_nets": [
+        "PL_LED0",
+        "PL_LED1"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "power",
+      "net_count": 28,
+      "sample_nets": [
+        "+5v",
+        "+5v",
+        "+5v",
+        "+5v",
+        "+5v",
+        "+5v",
+        "+5v",
+        "+5v",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND",
+        "GND"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "ps_keys",
+      "net_count": 2,
+      "sample_nets": [
+        "PSKEY0",
+        "PSKEY1"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "ps_led",
+      "net_count": 2,
+      "sample_nets": [
+        "PS_LED0",
+        "PS_LED1"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "ps_mio",
+      "net_count": 7,
+      "sample_nets": [
+        "PS_MIO10",
+        "PS_MIO11",
+        "PS_MIO12",
+        "PS_MIO13",
+        "PS_MIO7",
+        "PS_MIO8",
+        "PS_MIO9"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "qspi",
+      "net_count": 3,
+      "sample_nets": [
+        "QSPI",
+        "QSPI_D2",
+        "QSPI_D3"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "rgb_lcd",
+      "net_count": 80,
+      "sample_nets": [
+        "LCD",
+        "LCDB4",
+        "LCDR5",
+        "LCD_B0",
+        "LCD_B1",
+        "LCD_B2",
+        "LCD_B3",
+        "LCD_B5",
+        "LCD_B6",
+        "LCD_B7",
+        "LCD_BL",
+        "LCD_CLK",
+        "LCD_DE",
+        "LCD_G0",
+        "LCD_G1",
+        "LCD_G2",
+        "LCD_G3",
+        "LCD_G4",
+        "LCD_G5",
+        "LCD_G6"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "rs485",
+      "net_count": 4,
+      "sample_nets": [
+        "RS485",
+        "RS485_DE",
+        "RS485_RX",
+        "RS485_TX"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "sd_card",
+      "net_count": 7,
+      "sample_nets": [
+        "SD_CD",
+        "SD_CLK",
+        "SD_CMD",
+        "SD_D0",
+        "SD_D1",
+        "SD_D2",
+        "SD_D3"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "touch",
+      "net_count": 3,
+      "sample_nets": [
+        "T_CS",
+        "T_MISO",
+        "T_PEN"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "uart",
+      "net_count": 10,
+      "sample_nets": [
+        "UART",
+        "UART2",
+        "UART2_RX",
+        "UART2_TX",
+        "UART3",
+        "UART3_RX",
+        "UART3_TX",
+        "UART1",
+        "UART1_RXD",
+        "UART1_TXD"
+      ]
+    },
+    {
+      "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+      "interface": "usb_otg",
+      "net_count": 20,
+      "sample_nets": [
+        "OTG",
+        "OTGRESETN",
+        "OTG_CLK",
+        "OTG_DATA0",
+        "OTG_DATA1",
+        "OTG_DATA2",
+        "OTG_DATA3",
+        "OTG_DATA4",
+        "OTG_DATA5",
+        "OTG_DATA6",
+        "OTG_DATA7",
+        "OTG_DIR",
+        "OTG_NXT",
+        "OTG_STP",
+        "OTG_D_N",
+        "OTG_D_P",
+        "OTG_HN",
+        "OTG_HP",
+        "OTG_SN",
+        "OTG_SP"
+      ]
+    }
+  ]
+}

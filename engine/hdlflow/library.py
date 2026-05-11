@@ -93,6 +93,7 @@ def build_library(workspace: Path) -> Path:
                     ),
                 )
         _import_fpga_io_tables(conn, library_root)
+        _import_fpga_schematics(conn, library_root)
     return db_path
 
 
@@ -246,6 +247,70 @@ def query_fpga_io_pins(
     return [dict(zip(keys, row)) for row in rows]
 
 
+def query_fpga_schematic_nets(
+    workspace: Path,
+    *,
+    schematic_id: str | None = None,
+    net: str | None = None,
+    interface: str | None = None,
+    category: str | None = None,
+    connector: str | None = None,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    if schematic_id:
+        clauses.append("schematic_id = ?")
+        params.append(schematic_id)
+    if net:
+        clauses.append("(net_name LIKE ? OR linked_io_signal LIKE ? OR normalized_name LIKE ?)")
+        params.extend([f"%{net}%", f"%{net}%", f"%{_normalize_signal(net)}%"])
+    if interface:
+        clauses.append("interface = ?")
+        params.append(interface)
+    if category:
+        clauses.append("category = ?")
+        params.append(category)
+    if connector:
+        clauses.append("(schematic_connector = ? OR core_connector = ?)")
+        params.extend([connector, connector])
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT schematic_id, net_name, interface, category,
+               schematic_connector, schematic_connector_pin,
+               core_connector, core_connector_pin, zynq_pin,
+               bank, voltage, linked_io_signal, source_sheet,
+               confidence, notes
+        FROM fpga_schematic_nets
+        {where}
+        ORDER BY schematic_id, source_sheet, interface, net_name,
+                 schematic_connector, schematic_connector_pin
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = [
+        "schematic_id",
+        "net_name",
+        "interface",
+        "category",
+        "schematic_connector",
+        "schematic_connector_pin",
+        "core_connector",
+        "core_connector_pin",
+        "zynq_pin",
+        "bank",
+        "voltage",
+        "linked_io_signal",
+        "source_sheet",
+        "confidence",
+        "notes",
+    ]
+    return [dict(zip(keys, row)) for row in rows]
+
+
 def format_toc(entries: list[LibraryEntry]) -> list[str]:
     if not entries:
         return ["no matching library entries"]
@@ -292,6 +357,35 @@ def format_io_pins(rows: list[dict[str, Any]]) -> list[str]:
                     str(row.get("bank") or ""),
                     str(row.get("voltage") or ""),
                     str(row.get("category") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def format_schematic_nets(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching FPGA schematic nets"]
+    lines = [
+        "schematic_id | net | interface | category | schematic_pin | core_pin | zynq_pin | bank | sheet | confidence"
+    ]
+    lines.append("--- | --- | --- | --- | --- | --- | --- | --- | --- | ---")
+    for row in rows:
+        schematic_pin = _join_pin(row.get("schematic_connector"), row.get("schematic_connector_pin"))
+        core_pin = _join_pin(row.get("core_connector"), row.get("core_connector_pin"))
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("schematic_id") or ""),
+                    str(row.get("net_name") or ""),
+                    str(row.get("interface") or ""),
+                    str(row.get("category") or ""),
+                    schematic_pin,
+                    core_pin,
+                    str(row.get("zynq_pin") or ""),
+                    str(row.get("bank") or ""),
+                    str(row.get("source_sheet") or ""),
+                    str(row.get("confidence") or ""),
                 ]
             )
         )
@@ -353,6 +447,89 @@ def _import_fpga_io_tables(conn: sqlite3.Connection, library_root: Path) -> None
             )
 
 
+def _import_fpga_schematics(conn: sqlite3.Connection, library_root: Path) -> None:
+    parsed_root = library_root / "parsed" / "fpga_schematics"
+    if not parsed_root.is_dir():
+        return
+    for metadata_path in parsed_root.glob("*/*/metadata.json"):
+        parsed_dir = metadata_path.parent
+        nets_path = parsed_dir / "nets.json"
+        sheets_path = parsed_dir / "sheets.json"
+        if not nets_path.is_file():
+            continue
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        nets_data = json.loads(nets_path.read_text(encoding="utf-8"))
+        schematic_id = str(metadata.get("schematic_id") or "")
+        if not schematic_id:
+            continue
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO fpga_schematics (
+                schematic_id, title, source_file, source_type, parser,
+                page_count, net_count, parsed_dir
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                schematic_id,
+                str(metadata.get("title") or ""),
+                str(metadata.get("source_file") or ""),
+                str(metadata.get("source_type") or ""),
+                str(metadata.get("parser") or ""),
+                metadata.get("page_count"),
+                metadata.get("net_count"),
+                str(parsed_dir.relative_to(library_root)).replace("\\", "/"),
+            ),
+        )
+        if sheets_path.is_file():
+            sheets_data = json.loads(sheets_path.read_text(encoding="utf-8"))
+            for sheet in sheets_data.get("sheets", []):
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO fpga_schematic_sheets (
+                        schematic_id, page, title, interfaces, net_count, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        schematic_id,
+                        sheet.get("page"),
+                        str(sheet.get("title") or ""),
+                        ",".join(str(item) for item in sheet.get("interfaces", [])),
+                        sheet.get("net_count"),
+                        str(sheet.get("summary") or ""),
+                    ),
+                )
+        for net in nets_data.get("nets", []):
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO fpga_schematic_nets (
+                    schematic_id, net_name, normalized_name, interface, category,
+                    schematic_connector, schematic_connector_pin, core_connector,
+                    core_connector_pin, zynq_pin, bank, voltage, linked_io_signal,
+                    source_sheet, confidence, source_file, notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    schematic_id,
+                    str(net.get("net_name") or ""),
+                    str(net.get("normalized_name") or _normalize_signal(net.get("net_name"))),
+                    str(net.get("interface") or ""),
+                    str(net.get("category") or ""),
+                    str(net.get("schematic_connector") or ""),
+                    net.get("schematic_connector_pin"),
+                    str(net.get("core_connector") or ""),
+                    net.get("core_connector_pin"),
+                    net.get("zynq_pin"),
+                    net.get("bank"),
+                    net.get("voltage"),
+                    str(net.get("linked_io_signal") or ""),
+                    str(net.get("source_sheet") or ""),
+                    str(net.get("confidence") or ""),
+                    str(net.get("source_file") or ""),
+                    str(net.get("notes") or ""),
+                ),
+            )
+
+
 def _entry_from_mapping(entry_id: str, kind: str, raw: dict[str, Any], source_index: str) -> LibraryEntry:
     return LibraryEntry(
         id=entry_id,
@@ -401,3 +578,17 @@ def _as_tags(value: Any) -> str:
 def _tokens(text: str) -> list[str]:
     normalized = "".join(char.lower() if char.isalnum() else " " for char in text)
     return [token for token in normalized.split() if len(token) >= 3]
+
+
+def _normalize_signal(value: Any) -> str:
+    return "".join(char.upper() for char in str(value or "") if char.isalnum())
+
+
+def _join_pin(connector: Any, pin: Any) -> str:
+    if not connector and not pin:
+        return ""
+    if not pin:
+        return str(connector or "")
+    if not connector:
+        return str(pin)
+    return f"{connector}_{pin}"

@@ -1,0 +1,10 @@
+{
+  "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
+  "rails": [
+    "+5v",
+    "GND"
+  ],
+  "notes": [
+    "Power nets are indexed for lookup only; current extraction does not infer regulator topology."
+  ]
+}

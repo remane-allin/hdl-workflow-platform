@@ -50,3 +50,58 @@ CREATE INDEX IF NOT EXISTS idx_fpga_io_pins_signal ON fpga_io_pins(signal_name);
 CREATE INDEX IF NOT EXISTS idx_fpga_io_pins_bank ON fpga_io_pins(bank);
 CREATE INDEX IF NOT EXISTS idx_fpga_io_pins_category ON fpga_io_pins(category);
 CREATE INDEX IF NOT EXISTS idx_fpga_io_pins_connector ON fpga_io_pins(connector);
+
+CREATE TABLE IF NOT EXISTS fpga_schematics (
+    schematic_id TEXT PRIMARY KEY,
+    title TEXT,
+    source_file TEXT,
+    source_type TEXT,
+    parser TEXT,
+    page_count INTEGER,
+    net_count INTEGER,
+    parsed_dir TEXT
+);
+
+CREATE TABLE IF NOT EXISTS fpga_schematic_sheets (
+    schematic_id TEXT NOT NULL,
+    page INTEGER NOT NULL,
+    title TEXT,
+    interfaces TEXT,
+    net_count INTEGER,
+    summary TEXT,
+    PRIMARY KEY (schematic_id, page)
+);
+
+CREATE TABLE IF NOT EXISTS fpga_schematic_nets (
+    schematic_id TEXT NOT NULL,
+    net_name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    interface TEXT,
+    category TEXT,
+    schematic_connector TEXT,
+    schematic_connector_pin INTEGER,
+    core_connector TEXT,
+    core_connector_pin INTEGER,
+    zynq_pin TEXT,
+    bank TEXT,
+    voltage TEXT,
+    linked_io_signal TEXT,
+    source_sheet TEXT,
+    confidence TEXT,
+    source_file TEXT,
+    notes TEXT,
+    PRIMARY KEY (
+        schematic_id,
+        net_name,
+        schematic_connector,
+        schematic_connector_pin,
+        core_connector,
+        core_connector_pin
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_name ON fpga_schematic_nets(net_name);
+CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_normalized ON fpga_schematic_nets(normalized_name);
+CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_interface ON fpga_schematic_nets(interface);
+CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_category ON fpga_schematic_nets(category);
+CREATE INDEX IF NOT EXISTS idx_fpga_schematic_nets_connector ON fpga_schematic_nets(schematic_connector);

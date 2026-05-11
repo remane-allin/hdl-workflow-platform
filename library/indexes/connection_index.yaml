@@ -52,3 +52,16 @@ connections:
       - pdf
       - nets
       - board
+  fpga.navigator_zynq_baseboard_schematic_v3_8:
+    title: Navigator ZYNQ baseboard schematic V3.8
+    domain: fpga
+    category: schematic_database
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Normalized net/interface lookup database extracted from the Navigator ZYNQ baseboard schematic PDF.
+    detail_path: sources/schematic_patterns/navigator_zynq_baseboard_schematic_v3_8.md
+    tags:
+      - fpga
+      - zynq
+      - schematic
+      - nets
+      - connector

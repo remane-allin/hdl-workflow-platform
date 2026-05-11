@@ -1,0 +1,21 @@
+schematic_id: navigator_zynq_baseboard_schematic.v3_8
+clock_nets:
+  - CMOS_PCLK
+  - CMOS_XCLK
+  - HDMI_CLK
+  - HDMI_CLK_N
+  - HDMI_CLK_P
+  - LCD_CLK
+  - LCD_CLK11
+  - LCD_CLKJ1_2
+  - PHY_RXCLK
+  - TXCLK
+reset_nets:
+  - CMOS_RESET
+  - LCD_RST
+  - OTGRESETN
+  - PHYRSTB
+  - PHY_RST_N
+  - PL_RESET
+notes:
+  - Clock/reset lists are token-derived and should be checked against the original PDF for signoff.
