@@ -37,7 +37,6 @@ REQUIRED_PATHS = [
     "change_control/trace_updates",
     "00_SPEC/raw_docs",
     "00_SPEC/requirements",
-    "01_DocParse/mineru_raw",
     "01_DocParse/structured_spec",
     "01_DocParse/req_decompose",
     "01_DocParse/trace_matrix",

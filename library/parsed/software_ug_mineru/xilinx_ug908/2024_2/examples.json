@@ -1,0 +1,3701 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug908.2024_2",
+  "examples": [
+    {
+      "example_id": "xilinx.ug908.2024_2.example.001",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.figure_hardware_view_after_opening_a_connection_to_the_hardware_target",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Figure: Hardware View after Opening a Connection to the Hardware Target",
+      "page_start": 26,
+      "page_end": 26,
+      "code": "connect_hw_server -url localhost:3121\ncurrent_hw_target [get_hw_targets */xilinx_tcf/Digilent/210203339395A]\nset_property PARAM.FREQUENCY 15000000 [get_hw_targets \\\n*/xilinx_tcf/Digilent/210203339395A]\nopen_hw_target",
+      "description": "The Open New Hardware Target wizard is also what populates a list of previously connected hardware targets. Instead of connecting to a hardware target by going through the wizard, you can re-open a connection to a previously connected hardware target by selecting the Open recent target link in the Hardware Manager w...",
+      "commands": [
+        "connect_hw_server",
+        "current_hw_target",
+        "set_property",
+        "open_hw_target"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hw_server"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.002",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.decode_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "decode Example",
+      "page_start": 34,
+      "page_end": 34,
+      "code": "[1057.942]CMD Payload START, Len:0x000000030x00000000F2000038: 0x2940C000 0x00000004 0x00000001\n[1066.558]CMD Payload END[1068.886]PLM Error Status: 0x28010007",
+      "description": "The error numbers are typically composed of major and minor errors. You can supply one or more error numbers to decode. If the tool finds a matching error number, it displays the name and description of the error. An example excerpt of a PDI log output for a Versal device is shown below. In this example, the PDI Log...",
+      "commands": [],
+      "tags": [
+        "embedded",
+        "error_handling",
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.003",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_a_configuration_memory_file_for_fpga_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating a Configuration Memory File (for FPGA Devices)",
+      "page_start": 54,
+      "page_end": 54,
+      "code": "write_cfgmem -format mcs -interface bpix16 -size 128 \\\n-loadbit \"up 0x0 design.bit\"-file design.mcs",
+      "description": "Device Configuration Bitstream or PDI Settings Use the write\\_cfgmem Tcl command to create the .mcs or .bin programming file. This file is used in programming the configuration memory device. For example, to generate an .mcs file to configure an FPGA with a single 1 Gbit BPI configuration memory device:",
+      "commands": [
+        "write_cfgmem"
+      ],
+      "tags": [
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.004",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_a_configuration_memory_file_for_fpga_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating a Configuration Memory File (for FPGA Devices)",
+      "page_start": 54,
+      "page_end": 54,
+      "code": "write_cfgmem -format mcs -interface bpix16 -size 128\n    -loadbit \"up 0 design1.bit up 0xFFFFF design2.bit\"\n    -file design1_design2.mcs",
+      "description": "For example, to generate an .mcs file to configure an FPGA with a single 1 Gbit BPI configuration memory device: Vivado IDE supports the ability to chain multiple .bit files together using the write\\_cfgmem command. To generate an .mcs file for a single 1 Gbit BPI configuration memory device containing multiple bits...",
+      "commands": [
+        "write_cfgmem"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.005",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_an_initialization_pdi_for_versal_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating an Initialization PDI (for Versal Devices)",
+      "page_start": 56,
+      "page_end": 56,
+      "code": "write_cfgmem -format mcs -interface spix8 -size 32 \\\n-loadbit \"up 0 ./design1_spix8.bit up 0x02000000 ./design2_spix8.bit\" \\\n-file design1_design2_spix8.mcs",
+      "description": "Total storage size: 2 \\* 32 MiB = 64 MiB Load addresses: Golden: 0 \\* 2 = 0 Multiboot: 0x0100\\_0000 \\* 2 = 0x0200\\_0000",
+      "commands": [
+        "write_cfgmem"
+      ],
+      "tags": [
+        "embedded",
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.006",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.readback_and_verify",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Readback and Verify",
+      "page_start": 65,
+      "page_end": 65,
+      "code": "create_hw_bitstream -hw_device [current_hw_device] \\\n    -mask kcu105_cnt_ila_uncmpr.msk kcu105_cnt_ila_uncmpr.bit\nverify_hw_devices [current_hw_device]",
+      "description": "When performing a verify operation, the verify\\_hw\\_devices Tcl command reads data back from the FPGA/MPSoC and uses the .msk file to determine which readback data bits to skip and which ones to compare against the corresponding bits in the .bit file. Following is an example of a bitstream verify Tcl command sequenc...",
+      "commands": [
+        "create_hw_bitstream",
+        "verify_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.007",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.configuration_and_boot_memory_verify_and_readback_for_fpgas_or_mpsocs",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Configuration and Boot Memory Verify and Readback for FPGAs or MPSoCs",
+      "page_start": 66,
+      "page_end": 66,
+      "code": "-readback_file <filename.rbd>",
+      "description": "Figure: Verify Device Dialog You need to enter the bit file and corresponding mask (.msk) file. Click Verify to execute the verification. Use the readback\\_hw\\_device Tcl command with at least one of the following options to read back the FPGA/MPSoC configuration data: To save readback data in ASCII format:",
+      "commands": [],
+      "tags": [
+        "example",
+        "external_program"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.008",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.configuration_and_boot_memory_verify_and_readback_for_fpgas_or_mpsocs",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Configuration and Boot Memory Verify and Readback for FPGAs or MPSoCs",
+      "page_start": 66,
+      "page_end": 66,
+      "code": "-bin_file <filename.bin>",
+      "description": "Use the readback\\_hw\\_device Tcl command with at least one of the following options to read back the FPGA/MPSoC configuration data: To save readback data in ASCII format: To saves readback data in binary format:",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.009",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.configuration_and_boot_memory_verify_and_readback_for_fpgas_or_mpsocs",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Configuration and Boot Memory Verify and Readback for FPGAs or MPSoCs",
+      "page_start": 66,
+      "page_end": 66,
+      "code": "readback_hw_device [current_hw_device] \\\n-readback_file kcu105_cnt_ila_uncmpr_rb.rbd \\\n-bin_file kcu105_cnt_ila_uncmpr_rb.bin",
+      "description": "To saves readback data in binary format: Example: Readback FPGA/MPSoC configuration data in both ASCII and binary formats:",
+      "commands": [
+        "readback_hw_device"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.010",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.configuration_and_boot_memory_verify_and_readback_for_fpgas_or_mpsocs",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Configuration and Boot Memory Verify and Readback for FPGAs or MPSoCs",
+      "page_start": 67,
+      "page_end": 67,
+      "code": "set_property PROGRAM.ADDRESS_RANGE {use_file} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.FILES [list \"H:/projects/k7_led/k7_led_325t_afx_x16_33v.mcs\" ] \\\n[ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.BPI_RS_PINS {none} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.UNUSED_PIN_TERMINATION {pull-none} [ get_property \\\nPROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.BLANK_CHECK 0 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.ERASE 0 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.CFG_PROGRAM 0 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nset_property PROGRAM.VERIFY 1 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]\nstartgroup\nif {!string equal [get_property PROGRAM.HW_CFGMEM_TYPE [lindex [get_hw_devices] 0]]\n[get_property MEM_TYPE\n[get_property CFGMEM_PART [get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]]]]\n} \\\n{ create_hw_bitstream -hw_device [lindex [get_hw_devices] 0] [get_property\nPROGRAM.HW_CFGMEM_BITFILE \\\n[ lindex [get_hw_devices] 0]]; program_hw_devices [lindex [get_hw_devices] 0]; };",
+      "description": "Verify the configuration memory device through the AMD VivadoTM Design Suite Hardware Manager as shown in the following figure. You can also verify the configuration memory device by setting the appropriate HW\\_CFGMEM properties and calling program\\_hw\\_cfgmem as shown in the following code:",
+      "commands": [
+        "set_property",
+        "PROGRAM",
+        "startgroup"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.011",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.pdi_verify_for_versal_adaptive_soc_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "PDI Verify for Versal Adaptive SoC Devices",
+      "page_start": 68,
+      "page_end": 68,
+      "code": "readback_hw_cfgmem -file test.bin -hw_cfgmem \\\n[get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]",
+      "description": "program\\_hw\\_cfgmem -hw\\_cfgmem [get\\_property PROGRAM.HW\\_CFGMEM [lindex [get\\_hw\\_devices] 0 ]] endgroup On FPGA devices, the contents of the configuration memory can be readback through the Vivado Design Suite Tcl Console using the following command sequence (not supported on MPSoC):",
+      "commands": [
+        "readback_hw_cfgmem"
+      ],
+      "tags": [
+        "embedded",
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.012",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.r_dis_rsa",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "R\\_DIS\\_RSA",
+      "page_start": 88,
+      "page_end": 88,
+      "code": "report_property [lindex [get_hw_device] 0] REGISTER. EFUSE. FUSE_USER\nreport_property [lindex [get_hw_devices] 0] REGISTER. EFUSE. FUSE_USER_128",
+      "description": "programmable eFUSE bits. The bits of these registers are cumulatively programmable. This means that if you program only one USER bit in an eFUSE programming session (for example, USER = 0x0000\\_0001 or bit 0), on subsequent eFUSE programming sessions you can program any of the remaining 0 bits (for example, USER = 0...",
+      "commands": [
+        "report_property"
+      ],
+      "tags": [
+        "efuse",
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.013",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.efuse_export_nkz_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "eFUSE Export NKZ File",
+      "page_start": 91,
+      "page_end": 91,
+      "code": "export_<FUSE_DNA>.nkz",
+      "description": "Because you are advised to program eFUSE settings in multiple passes, eFUSE settings are always exported to an externally visible NKZ file which is updated during each eFUSE operation. The intent of this file is to accumulate all eFUSE settings applied to a device, even if they are applied over multiple eFUSE operat...",
+      "commands": [
+        "export_"
+      ],
+      "tags": [
+        "efuse",
+        "example",
+        "external_program",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.014",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.efuse_export_nkz_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "eFUSE Export NKZ File",
+      "page_start": 91,
+      "page_end": 91,
+      "code": "program_hw_devices -user_efuse {1} -efuse_export_file {my_settings.nkz}",
+      "description": "Because you are advised to program eFUSE settings in multiple passes, eFUSE settings are always exported to an externally visible NKZ file which is updated during each eFUSE operation. The intent of this file is to accumulate all eFUSE settings applied to a device, even if they are applied over multiple eFUSE operat...",
+      "commands": [
+        "program_hw_devices"
+      ],
+      "tags": [
+        "efuse",
+        "example",
+        "external_program",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.015",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 96,
+      "page_end": 96,
+      "code": "open_hw_manager\nconnect_hw_server\ncreate_hw_target -stapl my_stapl_target\nif {string length [get_hw_targets -quiet -filter {IS_OPENED == TRUE}] > 0} \\\n{close_hw_target [get_hw_targets * -filter {IS_OPENED == TRUE}]\n}; \\\nopen_hw_target [get_hw_targets -regexp .*my_stapl_target]\ncurrent_hw_target",
+      "description": "The STAPL target is similar to a live AMD Platform Cable USB or Digilent JTAG cable hardware target. The properties and Tcl commands are all the same, with the main distinction being that the STAPL target is not an active live cable. Any operations performed on this target do not affect the hardware until the STAPL...",
+      "commands": [
+        "open_hw_manager",
+        "connect_hw_server",
+        "create_hw_target",
+        "open_hw_target",
+        "current_hw_target"
+      ],
+      "tags": [
+        "embedded",
+        "example",
+        "hardware_debug",
+        "hw_server",
+        "jtag",
+        "platform",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.016",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 96,
+      "page_end": 96,
+      "code": "get_property IS_STAPL [get_hw_targets -regexp .*my_stapl_target]",
+      "description": "All standard operations on the target, such as get\\_hw\\_targets and open\\_hw\\_target commands, are supported. You can use the IS\\_STAPL hardware target property to distinguish between a live target and an STAPL target. For instance, the following is a sample command line that reads the IS\\_STAPL property from a targ...",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "gui",
+        "hw_server",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.017",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 96,
+      "page_end": 96,
+      "code": "get_hw_targets -filter {IS_STAPL}",
+      "description": "All standard operations on the target, such as get\\_hw\\_targets and open\\_hw\\_target commands, are supported. You can use the IS\\_STAPL hardware target property to distinguish between a live target and an STAPL target. For instance, the following is a sample command line that reads the IS\\_STAPL property from a targ...",
+      "commands": [
+        "get_hw_targets"
+      ],
+      "tags": [
+        "example",
+        "gui",
+        "hw_server",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.018",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 96,
+      "page_end": 96,
+      "code": "delete_hw_target [get_hw_targets -regexp .*my_stapl_target]",
+      "description": "Additionally, all the STAPL hw\\_targets created in this session can be displayed by issuing the following command: To delete the created target, use the delete\\_hw\\_target command. For instance, by issuing the following command, the my\\_stapl\\_target is deleted:",
+      "commands": [
+        "delete_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.019",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 97,
+      "page_end": 97,
+      "code": "current_hw_target my_stapl_target\nopen_hw_target\ncreate_hw_device -part xcvc1902\ncreate_hw_device -part xcvu095\nrefresh_hw_target\nget_hw_devices",
+      "description": "✎ Note: It is not recommended to create a STAPL device chain that contains both UltraScale/UltraScale+ FPGAs and Versal Devices as this might lead to unpredictable results. This limitation will be addressed in a later release. To create the chain using the Vivado Tcl mode or the Tcl Console in the Vivado IDE, perfor...",
+      "commands": [
+        "current_hw_target",
+        "open_hw_target",
+        "create_hw_device",
+        "refresh_hw_target",
+        "get_hw_devices"
+      ],
+      "tags": [
+        "embedded",
+        "example",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.020",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 97,
+      "page_end": 97,
+      "code": "open_hw_target [current_hw_target]\ncreate_hw_device -idcode 01234567 -irlength 8 -mask ffffffff -part my_part\n# print IR length for user defined devices\nputs [get_property IR_LENGTH [lindex [get_hw_devices -filter {PART == my_part}] 0]]\nputs $idcode_hex\nclose_hw_target",
+      "description": "To add user-defined devices to the chain, add the -idcode, -irlength, and -mask values and the part type name using the -part options. For instance, if you have a part called \"my\\_part\" with a JTAG idcode of 1234567, an ir length of 8, mask of ffffffff, create the device as follows:",
+      "commands": [
+        "open_hw_target",
+        "create_hw_device",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.021",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 98,
+      "page_end": 98,
+      "code": "INFO: Server Property Information: localhost:3121\nCLASS: hw_server\nHOST: localhost\nNAME: localhost:3121\nPORT: 3121\nSID: TCP:localhost:3121\n\nINFO: Target Property Information: localhost:3121/xilinx_tcf/Xilinx/my_stapl_target\nCLASS: hw_target\nDEVICE_COUNT: 3\nHW_JTAG: 0\nIS_OPENED: 1\nMAX_DEVICE_COUNT: 32\nNAME: localhost:3121/xilinx_tcf/Xilinx/my_stapl_target\nFREQUENCY: 10000000\nTYPE: xilinx_tcf\nTID: jsn-XNC-my_stapl_target\nUID: Xilinx/my_stapl_target\nSVF: 0\nSTAPL: 1\nDevice: arm_dap_0\nDevice: xcvc1902_1\nDevice: xcvu095_2\n\nINFO: Device Property Information: arm_dap_0\nCLASS: hw_device\nPART: arm_dap\nID CODE: 01101011101000000000010001110111\nIR LENGTH: 4\nMASK: 0\nUSER_CHAIN_COUNT: 0\nPROGRAMMING FILE:\nPROBES FILE:\nPROGRAMMING STATUS: 0\n\nINFO: Device Property Information: xcvc1902_1\nCLASS: hw_device\nPART: xcvc1902\nID CODE: 00010100110010101000000010010011\nIR LENGTH: 6\nMASK: 0\nUSER_CHAIN_COUNT: 4\nPROGRAMMING FILE:\nPROBES FILE:\nPROGRAMMING STATUS: 0\n\nINFO: Device Property Information: xcvu095_2\nCLASS: hw_device\nPART: xcvu095\nID CODE: 01110011100001000010000010010011\nIR LENGTH: 6",
+      "description": "✎ Note: The idcode for the create\\_hw\\_device should be a valid device ID code. Silicon vendors typically provide ID code values and IR lengths through device BSDL files. To see a report of the target and its devices, run the report\\_hw\\_targets command. The report shows details for all active targets in the system....",
+      "commands": [
+        "INFO:",
+        "CLASS:",
+        "HOST:",
+        "NAME:",
+        "PORT:",
+        "SID:",
+        "DEVICE_COUNT:",
+        "HW_JTAG:",
+        "IS_OPENED:",
+        "MAX_DEVICE_COUNT:",
+        "FREQUENCY:",
+        "TYPE:",
+        "TID:",
+        "UID:",
+        "SVF:",
+        "STAPL:",
+        "Device:",
+        "PART:",
+        "ID",
+        "IR",
+        "MASK:",
+        "USER_CHAIN_COUNT:",
+        "PROGRAMMING",
+        "PROBES"
+      ],
+      "tags": [
+        "example",
+        "report",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.022",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 99,
+      "page_end": 99,
+      "code": "MASK: 0\nUSER_CHAIN_COUNT: 4\nPROGRAMMING FILE:\nPROBES FILE:\nPROGRAMMING STATUS: 0",
+      "description": "✎ Note: The idcode for the create\\_hw\\_device should be a valid device ID code. Silicon vendors typically provide ID code values and IR lengths through device BSDL files. To see a report of the target and its devices, run the report\\_hw\\_targets command. The report shows details for all active targets in the system....",
+      "commands": [
+        "MASK:",
+        "USER_CHAIN_COUNT:",
+        "PROGRAMMING",
+        "PROBES"
+      ],
+      "tags": [
+        "example",
+        "report",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.023",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 99,
+      "page_end": 99,
+      "code": "create_hw_target -stapl my_stapl_target\nopen_hw_target\nset device0 [create_hw_device -part xcvc1902]\nset_property PROGRAM.FILE {my_xcvc1902.pdi} $device0\nprogram_hw_devices $device0",
+      "description": "Once you have created a STAPL chain that reflects all the devices in the right order, you can start adding programming operations to the devices in the STAPL chain. The following can be used to program device in the STAPL chain:",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.024",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 99,
+      "page_end": 99,
+      "code": "create_hw_target -stapl my_stapl_target\nopen_hw_target\nset device0 [create_hw_device -part xcvc1902]\nset_property PROGRAM.FILE {my_xcvc1902.pdi} $device0\nprogram_hw_devices $device0\ncurrent_hw_device [lindex [get_hw_devices] 1]\nwrite_hw_stapl my_xcvc1902.stapl\nclose_hw_target",
+      "description": "The STAPL chain direct FPGA/SoC operations are captured in a temporary file. When the write\\_hw\\_stapl command is called, the temporary file is moved to the filename passed to the command. After the write\\_hw\\_stapl command is called, the temporary file is reset, and a subsequent programming operation is added to th...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices",
+        "current_hw_device",
+        "write_hw_stapl",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.025",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 100,
+      "page_end": 100,
+      "code": "create_hw_target -stapl my_stapl_target\nopen_hw_target\nset device0 [create_hw_device -part xcvc1902]\nset_property PROGRAM.FILE {my_xcvc1902_1.pdi} $device0\n# this program command will produce stapl instructions\n# which account for only device0 in chain\nprogram_hw_devices $device0\nset device1 [create_hw_device -part xcvc1902]\nset_property PROGRAM.FILE {my_xcvc1902_2.pdi} $device1\n# this program command will produce stapl instructions\n# which account for device0 and device1 in chain\nprogram_hw_devices $device1\nwrite_hw_stapl my_bad_xcvc1902.stapl\nclose_hw_target",
+      "description": "★ Tip: When writing STAPL files, you should first create all the devices for the JTAG chain and perform the programming operations. If you interleave create\\_hw\\_device commands between programming commands, you produce an output STAPL file with two different chain sequences. Example of Incorrect STAPL File Creation...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices",
+        "write_hw_stapl",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.026",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 100,
+      "page_end": 100,
+      "code": "create_hw_target -stapl my_stapl_target\nopen_hw_target\n# create device chain first\nset device0 [create_hw_device -part xcvc1902]\nset device1 [create_hw_device -part xcvc1902]\n# program device0\nset_property PROGRAM.FILE {my_xcvc1902_1.bit} $device0\nprogram_hw_devices $device0\n# program device1\nset_property PROGRAM.FILE {my_xcvc1902_2.bit} $device1\nprogram_hw_devices $device1",
+      "description": "The first program command only captures the chain definition containing the first device. The second program command includes both devices in the chain when writing out the STAPL instructions. Therefore, if you attempt to play this STAPL file on a chain with two devices, the first programming operations fail because...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.027",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "-i, --input-file FILE STAPL file to play [required]\n-h, --hw-server TEXT Hardware server URL [default: TCP:localhost:3121]\n-a, --action TEXT STAPL action to perform [required]\n--cable-serial TEXT Serial number of JTAG cable. This option can be used to choose a specific JTAG cable amongst multiple cables connected to the hardware server. [optional]",
+      "description": "To run a STAPL file, you can run the application using the command on a live target as follows: stapl\\_player run --help Usage: stapl\\_player run [OPTIONS] Options:",
+      "commands": [],
+      "tags": [
+        "example",
+        "jtag",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.028",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "***** Build date : Mar 21 2024-07:45:59\n**** Build number : 2024.1.1710987359\n** Copyright 2021-2022 Xilinx, Inc. All Rights Reserved.\n** Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.",
+      "description": "--help Show this message and exit. \\$stapl\\_player run --input-file my\\_vc1902.stapl --hw-server TCP:192.168.0.100:3121 --action PROGRAM \\*\\*\\*\\*\\*\\*\\*\\* AMD stapl-player v2024.1.0",
+      "commands": [],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.029",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.serial_vector_format_svf_file_programming_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Serial Vector Format (SVF) File Programming",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "***** Xilinx stapl-player v2024.1.0\n***** Build date : Mar 21 2024-07:45:59\n**** Build number : 2024.1.1710987359\n** Copyright 2021-2022 Xilinx, Inc. All Rights Reserved.\n** Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.",
+      "description": "If the host machine running the hardware server has multiple JTAG cables, you can use the list\\_cables command of the STAPL player to list the serial numbers of available cables. You can specify the target serial number using the --cable-serial option of the run command. \\$ stapl\\_player list\\_cables -h 192.168.0.20...",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hw_server",
+        "jtag",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.030",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.serial_vector_format_svf_file_programming_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Serial Vector Format (SVF) File Programming",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "Serial numbers of JTAG cables connected to the hardware server on 192.168.0.200:3121 are -\nCable #1 - 492218147875A\nCable #2 - 0000180fe3cf01",
+      "description": "\\$ stapl\\_player list\\_cables -h 192.168.0.200:3121 Connecting to the hardware server at 192.168.0.200:3121",
+      "commands": [
+        "Serial",
+        "Cable"
+      ],
+      "tags": [
+        "example",
+        "hw_server",
+        "jtag",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.031",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_ide_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado IDE",
+      "page_start": 105,
+      "page_end": 105,
+      "code": "open_hw_manager\nconnect_hw_server\ncreate_hw_target my_svf_target\nif {string length [get_hw_targets -quiet -filter {IS_OPENED == TRUE}] > 0} \\\n{close_hw_target [get_hw_targets * -filter {IS_OPENED == TRUE}]\n}; \\\nopen_hw_target [get_hw_targets *my_svf_target]\ncurrent_hw_target",
+      "description": "You can also use the Vivado Tcl mode or the Tcl Console in the Vivado IDE to create the SVF Target. Following are the steps needed to create an SVF target after initially launching Vivado or Vivado Lab Edition: Following are the steps needed to create an SVF target after initially launching Vivado or Vivado Lab Edit...",
+      "commands": [
+        "open_hw_manager",
+        "connect_hw_server",
+        "create_hw_target",
+        "open_hw_target",
+        "current_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.032",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_ide_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado IDE",
+      "page_start": 105,
+      "page_end": 105,
+      "code": "get_property IS_SVF [get_hw_targets -regexp .*my_svf_target]",
+      "description": "All standard operations on the target, such as get\\_hw\\_targets and open\\_hw\\_target commands are supported. You can use the IS\\_SVF hardware target property to distinguish between a live target and an SVF target. For instance, the following is a sample command line that reads the IS\\_SVF property from a target name...",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "gui",
+        "hw_server",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.033",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_ide_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado IDE",
+      "page_start": 105,
+      "page_end": 105,
+      "code": "get_hw_targets -filter {IS_SVF}",
+      "description": "All standard operations on the target, such as get\\_hw\\_targets and open\\_hw\\_target commands are supported. You can use the IS\\_SVF hardware target property to distinguish between a live target and an SVF target. For instance, the following is a sample command line that reads the IS\\_SVF property from a target name...",
+      "commands": [
+        "get_hw_targets"
+      ],
+      "tags": [
+        "example",
+        "gui",
+        "hw_server",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.034",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_ide_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado IDE",
+      "page_start": 105,
+      "page_end": 105,
+      "code": "delete_hw_target [get_hw_targets -regexp .*my_svf_target]",
+      "description": "Additionally, all the SVF hw\\_targets created in this session can be displayed by issuing the following command: To delete the created target, use the delete\\_hw\\_target command. For instance, by issuing the following command, the my\\_svf\\_target is deleted:",
+      "commands": [
+        "delete_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.035",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_6",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 108,
+      "page_end": 108,
+      "code": "current_hw_target my_svf_target\nopen_hw_target\ncreate_hw_device -part xcku9p\ncreate_hw_device -part xcvu095\nrefresh_hw_target\nget_hw_devices",
+      "description": "Click OK, and the non-Xilinx part is added to the SVF device chain. To create the chain using the Vivado Tcl mode or the Tcl Console in the Vivado IDE, perform sequential create\\_hw\\_device operations on an open SVF target. For instance, to add an xcku9p part followed by an xcvu095 part perform the following steps:",
+      "commands": [
+        "current_hw_target",
+        "open_hw_target",
+        "create_hw_device",
+        "refresh_hw_target",
+        "get_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.036",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_6",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 108,
+      "page_end": 108,
+      "code": "open_hw_target [current_hw_target]\ncreate_hw_device -idcode 01234567 -irlength 8 -mask ffffffff -part my_part\n# print IR length for user defined devices\nputs [get_property IR_LENGTH [lindex [get_hw_devices -filter {PART == my_part}] 0]]\nputs $idcode_hex\nclose_hw_target",
+      "description": "To add user defined devices to the chain, add the -idcode, -irlength, and -mask values along with the part type name using the -part options. For instance, if you have a part called \"my\\_part\" with a JTAG idcode of 1234567, an ir length of 8, mask of ffffffff, create the device as follows:",
+      "commands": [
+        "open_hw_target",
+        "create_hw_device",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.037",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_6",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 108,
+      "page_end": 108,
+      "code": "report_hw_targets\nINFO: Server Property Information: localhost:3121\nCLASS: hw_server\nHOST: localhost\nNAME: localhost:3121\nPORT: 3121\nSID: TCP:localhost:3121\nINFO: Target Property Information: localhost:3121/xilinx_tcf/Xilinx/my_svf_target\nCLASS: hw_target\nDEVICE_COUNT: 3\nHW_JTAG: 0\nIS_OPENED: 1",
+      "description": "Note: The idcode for the create\\_hw\\_device should be a valid device ID code. ID code values and IR lengths are typically provided by silicon vendors through device BSDL files. To see a report of the target and its devices, run the report\\_hw\\_targets command. The report shows details for all active targets in the s...",
+      "commands": [
+        "report_hw_targets",
+        "INFO:",
+        "CLASS:",
+        "HOST:",
+        "NAME:",
+        "PORT:",
+        "SID:",
+        "DEVICE_COUNT:",
+        "HW_JTAG:",
+        "IS_OPENED:"
+      ],
+      "tags": [
+        "example",
+        "report",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.038",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.adding_configuration_memory_parts_to_xilinx_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Adding Configuration Memory Parts to Xilinx Devices",
+      "page_start": 109,
+      "page_end": 109,
+      "code": "MAX_DEVICE_COUNT: 32\nNAME: localhost:3121/xilinx_tcf/Xilinx/my_svf_target\nFREQUENCY: 10000000\nTYPE: xilinx_tcf\nTID: jsn-XNC-my_svf_target\nUID: Xilinx/my_svf_target\nSVF: 1\nDevice: xcku9p_0\nDevice: xcvu095_1\nDevice: my_part_2",
+      "description": "Note: The idcode for the create\\_hw\\_device should be a valid device ID code. ID code values and IR lengths are typically provided by silicon vendors through device BSDL files. To see a report of the target and its devices, run the report\\_hw\\_targets command. The report shows details for all active targets in the s...",
+      "commands": [
+        "MAX_DEVICE_COUNT:",
+        "NAME:",
+        "FREQUENCY:",
+        "TYPE:",
+        "TID:",
+        "UID:",
+        "SVF:",
+        "Device:"
+      ],
+      "tags": [
+        "example",
+        "report"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.039",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_7",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 113,
+      "page_end": 113,
+      "code": "create_hw_target my_svf_target\nopen_hw_target\nset device0 [create_hw_device -part xcku9p]\nset_property PROGRAM.FILE {my_xcku9p.bit} $device0\nprogram_hw_devices $device0\nwrite_hw_svf my_xcku9p.svf\nclose_hw_target",
+      "description": "The SVF chain, direct FPGA and indirect flash programming operations are captured in a temporary file. When the write\\_hw\\_svf command is called, the temporary file is moved to the filename passed to the command. After the write\\_hw\\_svfcommand is called, the temporary file is reset, and a subsequent programing oper...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices",
+        "write_hw_svf",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.040",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_7",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 114,
+      "page_end": 114,
+      "code": "create_hw_target my_svf_target\nopen_hw_target\nset device0 [create_hw_device -part xcku9p]\nset_property PROGRAM.FILE {my_xcku9p1.bit} $device0\n# this program command will produce SVF instructions\n# which account for only device0 in chain\nprogram_hw_devices $device0\nset device1 [create_hw_device -part xcku9p]\nset_property PROGRAM.FILE {my_xcku9p2.bit} $device1\n# this program command will produce SVF instructions\n# which account for device0 and device1 in chain\nprogram_hw_devices $device1\nwrite_hw_svf my_bad_xcku9p.svf\nclose_hw_target",
+      "description": "★ Tip: When writing STAPL files, you should first create all the devices for the JTAG chain and perform the programming operations. If you happen to interleave create\\_hw\\_device commands in between programming commands, you produce an output SVF file that has two different chain sequences. Example of Incorrect SVF...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices",
+        "write_hw_svf",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "tcl_store",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.041",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_the_command_line_7",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using the Command Line",
+      "page_start": 114,
+      "page_end": 114,
+      "code": "create_hw_target my_svf_target\nopen_hw_target\n# create device chain first\nset device0 [create_hw_device -part xcku9p]\nset device1 [create_hw_device -part xcku9p]\n# program device0\nset_property PROGRAM.FILE {my_xcku9p1.bit} $device0\nprogram_hw_devices $device0\n# program device1\nset_property PROGRAM.FILE {my_xcku9p2.bit} $device1\nprogram_hw_devices $device1\nwrite_hw_svf my_good_xcku9p.svf\nclose_hw_target",
+      "description": "The first program command only captures the chain definition containing the first device. The second program command includes both devices in the chain when writing out the SVF instructions. Therefore, if you attempt to play this SVF file on a chain with two devices, the first programming operations fail because the...",
+      "commands": [
+        "create_hw_target",
+        "open_hw_target",
+        "set_property",
+        "program_hw_devices",
+        "write_hw_svf",
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "programming",
+        "vitis_cli"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.042",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synplify_mark_debug_syntax_examples",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synplify mark\\_debug Syntax Examples",
+      "page_start": 123,
+      "page_end": 123,
+      "code": "attribute mark_debug : string;\nattribute mark_debug of char_fifo_dout: signal is \"true\";",
+      "description": "The following are examples of VHDL and Verilog syntax when using Vivado synthesis. VHDL Syntax Example",
+      "commands": [
+        "attribute"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.043",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synplify_mark_debug_syntax_examples",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synplify mark\\_debug Syntax Examples",
+      "page_start": 123,
+      "page_end": 123,
+      "code": "(* mark_debug = \"true\" *) wire [7:0] char_fifo_dout;",
+      "description": "The following are examples of VHDL and Verilog syntax when using Vivado synthesis. VHDL Syntax Example Verilog Syntax Example",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.044",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "attribute syn_keep : boolean;\nattribute mark_debug : string;\nattribute syn_keep of char_fifo_dout: signal is true;\nattribute mark_debug of char_fifo_dout: signal is \"true\";",
+      "description": "The following are examples of Synplify syntax for VHDL, Verilog, and SDC. VHDL Syntax Example",
+      "commands": [
+        "attribute"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.045",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "(* syn_keep = \"true\", mark_debug = \"true\" *) wire [7:0] char_fifo_dout;",
+      "description": "The following are examples of Synplify syntax for VHDL, Verilog, and SDC. VHDL Syntax Example Verilog Syntax Example",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.046",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "define_attribute {n:char_fifo_din[*]} {mark_debug} {\"true\"}\ndefine_attribute {n:char_fifo_din[*]} {syn_keep} {\"true\"}",
+      "description": "Verilog Syntax Example SDC Syntax Example",
+      "commands": [
+        "define_attribute"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.047",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "attribute mark_debug : string;\nattribute mark_debug of char_fifo_dout: signal is \"true\";",
+      "description": "✎ Note: Synopsys Design Constraints (SDC) is an accepted industry standard for communicating design intent to tools, particularly for timing analysis. A reference copy of the SDC specification is available from Synopsys by registering for the TAP-in program by clicking this link. The following are examples of VHDL a...",
+      "commands": [
+        "attribute"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "timing"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.048",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "(* mark_debug = \"true\" *) wire [7:0] char_fifo_dout;",
+      "description": "The following are examples of VHDL and Verilog syntax when using Precision. VHDL Syntax Example Verilog Syntax Example",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.049",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design",
+      "page_start": 124,
+      "page_end": 124,
+      "code": "launch_runs synth_1\nwait_on_run synth_1",
+      "description": "Verilog Syntax Example The next step is to synthesize the design containing the debug cores by clicking Run Synthesis in the Vivado Design Suite or by running the following Tcl commands:",
+      "commands": [
+        "launch_runs",
+        "wait_on_run"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.050",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_xdc_commands_to_insert_debug_cores",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using XDC Commands to Insert Debug Cores",
+      "page_start": 134,
+      "page_end": 134,
+      "code": "set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]\nset_property C_TRIGIN_EN false [get_debug_cores u_ila_0]\nset_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]\nset_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]\nset_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]\nset_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]",
+      "description": "!! Important: The XDC commands in the following steps are only valid when a synthesized design netlist is open. 2. Create the ILA core black box. create\\_debug\\_core u\\_ila\\_0 ila 3. Set the various properties of the ILA core.",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.051",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_xdc_commands_to_insert_debug_cores",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using XDC Commands to Insert Debug Cores",
+      "page_start": 134,
+      "page_end": 134,
+      "code": "set_property port_width 1 [get_debug_ports u_ila_0/clk]\nconnect_debug_port u_ila_0/clk [get_nets [list clk]]",
+      "description": "create\\_debug\\_core u\\_ila\\_0 ila 3. Set the various properties of the ILA core. 4. Set the width of the clk port of the ILA core to 1 and connect it to the desired clock net.",
+      "commands": [
+        "set_property",
+        "connect_debug_port"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.052",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_xdc_commands_to_insert_debug_cores",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using XDC Commands to Insert Debug Cores",
+      "page_start": 134,
+      "page_end": 134,
+      "code": "create_debug_port u_ila_0 probe\nset_property port_width 2 [get_debug_ports u_ila_0/probel]\nconnect_debug_port u_ila_0/probel [get_nets [list {A[0]} {A[1]}]]",
+      "description": "✎ Note: You do not have to create the first probe port (probe0) of the ILA core because it is automatically created by the create\\_debug\\_core command. set\\_property port\\_width 1 [get\\_debug\\_ports u\\_ila\\_0/probe0] 6. Connect the probe0 port to the nets you want to attach to that port. connect\\_debug\\_port u\\_ila\\...",
+      "commands": [
+        "create_debug_port",
+        "set_property",
+        "connect_debug_port"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.053",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_core_insertion_in_non_project_mode",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Core Insertion in Non-Project Mode",
+      "page_start": 135,
+      "page_end": 135,
+      "code": "#read relevant design source files\nread_vhdl [glob ./*.vhdl]\nread_verilog [ glob ./Sources/*.v ]\nread_xdc ./target.xdc\n#Synthesize Design\nsynth_design -top top -part xc7k325tffg900-2\n#Create the debug core\ncreate_debug_core u_ila_0 ila\n#set debug core properties\nset_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]\nset_property C_TRIGIN_EN false [get_debug_cores u_ila_0]\nset_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]",
+      "description": "Debug cores can be inserted in either Project Mode or Non-Project Mode. The following sample Tcl script shows how to create the debug core, set debug core attributes, and connect the debug core probes to the signals in the design being probed. In Non-Project Mode, the insertion of the debug core needs to happen afte...",
+      "commands": [
+        "read_vhdl",
+        "read_verilog",
+        "read_xdc",
+        "synth_design",
+        "create_debug_core",
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "non_project",
+        "project",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.054",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.hdl_instantiation_debug_probing_flow_overview",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "HDL Instantiation Debug Probing Flow Overview",
+      "page_start": 136,
+      "page_end": 136,
+      "code": "set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]\nset_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]\nset_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]\n#connect the probe ports in the debug core to the signals being probed in the design\nset_property port_width 1 [get_debug_ports u_ila_0/clk]\nconnect_debug_port u_ila_0/clk [get_nets [list clk]]\nset_property port_width 1 [get_debug_ports u_ila_0/probe0]\nconnect_debug_port u_ila_0/probe0 [get_nets [list A_or_B]]\ncreate_debug_port u_ila_0 probe\n#Optionally, create more probe ports, set their width,\n# and connect them to the nets you want to debug\n#Implement design\nopt_design\nplace_design\nreport_drc -file ./placed_drc_rpt.txt\nreport_timing_summary -file ./placed_timing_rpt.txt\nroute_design\nreport_drc -file ./routed_drc_rpt.txt\nreport_timing_summary -file ./routed_timing_rpt.txt\nwrite_bitstream",
+      "description": "Debug cores can be inserted in either Project Mode or Non-Project Mode. The following sample Tcl script shows how to create the debug core, set debug core attributes, and connect the debug core probes to the signals in the design being probed. In Non-Project Mode, the insertion of the debug core needs to happen afte...",
+      "commands": [
+        "set_property",
+        "connect_debug_port",
+        "create_debug_port",
+        "opt_design",
+        "place_design",
+        "report_drc",
+        "report_timing_summary",
+        "route_design",
+        "write_bitstream"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "non_project",
+        "project",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.055",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.synthesizing_the_design_containing_the_debug_cores",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Synthesizing the Design Containing the Debug Cores",
+      "page_start": 142,
+      "page_end": 142,
+      "code": "u_ila_0\n(\n.clk(clk),\n.probe0(counterA),\n.probe1(counterB),\n.probe2(counterC),\n.probe3(counterD),\n.probe4(A_or_B),\n.probe5(B_or_C),\n.probe6(C_or_D),\n.probe7(D_or_A)\n);",
+      "description": "For a detailed tutorial that covers using the Cross Trigger feature between the FPGA fabric and the Zynq 7000 SoC processor, see the Vivado Design Suite Tutorial: Embedded Processor Hardware Design (UG940). After generating the debug core, instantiate it in your HDL source code and connect it to the signals that you...",
+      "commands": [
+        "u_ila_0"
+      ],
+      "tags": [
+        "embedded",
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.056",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.ila_core_and_timing_considerations",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "ILA Core and Timing Considerations",
+      "page_start": 146,
+      "page_end": 146,
+      "code": "launch_runs impl_1\nwait_on_run impl_1",
+      "description": "The Vivado software creates the debug core hub initially as a black box. This core must be implemented prior to running the placer and router. Implement the design containing the debug core by clicking Run Implementation in the Vivado Design Suite or by running the following Tcl commands:",
+      "commands": [
+        "launch_runs",
+        "wait_on_run"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "timing"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.057",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_hub_clock",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Hub Clock",
+      "page_start": 148,
+      "page_end": 148,
+      "code": "set_property PARAM.FREQUENCY 250000 [get_hw_targets */xilinx_tcf/Digilent/210203327962A]",
+      "description": "This clock synchronizes the internal state machine operation of the JTAG Boundary Scan (BSCAN) interface. You can choose the JTAG clock frequency in the Vivado Hardware Manager while connecting to the target device. If your design contains debug cores, ensure that the JTAG clock is 2.5x times slower than the debug h...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.058",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_hub_clock",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Hub Clock",
+      "page_start": 148,
+      "page_end": 148,
+      "code": "connect_debug_port dbg_hub/clk [get_nets <clock net name>]",
+      "description": "The Vivado Debug Hub core, which provides an interface between the JTAG Boundary Scan (BSCAN) interface of the FPGA and the Vivado Debug cores. The Debug Hub core is inserted automatically by the Vivado IDE during the design implementation step if it detects debug cores in the design. The Vivado IDE chooses the cloc...",
+      "commands": [
+        "connect_debug_port"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.059",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_hub_clock",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Hub Clock",
+      "page_start": 148,
+      "page_end": 148,
+      "code": "set_property C_CLK_INPUT_FREQ_HZ 200000000 [get_debug_cores dbg_hub]\nset_property C_ENABLE_CLK_DIVIDER true [get_debug_cores dbg_hub]",
+      "description": "You can change the Debug Hub Clock using the following Tcl command. ✎ Note: You need to run this command after the design has been synthesized, but before implementation. You can also reduce the Debug Hub Clock Frequency to 100 MHz using the following Tcl commands.",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.060",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.map",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "-map",
+      "page_start": 168,
+      "page_end": 168,
+      "code": "create_hw_probe [-verbose] [-map <arg>] <name> <core>",
+      "description": "You can also add or remove bits in the Create User Defined dialog box. Move specific bits up or down as shown in the following figure. Figure: Editing Bits in Create User Defined Probe Dialog Box Tcl Flow To create a user-defined debug probe use the create\\_hw\\_probe Tcl command.",
+      "commands": [
+        "create_hw_probe"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.061",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.map",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "-map",
+      "page_start": 168,
+      "page_end": 168,
+      "code": "# Given a 512-bit counter \"counterA[511:0]\": Connects [255:223] to\n# ILA probe port 0 [31:0]\n# Create a user-defined probe called foobar pointing at the\n# ILA buffer specified range [255:223]\ncreate_hw_probe -map {probe0[31:0]} {foobar [255:223]} [get_hw_ilas hw_ila_1]\n# Constant only probe. NO triggering allowed on constant ONLY probes.\ncreate_hw_probe -map {0} {my_constant_gnd[0:0]} [get_hw_ilas hw_ila_1]\n# Create a user-defined probe as a mix of constants and ILA probe ports\ncreate_hw_probe -map {0000 probe0[31:0] 1010} {my_mixed_probe[47:8]} [get_hw_ilas",
+      "description": "is the hw\\_ila to associate the probe with. is the declaration of bits to base the user-defined probe on. Examples of creating user-defined debug probes:",
+      "commands": [
+        "create_hw_probe"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.062",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.deleting_a_user_defined_debug_probe",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Deleting a User-Defined Debug Probe",
+      "page_start": 169,
+      "page_end": 169,
+      "code": "hw_ila_1]\n# Creating scalar hw_probe called \"foobar\" from probe1:\ncreate_hw_probe -map {probe1} foobar [get_hw_ilas hw_ila_1]\n# Creating scalar hw_probe called \"foobar\" from bit 3 of probe0:\ncreate_hw_probe -map {probe0[3]} foobar [get_hw_ilas hw_ila_1]\n# Creating vector hw_probe called \"foobar[0:0]\" from probe1:\ncreate_hw_probe -map {probe1} foobar[0:0] [get_hw_ilas hw_ila_1]\n# Creating vector probe called \"foobar[3:0]\" from probe0:\ncreate_hw_probe -map {probe0} foobar[3:0] [get_hw_ilas hw_ila_1]\n# Creating vector probe called \"foobar[3:2]\" from probe0[1:0]:\ncreate_hw_probe -map {probe0[1:0]} foobar[3:2] [get_hw_ilas hw_ila_1]",
+      "description": "is the declaration of bits to base the user-defined probe on. Examples of creating user-defined debug probes:",
+      "commands": [
+        "hw_ila_1",
+        "create_hw_probe"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.063",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_basic_trigger_mode",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Basic Trigger Mode",
+      "page_start": 170,
+      "page_end": 170,
+      "code": "delete_hw_probe [get_hw_probes foobar -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"i_fast_ila\"}]]",
+      "description": "To delete a user defined probe in the Vivado IDE Hardware Manager, select Window > Debug Probe. This brings up the Debug Probes window beside the Hardware Manager dashboards. Right-click the appropriate probe in this window and click Delete as follows: Tcl Flow You can delete user-defined debug probes using the dele...",
+      "commands": [
+        "delete_hw_probe"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.064",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.saving_captured_ila_data_to_a_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Saving Captured ILA Data to a File",
+      "page_start": 187,
+      "page_end": 187,
+      "code": "read_hw_ila_data {./iladata.ila}\ndisplay_hw_ila_data",
+      "description": "Export ILA Data: Captures data from an ILA core and saves it to a file. The data can be captured in either native, .csv, or .vcd format. Clicking this icon on the Waveform window toolbar, the following dialog box appears. Figure: Export ILA Data Dialog Box The ILA core is the name of the ILA debug core to export dat...",
+      "commands": [
+        "read_hw_ila_data",
+        "display_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.065",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.saving_captured_ila_data_to_a_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Saving Captured ILA Data to a File",
+      "page_start": 188,
+      "page_end": 188,
+      "code": "foreach probe [get_hw_probes -of [get_hw_ilas]] {\n    set_property DISPLAY_RADIX binary $probe\n    set_property DISPLAY_AS_ENUM false $probe\n}",
+      "description": "Every probe has a DISPLAY\\_RADIX property associated with it. This property is set to HEX for a multi-bit probe and BINARY for a one-bit probe by default. The exported probe data in the .csv files use probe radix. You can change the DISPLAY\\_RADIX property of all the probes of all ILAs in the design as follows in th...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.066",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.saving_captured_ila_data_to_a_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Saving Captured ILA Data to a File",
+      "page_start": 188,
+      "page_end": 188,
+      "code": "foreach probe [get_hw_probes -of [get_hw_ilas]] {\n    set_property DISPLAY_RADIX hex $probe\n    set_property DISPLAY_AS_ENUM false $probe\n}",
+      "description": "Every probe has a DISPLAY\\_RADIX property associated with it. This property is set to HEX for a multi-bit probe and BINARY for a one-bit probe by default. The exported probe data in the .csv files use probe radix. You can change the DISPLAY\\_RADIX property of all the probes of all ILAs in the design as follows in th...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.067",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.saving_captured_ila_data_to_a_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Saving Captured ILA Data to a File",
+      "page_start": 188,
+      "page_end": 188,
+      "code": "list_hw_samples [get_hw_probes fast_cnt_incr_val_1 -of_objects [get_hw_ilas-of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"i_fast_ila\"}]] 00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001 00000001",
+      "description": "Listing Data Samples Associated with a Single Probe You can also list data samples associated with individual probes using the list\\_hw\\_samples Tcl command. An example of listing the samples associated with probe fast\\_cnt\\_incr\\_val\\_1 on ILA named i\\_fast\\_ila is as follows:",
+      "commands": [
+        "list_hw_samples"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.068",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.access_enumeration",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Access Enumeration",
+      "page_start": 192,
+      "page_end": 192,
+      "code": "set probe [get_hw_probes fast_cnt_count -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"i_fast_ila\"}]]\nadd_hw_probe_enum ZERO eq5'h00 $probe\nadd_hw_probe_enum TWELVE eq5'u12 $probe\nadd_hw_probe_enum THIRTEEN eq5'u13 $probe\nadd_hw_probe_enum FOURTEEN eq5'u14 $probe\nadd_hw_probe_enum FIFTEEN eq5'u15 $probe\nadd_hw_probe_enum SIXTEEN eq5'u16 $probe\nadd_hw_probe_enum SEVENTEEN eq5'u17 $probe",
+      "description": "The add\\_hw\\_probe\\_enum command, associates an enumeration name-value pair to a debug probe. You can add add\\_hw\\_probe commands to a Tcl file, to have the definitions appear in a separate file. The enumeration names maintain the case they were entered in, but lookup is case-insensitive. Example:",
+      "commands": [
+        "add_hw_probe_enum"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.069",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.access_enumeration",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Access Enumeration",
+      "page_start": 192,
+      "page_end": 192,
+      "code": "remove_hw_probe_enum -list {zero} [get_hw_probes U_SINEGEN/sel -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"u_ila_0\"}]]",
+      "description": "Use the remove\\_hw\\_probe\\_enum command to remove explicitly named enumerations entries, or all enumerations for a hw\\_probe. Example:",
+      "commands": [
+        "remove_hw_probe_enum"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.070",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.access_enumeration",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Access Enumeration",
+      "page_start": 192,
+      "page_end": 192,
+      "code": "get_property ENUM.FIFTEEN -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"i_fast_ila\"}]]  \neq5'u15  \nreport_property [get_hw_probes fast_vio_slice5_fb -of_objects [get_hw_ilas hw_ila_1]] ENUM*",
+      "description": "Enumerations are stored as hw\\_probe properties, so set\\_property, get\\_property, and report\\_property commands can be used on these properties. The enumeration properties have a prefix ENUM, which needs to be used when using it with set\\_property and get\\_property commands. See the following example.",
+      "commands": [
+        "get_property",
+        "eq5",
+        "report_property"
+      ],
+      "tags": [
+        "example",
+        "report"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.071",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.access_enumeration",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Access Enumeration",
+      "page_start": 192,
+      "page_end": 192,
+      "code": "Property Type Read-only Visible Value\nENUM. FIFTEEN string true true eq5' u15\nENUM. FOURTEEN string true true eq5' u14\nENUM. SEVENTEEN string true true eq5' u17\nENUM. SIXTEEN string true true eq5' u16\nENUM. THIRTEEN string true true eq5' u13\nENUM. TWELVE string true true eq5' u12\nENUM. ZERO string true true eq5' h00",
+      "description": "Enumerations are stored as hw\\_probe properties, so set\\_property, get\\_property, and report\\_property commands can be used on these properties. The enumeration properties have a prefix ENUM, which needs to be used when using it with set\\_property and get\\_property commands. See the following example.",
+      "commands": [
+        "Property",
+        "ENUM"
+      ],
+      "tags": [
+        "example",
+        "report"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.072",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_enumerations_in_the_waveform_window",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Enumerations in the Waveform Window",
+      "page_start": 194,
+      "page_end": 194,
+      "code": "set_property CAPTURE_COMPARE_VALUE eq2' eone [get_hw_probes locked -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\"u_ila_0_0\"}]]",
+      "description": "set\\_property TRIGGER\\_COMPARE\\_VALUE eq2'ethree [get\\_hw\\_probes U\\_SINEGEN/sel -of\\_objects [get\\_hw\\_ilas -of\\_objects [get\\_hw\\_devices xc7k325t\\_0] -filter {CELL\\_NAME=\\~\"u\\_ila\\_0\"}]] You can also compare values using enumeration in the Capture Setup window in the Vivado IDE or using Tcl commands.",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "object_query"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.073",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_enumerations_in_the_waveform_window",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Enumerations in the Waveform Window",
+      "page_start": 194,
+      "page_end": 194,
+      "code": "state my_state0:\n    if (fast_ila_slice5_fb == 5'eFIFTEEN) then\n    set_flag $flag1;\n    goto my_state0;\n    elseif (fast_ila_slice5_fb == 5'eTWELVE) then\n    trigger;\n    else\n    clear_flag $flag1;\n    goto my_state0;\nendif",
+      "description": "You can also compare values using enumeration in the Capture Setup window in the Vivado IDE or using Tcl commands. You can compare values using enumeration in the Advanced Trigger State Machine scripts as in the following example.",
+      "commands": [
+        "state",
+        "set_flag",
+        "goto",
+        "trigger",
+        "clear_flag",
+        "endif"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.074",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.related_information_37",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Related Information",
+      "page_start": 210,
+      "page_end": 210,
+      "code": "set_property OUTPUT_VALUE 11111 [get_hw_probes vio_slice5_fb_2]\ncommit_hw_vio [get_hw_probes {vio_slice5_fb_2}]",
+      "description": "The VIO output probes can be set using the VIO Probes window of the VIO Dashboard window. Each output probe is viewed as a separate row in the table. The value of the VIO output probes are shown in the Value column of the table (see Interacting with VIO Core output Probes). The VIO core output values are updated whe...",
+      "commands": [
+        "set_property",
+        "commit_hw_vio"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.075",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.hardware_system_communication_using_the_jtagto_axi_master_debug_core",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Hardware System Communication Using the JTAGto-AXI Master Debug Core",
+      "page_start": 212,
+      "page_end": 212,
+      "code": "commit_hw_vio [get_hw_vios {hw_vio_1}]",
+      "description": "The output probes of a VIO core can become out-of-sync with the Vivado IDE after resetting the VIO outputs, re-programming the FPGA or adaptive SoC, or by another Vivado tool instance setting output values before the current instance has started. In any case, if the VIO status indicates \"Outputs out-of-sync\", you ne...",
+      "commands": [
+        "commit_hw_vio"
+      ],
+      "tags": [
+        "axi",
+        "example",
+        "hardware_debug",
+        "jtag",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.076",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.hardware_system_communication_using_the_jtagto_axi_master_debug_core",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Hardware System Communication Using the JTAGto-AXI Master Debug Core",
+      "page_start": 212,
+      "page_end": 212,
+      "code": "refresh_hw_vio -update_output_values 1 [get_hw_vios {hw_vio_1}]",
+      "description": "Write the values from the Vivado IDE to the VIO core by right-clicking the VIO core in the Hardware window and selecting the Commit VIO Core Outputs option. You can also do this by running a Tcl command: Update the Vivado IDE with the current values of the VIO core output probe ports by rightclicking the VIO core in...",
+      "commands": [
+        "refresh_hw_vio"
+      ],
+      "tags": [
+        "axi",
+        "example",
+        "hardware_debug",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.077",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_and_running_a_read_transaction",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating and Running a Read Transaction",
+      "page_start": 213,
+      "page_end": 213,
+      "code": "reset_hw_axi [get_hw_axis hw_axi_1]",
+      "description": "The JTAG-to-AXI Master debug core can only be communicated with using Tcl commands. You can create and run AXI read and write transactions using the create\\_hw\\_axi\\_txn and run\\_hw\\_axi commands, respectively. Before creating and issuing transactions, it is important to reset the JTAG-to-AXI Master core using the f...",
+      "commands": [
+        "reset_hw_axi"
+      ],
+      "tags": [
+        "axi",
+        "example",
+        "hardware_debug",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.078",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_and_running_a_read_transaction",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating and Running a Read Transaction",
+      "page_start": 213,
+      "page_end": 213,
+      "code": "create_hw_axi_txn read_txn [get_hw_axis hw_axi_1] -type READ -address 00000000 -len 4",
+      "description": "The Tcl command used to create an AXI transaction is called create\\_hw\\_axi\\_txn. For more information on how to use this command, type \"help create\\_hw\\_axi\\_txn\" at the Tcl Console in the Vivado IDE. Here is an example on how to create a 4-word AXI read burst transaction from address 0:",
+      "commands": [
+        "create_hw_axi_txn"
+      ],
+      "tags": [
+        "axi",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.079",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_and_running_a_read_transaction",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating and Running a Read Transaction",
+      "page_start": 213,
+      "page_end": 213,
+      "code": "run_hw_axi [get_hw_axi_txns read_txn]",
+      "description": "where: The next step is to run the transaction that was created using the run\\_hw\\_axi command. Here is an example on how to do this:",
+      "commands": [
+        "run_hw_axi"
+      ],
+      "tags": [
+        "axi",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.080",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.creating_and_running_a_read_transaction",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Creating and Running a Read Transaction",
+      "page_start": 213,
+      "page_end": 213,
+      "code": "report_hw_axi_txn [get_hw_axi_txns read_txn]\n0 00000000 00000000\n8 00000000 00000000\nreport_property [get_hw_axi_txns read_txn]\nProperty Type Read-only Visible Value\nCLASS string true true hw_axi_txn\nCMD.ADDR string false true 00000000\nCMD.BURST enum false true INCR\nCMD.CACHE int false true 3\nCMD.ID int false true 0",
+      "description": "The next step is to run the transaction that was created using the run\\_hw\\_axi command. Here is an example on how to do this: The last step is to get the data that was read due to running the transaction. You can use either the report\\_hw\\_axi\\_txn or report\\_property commands to print the data to the screen or you...",
+      "commands": [
+        "report_hw_axi_txn",
+        "report_property",
+        "Property",
+        "CLASS",
+        "CMD"
+      ],
+      "tags": [
+        "axi",
+        "example",
+        "report"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.081",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_logic_analyzer_in_a_lab_environment",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado Logic Analyzer in a Lab Environment",
+      "page_start": 214,
+      "page_end": 214,
+      "code": "CMD. LEN int false true 4\nCMD. SIZE enum false true 32\nDATA string false true 0000000000000000000000000000000\nHW_AXI string true true hw_axi_1\nNAME string true true read_txn\nTYPE enum false true READ",
+      "description": "The next step is to run the transaction that was created using the run\\_hw\\_axi command. Here is an example on how to do this: The last step is to get the data that was read due to running the transaction. You can use either the report\\_hw\\_axi\\_txn or report\\_property commands to print the data to the screen or you...",
+      "commands": [
+        "CMD",
+        "DATA",
+        "HW_AXI",
+        "NAME",
+        "TYPE"
+      ],
+      "tags": [
+        "axi",
+        "environment",
+        "example",
+        "hardware_debug",
+        "report"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.082",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_logic_analyzer_in_a_lab_environment",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado Logic Analyzer in a Lab Environment",
+      "page_start": 214,
+      "page_end": 214,
+      "code": "create_hw_axi_txn write_txn [get_hw_axis hw_axi_1] -type WRITE -address 00000000 \\\n-len 4 -data {11111111_22222222_33333333_44444444}",
+      "description": "Here is an example on how to create a 4-word AXI write burst transaction from address 0:",
+      "commands": [
+        "create_hw_axi_txn"
+      ],
+      "tags": [
+        "axi",
+        "environment",
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.083",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_vivado_logic_analyzer_in_a_lab_environment",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Vivado Logic Analyzer in a Lab Environment",
+      "page_start": 214,
+      "page_end": 214,
+      "code": "run_hw_axi [get_hw_axi_txns write_txn]",
+      "description": "where: The next step is to run the transaction that was created using the run\\_hw\\_axi command. Here is an example on how to do this:",
+      "commands": [
+        "run_hw_axi"
+      ],
+      "tags": [
+        "axi",
+        "environment",
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.084",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example_tcl_command_script",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example Tcl Command Script",
+      "page_start": 220,
+      "page_end": 220,
+      "code": "# Connect to the Digilent Cable on localhost:3121\nconnect_hw_server -url localhost:3121\ncurrent_hw_target [get_hw_targets */xilinx_tcf/Digilent/12345]\nopen_hw_target\n# Program and Refresh the XC7K325T Device\ncurrent_hw_device [lindex [get_hw_devices] 0]\nrefresh_hw_device -update_hw_probes false [lindex [get_hw_devices] 0]\nset_property PROGRAM.FILE {C:/design.bit} [lindex [get_hw_devices] 0]\nset_property PROBES.FILE {C:/design.ltx} [lindex [get_hw_devices] 0]\nprogram_hw_devices [lindex [get_hw_devices] 0]",
+      "description": "Here is an example Tcl command script that interacts with the following example system:",
+      "commands": [
+        "connect_hw_server",
+        "current_hw_target",
+        "open_hw_target",
+        "current_hw_device",
+        "refresh_hw_device",
+        "set_property",
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.085",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example_tcl_command_script_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example Tcl Command Script",
+      "page_start": 221,
+      "page_end": 221,
+      "code": "refresh_hw_device [lindex [get_hw_devices] 0]\n# Reset the JTAG-to-AXI Master core\nreset_hw_axi [get_hw_axis hw_axi_1]\n# Create a read transaction bursts 128 words starting from address 0\ncreate_hw_axi_txn read_txn [get_hw_axis hw_axi_1] -type read \\\n-address 00000000 -len 128\n# Create a write transaction bursts 128 words starting at address 0\n# using a repeating fill value of 11111111_22222222_33333333_444444444\n# (where LSB is to the left)\ncreate_hw_axi_txn write_txn [get_hw_axis hw_axi_1] -type write \\\n-address 00000000 -len 128 -data {11111111_22222222_33333333_444444444}\n# Run the write transaction\nrun_hw_axi [get_hw_axi_txns write_txn]\n# Run the read transaction\nrun_hw_axi [get_hw_axi_txns read_txn]",
+      "description": "Here is an example Tcl command script that interacts with the following example system:",
+      "commands": [
+        "refresh_hw_device",
+        "reset_hw_axi",
+        "create_hw_axi_txn",
+        "run_hw_axi"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.086",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example_tcl_command_script_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example Tcl Command Script",
+      "page_start": 221,
+      "page_end": 221,
+      "code": "# Connect to the Digilent Cable on localhost:3121\nconnect_hw_server -url localhost:3121\ncurrent_hw_target [get_hw_targets */xilinx_tcf/Digilent/12345]\nopen_hw_target\n\n# Program and Refresh the XC7K325T Device\ncurrent_hw_device [lindex [get_hw_devices] 0]\nrefresh_hw_device -update_hw_probes false [lindex [get_hw_devices] 0]\nset_property PROGRAM.FILE {C:/design.bit} [lindex [get_hw_devices] 0]\nset_property PROBES.FILE {C:/design.ltx} [lindex [get_hw_devices] 0]\nprogram_hw_devices [lindex [get_hw_devices] 0]\nrefresh_hw_device [lindex [get_hw_devices] 0]\n\n# Set Up ILA Core Trigger Position and Probe Compare Values\nset_property CONTROL.TRIGGER_POSITION 512 [get_hw_ilas hw_ila_1]\nset_property COMPARE_VALUE.0 eq4'b0000 [get_hw_probes counter]\n\n# Arm the ILA trigger and wait for it to finish capturing data\nrun_hw_ila hw_ila_1\n\nwait_on_hw_ila hw_ila_1\n\n# Upload the captured ILA data, display it, and write it to a file\ncurrent_hw_ila_data [upload_hw_ila_data hw_ila_1]",
+      "description": "Here is an example Tcl command script that interacts with the following example system:",
+      "commands": [
+        "connect_hw_server",
+        "current_hw_target",
+        "open_hw_target",
+        "current_hw_device",
+        "refresh_hw_device",
+        "set_property",
+        "program_hw_devices",
+        "run_hw_ila",
+        "wait_on_hw_ila",
+        "current_hw_ila_data"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.087",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.run_trigger",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Run Trigger",
+      "page_start": 232,
+      "page_end": 232,
+      "code": "add_wave -into {hw_ila_data_1.wcfg} -radix hex { {counter1} }",
+      "description": "To add another copy of a signal or bus to the Waveform window, select the signal or bus in the Waveform window. Select Edit > Copy or type Ctrl+C. This copies the object to the clipboard. Select Edit > Paste or type Ctrl+V to paste a copy of the object in the waveform. You can do the same using the Tcl command add\\_...",
+      "commands": [
+        "add_wave"
+      ],
+      "tags": [
+        "example",
+        "object_query"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.088",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.reference_design",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Reference Design",
+      "page_start": 253,
+      "page_end": 253,
+      "code": "modify_debug_ports -probes [list {top/x_ila/probe0 0 top/inst_A/net_0} \\\n{top/x_ila/probel 1 top/inst_A/net_a} {top/x_ila/probel 2 top/inst_A/net_b}]",
+      "description": "After you have replaced all the debug probe ports, you can save your modifications to a new checkpoint using the Save Checkpoint As option in the ECO Navigator. The Replace Debug Probes command in the ECO Navigator needs to be run to generate a new .ltx file for the debug probes. You should generate a new bit file t...",
+      "commands": [
+        "modify_debug_ports"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.089",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_incremental_compile",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Incremental Compile",
+      "page_start": 255,
+      "page_end": 255,
+      "code": "# to load the current design\nlink_design;\n#Create the debug core\ncreate_debug_core u_ila_0 ila\n#set debug core properties\nset_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]\nset_property C_TRIGIN_EN false [get_debug_cores u_ila_0]\nset_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]\nset_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]\nset_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]\nset_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]\nset_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]\n#connect the probe ports in the debug core to the signals being probed in the design\nset_property port_width 1 [get_debug_ports u_ila_0/clk]\nconnect_debug_port u_ila_0/clk [get_nets [list clk]]\nset_property port_width 1 [get_debug_ports u_ila_0/probe0]\nconnect_debug_port u_ila_0/probe0 [get_nets [list A_or_B]]\ncreate_debug_port u_ila_0 probe\nopt_design\nread_checkpoint -incremental <reference_dcp_file>\nplace_design\nroute_design",
+      "description": "To specify a design checkpoint file (DCP) to use as the reference design, and to run incremental place in Non-Project Mode: !! Important: Make sure the opt\\_design options and directives match those used in the original reference run as closely as possible.",
+      "commands": [
+        "link_design",
+        "create_debug_core",
+        "set_property",
+        "connect_debug_port",
+        "create_debug_port",
+        "opt_design",
+        "read_checkpoint",
+        "place_design",
+        "route_design"
+      ],
+      "tags": [
+        "example",
+        "non_project",
+        "project"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.090",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.in_system_ibert_system_serial_i_o_design_debugging_flows",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "In-System IBERT System Serial I/O Design Debugging Flows",
+      "page_start": 258,
+      "page_end": 258,
+      "code": "launch_runs impl_1 -to_step write_bitstream wait_on_run impl_1",
+      "description": "!! Important: Modification of the IBERT IP example design is not recommended and can result in functional issues when interacting with the IBERT IP core in hardware. Once the example design is generated, you can implement the IBERT example design through bitstream creation core by clicking Generate Bitstream in the...",
+      "commands": [
+        "launch_runs"
+      ],
+      "tags": [
+        "example",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.091",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.viewing_slicer_eye_histogram_and_signal_to_noise",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Viewing Slicer Eye, Histogram, and Signal-to-Noise",
+      "page_start": 275,
+      "page_end": 275,
+      "code": "# Connect to the Digilent Cable on localhost:3121\nconnect_hw_server -url localhost:3121\ncurrent_hw_target [get_hw_targets */digilent_plugin/SN:12345]\nopen_hw_target\n# Program and Refresh the XC7K325T Device\ncurrent_hw_device [lindex [get_hw_devices] 0]\nrefresh_hw_device -update_hw_probes false [lindex [get_hw_devices] 0]\nset_property PROGRAM.FILE {C:/design.bit} [lindex [get_hw_devices] 0]\nprogram_hw_devices [lindex [get_hw_devices] 0]\nrefresh_hw_device [lindex [get_hw_devices] 0]\n# Set Up Link on first GT\nset tx0 [lindex [get_hw_sio_txs] 0]\nset rx0 [lindex [get_hw_sio_rxs] 0]\nset link0 [create_hw_sio_link $tx0 $rx0]\nset_property DESCRIPTION {Link 0} [get_hw_sio_links $link0]\n# Set link to use PCS Loopback, and write to hardware\nset_property LOOPBACK \"Near-End PCS\" $link0\ncommit_hw_sio $link0\n# Create, run, display and save scan\nset scan0 [create_hw_sio_scan 2d_full_eye [get_hw_sio_rxs -of $link0]]\nrun_hw_sio_scan $scan0\ndisplay_hw_sio_scan $scan0\nwrite_hw_sio_scan \"scan0.csv\" $scan0",
+      "description": "Here is an example Tcl command script that interacts with the following example system",
+      "commands": [
+        "connect_hw_server",
+        "current_hw_target",
+        "open_hw_target",
+        "current_hw_device",
+        "refresh_hw_device",
+        "set_property",
+        "program_hw_devices",
+        "commit_hw_sio",
+        "run_hw_sio_scan",
+        "display_hw_sio_scan",
+        "write_hw_sio_scan"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.092",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.goto_action",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Goto Action",
+      "page_start": 318,
+      "page_end": 318,
+      "code": "state <state_name>:\n    <state_body>",
+      "description": "The trigger state machine language is used to describe complex trigger conditions that map to the advanced trigger logic of the ILA debug core. The trigger state machine has the following features: Each state machine program can have up to 16 states declared. Each state is composed of a state declaration and a body:",
+      "commands": [
+        "state"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.093",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.goto_action",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Goto Action",
+      "page_start": 318,
+      "page_end": 318,
+      "code": "state my_state_0:\n    goto my_state_1;",
+      "description": "Each state machine program can have up to 16 states declared. Each state is composed of a state declaration and a body: The goto action is used to transition between states. Here is an example of using the goto action to transition from one state to another before triggering:",
+      "commands": [
+        "state",
+        "goto"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.094",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counters",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counters",
+      "page_start": 319,
+      "page_end": 319,
+      "code": "state my_state_1:\n    trigger;",
+      "description": "The goto action is used to transition between states. Here is an example of using the goto action to transition from one state to another before triggering:",
+      "commands": [
+        "state",
+        "trigger"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.095",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counters",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counters",
+      "page_start": 319,
+      "page_end": 319,
+      "code": "state my_state_0:\n    goto my_state_1;",
+      "description": "The trigger state machine language supports one-, two-, and three-way conditional branching per state. One-way branching involves using goto actions without any if/elseif/else/endif constructs:",
+      "commands": [
+        "state",
+        "goto"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.096",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counters",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counters",
+      "page_start": 319,
+      "page_end": 319,
+      "code": "state my_state_0:\n    if (<condition1>) then\n    goto my_state_1;\n    else\n    goto my_state_0;\n    endif",
+      "description": "The trigger state machine language supports one-, two-, and three-way conditional branching per state. One-way branching involves using goto actions without any if/elseif/else/endif constructs: Two-way conditional branching uses goto actions with if/else/endif constructs:",
+      "commands": [
+        "state",
+        "goto",
+        "endif"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.097",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counters",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counters",
+      "page_start": 319,
+      "page_end": 319,
+      "code": "state my_state_0:\n    if (<condition1>) then\n    goto my_state_1;\n    elseif (<condition2>) then\n    goto my_state_2;\n    else\n    goto my_state_0;\nendif",
+      "description": "Two-way conditional branching uses goto actions with if/else/endif constructs: Three-way conditional branching uses goto actions with if/else/elseif/endif constructs:",
+      "commands": [
+        "state",
+        "goto",
+        "endif"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.098",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_probe_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Probe Conditions",
+      "page_start": 320,
+      "page_end": 320,
+      "code": "state my_state_0:\nreset_counter $counter0;\ngoto my_state_1;",
+      "description": "Conditional Statements The four built-in 16-bit counters have fixed names and are called \\$counter0, \\$counter1, \\$counter2, \\$counter3. The counters can be reset, incremented, and used in conditional statements. To reset a counter, use the reset\\_counter action:",
+      "commands": [
+        "state",
+        "reset_counter",
+        "goto"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.099",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_probe_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Probe Conditions",
+      "page_start": 320,
+      "page_end": 320,
+      "code": "state my_state_0:\n    increment_counter $counter3;\n    goto my_state_1;",
+      "description": "The four built-in 16-bit counters have fixed names and are called \\$counter0, \\$counter1, \\$counter2, \\$counter3. The counters can be reset, incremented, and used in conditional statements. To reset a counter, use the reset\\_counter action: To increment a counter, use the increment\\_counter action:",
+      "commands": [
+        "state",
+        "increment_counter",
+        "goto"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.100",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_probe_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Probe Conditions",
+      "page_start": 320,
+      "page_end": 320,
+      "code": "state my_state_0:\n    set_flag $flag0;\n    goto my_state_1;",
+      "description": "Conditional Statements Flags can be used to monitor progress of the trigger state machine program as it executes. The four built-in flags have fixed names and are called \\$flag0, \\$flag1, \\$flag2, and \\$flag3. The flags can be set and cleared. To set a flag, use the set\\_flag action:",
+      "commands": [
+        "state",
+        "set_flag",
+        "goto"
+      ],
+      "tags": [
+        "example",
+        "external_program",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.101",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_probe_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Probe Conditions",
+      "page_start": 320,
+      "page_end": 320,
+      "code": "state my_state_0:\n    clear_flag $flag2;\n    goto my_state_1;",
+      "description": "Flags can be used to monitor progress of the trigger state machine program as it executes. The four built-in flags have fixed names and are called \\$flag0, \\$flag1, \\$flag2, and \\$flag3. The flags can be set and cleared. To set a flag, use the set\\_flag action: To clear a flag, use the clear\\_flag action:",
+      "commands": [
+        "state",
+        "clear_flag",
+        "goto"
+      ],
+      "tags": [
+        "example",
+        "external_program",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.102",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.where",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Where:",
+      "page_start": 321,
+      "page_end": 321,
+      "code": "<bit_width>' <radix><value>",
+      "description": "!! Important: Each PROBE port can have from 1 to 16 trigger comparators as configured at compile time. This means that you can only use a particular debug probe in a debug probe condition up from 1 to 16 times in the entire trigger state machine program, depending on the number of comparators configured on the PROBE...",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.103",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.where",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Where:",
+      "page_start": 321,
+      "page_end": 321,
+      "code": "1'b0",
+      "description": "1-bit binary value of 0",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.104",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.where",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Where:",
+      "page_start": 321,
+      "page_end": 321,
+      "code": "12' h07A",
+      "description": "1-bit binary value of 0 12-bit hex value of 7A",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.105",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.where",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Where:",
+      "page_start": 321,
+      "page_end": 321,
+      "code": "9' u123",
+      "description": "12-bit hex value of 7A 9-bit integer value of 123",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.106",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if (abc == 1'b0) then",
+      "description": "9-bit integer value of 123 Examples of debug probe condition statements are: A single-bit debug probe called abc equals 0",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.107",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if (xyz >= 23' u456) then",
+      "description": "Examples of debug probe condition statements are: A single-bit debug probe called abc equals 0 A 23-bit debug probe xyz equals 456",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.108",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if (klm != 23'h0000A5) then",
+      "description": "A 23-bit debug probe xyz equals 456 A 23-bit debug probe klm does not equal hex A5",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.109",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if ((xyz >= 23' u456) || (abc == 1'b0)) then",
+      "description": "A 23-bit debug probe klm does not equal hex A5 Examples of multiple debug probe condition statements are: Two debug probe comparisons combined with an \"OR\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.110",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if ((xyz >= 23'u456) && (abc == 1'b0)) then",
+      "description": "Examples of multiple debug probe condition statements are: Two debug probe comparisons combined with an \"OR\" function: Two debug probe comparisons combined with an \"AND\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.111",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if ((xyz >= 23' u456) || (abc == 1'b0) || (klm != 23'h0000A5)) then",
+      "description": "Two debug probe comparisons combined with an \"AND\" function: Three debug probe comparisons combined with an \"OR\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.112",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.counter_conditions",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Counter Conditions",
+      "page_start": 322,
+      "page_end": 322,
+      "code": "if ((xyz >= 23' u456) && (abc == 1'b0) && (klm != 23'h0000A5)) then",
+      "description": "Three debug probe comparisons combined with an \"OR\" function: Three debug probe comparisons combined with an \"AND\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.113",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.note",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Note:",
+      "page_start": 324,
+      "page_end": 324,
+      "code": "if (((xyz >= 23' u456) || (abc == 1'b0)) && ($counter0 == 16'u0023)) then",
+      "description": "Debug probe conditions and counter conditions can be combined together to form a single condition using the following rules: Examples of multiple debug probe and counter condition statements are: Two debug probe comparisons combined with an \"OR\" function, combined with counter conditional using \"AND\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.114",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.note",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Note:",
+      "page_start": 324,
+      "page_end": 324,
+      "code": "if (((xyz >= 23' u456) && (abc == 1'b0)) || ($counter0 == 16'u0023)) then",
+      "description": "Examples of multiple debug probe and counter condition statements are: Two debug probe comparisons combined with an \"OR\" function, combined with counter conditional using \"AND\" function: Two debug probe comparisons combined with an \"AND\" function, combined with counter conditional using \"OR\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.115",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.note",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Note:",
+      "page_start": 324,
+      "page_end": 324,
+      "code": "if (((xyz >= 23' u456) || (abc == 1'b0) || (klm != 23'h0000A5)) && ($counter0 == 16'u0023)) then",
+      "description": "Two debug probe comparisons combined with an \"AND\" function, combined with counter conditional using \"OR\" function: Three debug probe comparisons combined with an \"OR\" function, combined with counter conditional using \"AND\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.116",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.note",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Note:",
+      "page_start": 324,
+      "page_end": 324,
+      "code": "if (((xyz >= 23'u456) && (abc == 1'b0) && (klm != 23'h0000A5)) || ($counter0 == 16'u0023)) then",
+      "description": "Three debug probe comparisons combined with an \"OR\" function, combined with counter conditional using \"AND\" function: Three debug probe comparisons combined with an \"AND\" function, combined with counter conditional using \"OR\" function:",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.117",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.note",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Note:",
+      "page_start": 324,
+      "page_end": 324,
+      "code": "<program> ::= <state_list>\n    <state_list> ::= <state_list> <state> | <state>\n    <state> ::= 'STATE' <state_label>':' <if_condition> | <action_block>\n\n<action_block> ::= <action_list> 'GOTO' <state_label> ';' |\n| <action_list> 'TRIGGER' ';' |\n| 'GOTO' <state_label> ';' |\n| 'TRIGGER' ';'\n\n<action_list> ::= <action_statement> | <action_list> <action_statement>\n<action_statement> ::= 'SET_FLAG' <flag_name> ';' |\n| 'CLEAR_FLAG' <flag_name> ';' |\n| 'INCREMENT_COUNTER' <counter_name> ';' |\n| 'RESET_COUNTER' <counter_name> ';' |\n<if_condition> ::= 'IF' '(' <condition> ')' 'THEN' <actionblock>",
+      "description": "",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.118",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.low_level_svf_jtag_commands_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Low Level SVF JTAG Commands",
+      "page_start": 325,
+      "page_end": 325,
+      "code": "['ELSEIF' '(' <condition> ')' 'THEN' <actionblock>]\n'ELSE' <actionblock>\n'ENDIF'\n\n<condition> ::= <probe_match_list>\n| <counter_match>\n| <probe_counter_match>\n<probe_counter_match> ::= '(' <probe_counter_match> ')' |\n| <probe_match_list> <boolean_logic_op> <counter_match>\n| <counter_match> <boolean_logic_op> <probe_match_list>\n<probe_match_list> ::= '(' <probe_match> ')' |\n| <probe_match>\n<probe_match> ::= <probe_match_list> <boolean_logic_op> <probe_match_list>\n| <probe_name> <compare_op> <constant>\n| <constant> <compare_op> <probe_name>\n<counter_match> ::= '(' <counter_match> ')' |\n| <counter_name> <compare_op> <constant>\n| <constant> <compare_op> <counter_name>\n<constant> ::= <integer_constant>\n| <hex_constant>\n| <binary_constant>\n<compare_op> ::= '=' | ' !=' | ' ' | ' =' | '<' | '<='\n<boolean_logic_op> ::= ' &&' | ' ||'\n--- The following are in regular expression format to simplify expressions:\n--- [A-Z0-9] means match any single character in AB...Z,0..9\n--- [AB]+ means match [AB] one or more times like A, AB, ABAB, AAA, etc\n--- [AB]* means match [AB] zero or more times\n<probe_name>    ::= [A-Z_\\[\\]</][A-Z_0-9[\\]</]+\n<state_label>    ::= [A-Z_][A-Z_0-9]+\n<flag_name>    ::= \\$FLAG[0-3]\n<counter_name>    ::= \\$COUNTER[0-3]\n<hex_constant>    ::= <integer>*h<hex_digit>+ \n<binary_constant> ::= <integer>*b<binary_digit>+ \n<integer_constant> ::= <integer>*u<integer_digit>+ \n<integer>    ::= <digit>+ \n<hex_digit>    ::= [0-9ABCDEFBN_]\n<binary_digit>    ::= [01XRFBN_]\n<digit>    ::= [0-9]",
+      "description": "",
+      "commands": [],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.119",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example",
+      "page_start": 327,
+      "page_end": 327,
+      "code": "scan_ir_hw_jtag [-tdi <arg>] [-tdo <arg>] [-mask <arg>] [-smask <arg>] [-quiet] [-verbose] <length>",
+      "description": "The set of SVF statements originally developed for the ASIC can be reused with minimal modification if the appropriate header and trailer statements are defined to accommodate the devices in front of and behind u3. In this example, a header pattern would be defined for devices u4 and u5, and a trailer pattern would...",
+      "commands": [
+        "scan_ir_hw_jtag"
+      ],
+      "tags": [
+        "example",
+        "jtag",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.120",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.multi_chain_svf_operation_with_configuration_memory_attached_to_first_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Multi Chain SVF Operation with Configuration Memory Attached to First Device",
+      "page_start": 329,
+      "page_end": 329,
+      "code": "HIR 0 ;\nTIR 6 TDI (3f) SMASK (3f) ;\nHDR 0 ;\nTDR 1 TDI (00) SMASK (01) ;\n// config/idcode\nSIR 6 TDI (09) ;\nSDR 32 TDI (00000000) TDO (0484a093) MASK (Offffff) ;\n// config/jprog\nSTATE RESET;\nSTATE IDLE;\nSIR 6 TDI (0b) ;\nSIR 6 TDI (14) ;\n// Modify the below delay for config_init operation (0.100000 sec typical, 0.100000 sec maximum)\nRUNTEST 0.100000 SEC;\n// config/jprog/poll\nRUNTEST 10000 TCK;\nSIR 6 TDI (14) TDO (11) MASK (31) ;\n// config/slr\nSIR 6 TDI (05) ;",
+      "description": "Two devices, xcku11, and xcku9, are connected in a chain. A configuration memory is attached to the second device in the chain (xcku9). To access this configuration memory, SVF generates commands using the HIR, HDR, TIR, and TDR commands. The commands generated for flashing this configuration memory take into accoun...",
+      "commands": [
+        "HIR",
+        "TIR",
+        "HDR",
+        "TDR",
+        "SIR",
+        "SDR",
+        "STATE",
+        "RUNTEST"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.121",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.multi_chain_svf_operation_with_configuration_memory_attached_to_second_device_in_chain",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Multi Chain SVF Operation with Configuration Memory Attached to Second Device in Chain",
+      "page_start": 330,
+      "page_end": 330,
+      "code": "HIR 6 TDI (3f) SMASK (3f);\nTIR 0;\nHDR 1 TDI (00) SMASK (01);\nTDR 0;\n// config/idcode\nSIR 6 TDI (09);\nSDR 32 TDI (00000000) TDO (04a4e093) MASK (Offffff);\n// config/jprog\nSTATE RESET;\nSTATE IDLE;\nSIR 6 TDI (0b);\nSIR 6 TDI (14);\n// Modify the below delay for config_init operation (0.100000 sec typical, 0.100000 sec maximum)\nRUNTEST 0.100000 SEC;\n// config/jprog/poll\nRUNTEST 10000 TCK;\nSIR 6 TDI (14) TDO (11) MASK (31);\n// config/slr\nSIR 6 TDI (05);",
+      "description": "In this example, to access the ku9 device, a SMASK value of 0000 0011 1111 (0x3f) is used with the TIR and TDR instructions. To access the second device in the chain, the mask value is pushed in followed by SIR and SDR instructions. SIR and SDR instructions combine HIR, HDR, TIR, and TDR information. If the configur...",
+      "commands": [
+        "HIR",
+        "TIR",
+        "HDR",
+        "TDR",
+        "SIR",
+        "SDR",
+        "STATE",
+        "RUNTEST"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.122",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.multi_chain_svf_operation_with_configuration_memory_attached_to_third_device_in_chain",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Multi Chain SVF Operation with Configuration Memory Attached to Third Device in Chain",
+      "page_start": 331,
+      "page_end": 331,
+      "code": "HIR 12 TDI (0fff) SMASK (0fff);\nTIR 6 TDI (3f) SMASK (3f);\nHDR 2 TDI (00) SMASK (03);\nTDR 1 TDI (00) SMASK (01);\n// config/idcode\nSIR 6 TDI (09);\nSDR 32 TDI (00000000) TDO (0484a093) MASK (Offffff);\n// config/jprog\nSTATE RESET;\nSTATE IDLE;\nSIR 6 TDI (0b);\nSIR 6 TDI (14);\n// Modify the below delay for config_init operation (0.100000 sec typical, 0.100000 sec maximum)\nRUNTEST 0.100000 SEC;\n// config/jprog/poll\nRUNTEST 10000 TCK;\nSIR 6 TDI (14) TDO (11) MASK (31);\n// config/slr\nSIR 6 TDI (05);",
+      "description": "Now consider four devices, xcku11, xcku9, xcku11, and xcku9, are connected in a chain. A configuration memory is attached to the second device in the chain (xcku9) and if you want to access it, both the HIR and TIR instructions are used in this case: Figure: Multi-Chain-SVF- Operation- Example-Second Device in Chain",
+      "commands": [
+        "HIR",
+        "TIR",
+        "HDR",
+        "TDR",
+        "SIR",
+        "SDR",
+        "STATE",
+        "RUNTEST"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.123",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.multi_chain_svf_operation_with_configuration_memory_attached_to_third_device_in_chain",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Multi Chain SVF Operation with Configuration Memory Attached to Third Device in Chain",
+      "page_start": 331,
+      "page_end": 331,
+      "code": "HIR 6 TDI (3f) SMASK (3f);\nTIR 12 TDI (0fff) SMASK (0fff);\nHDR 1 TDI (00) SMASK (01);",
+      "description": "Figure: Multi-Chain-SVF- Operation- Example-Second Device in Chain If a configuration memory is attached to the third device in the chain (xcku9).",
+      "commands": [
+        "HIR",
+        "TIR",
+        "HDR"
+      ],
+      "tags": [
+        "example",
+        "jtag"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.124",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 332,
+      "page_end": 332,
+      "code": "TDR 2 TDI (00) SMASK (03);\n// config/idcode\nSIR 6 TDI (09);\nSDR 32 TDI (00000000) TDO (04a4e093) MASK (Offffff);\n// config/jprog\nSTATE RESET;\nSTATE IDLE;\nSIR 6 TDI (0b);\nSIR 6 TDI (14);\n// Modify the below delay for config_init operation (0.100000 sec typical, 0.100000 sec maximum)\nRUNTEST 0.100000 SEC;\n// config/jprog/poll\nRUNTEST 10000 TCK;\nSIR 6 TDI (14) TDO (11) MASK (31);\n// config/slr\nSIR 6 TDI (05);",
+      "description": "If a configuration memory is attached to the third device in the chain (xcku9).",
+      "commands": [
+        "TDR",
+        "SIR",
+        "SDR",
+        "STATE",
+        "RUNTEST"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.125",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 333,
+      "page_end": 333,
+      "code": "***** program_ftdi v2023.1\n**** Build date : Apr 16 2023-14:45:22\n** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.\n** Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.",
+      "description": "Note: The program\\_ftdi utility configures Channel A to be used as a USB-to-JTAG interface. If the device has multiple channels, such as in the case of FT4232H, these channels are configured to the default RS232 UART mode. If the default RS232 UART mode is not desirable, it is possible to use the FT\\_PROG EEPROM uti...",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "jtag",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.126",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 333,
+      "page_end": 333,
+      "code": "Short Description:\nWrite/Read to FTDI EEPROM for Xilinx JTAG Tools support",
+      "description": "The program\\_ftdi utility supports the following FTDI devices: The following is the command reference.",
+      "commands": [
+        "Short",
+        "Write"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.127",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 333,
+      "page_end": 333,
+      "code": "Syntax:\nprogram_ftdi {-write -ftdi=<ftdi_part> -serial=<serial_number> [options] |\n-write -filein=<cfg_filein> |\n-read [-fileout=<cfg_fileout>] |\n-erase} [-help]",
+      "description": "The following is the command reference.",
+      "commands": [
+        "Syntax:",
+        "program_ftdi"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.128",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 333,
+      "page_end": 333,
+      "code": "options:\nName Description",
+      "description": "The following is the command reference.",
+      "commands": [
+        "options:",
+        "Name"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.129",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_ftdi_devices_for_vivado_hardware_manager_support_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming FTDI Devices for Vivado Hardware Manager Support",
+      "page_start": 333,
+      "page_end": 333,
+      "code": "-f, -fdti Specify the ftdi device to be programmed <FT232H | FT2232H | FT4232H>\n-s, -serial Serial number to be written into the EEPROM\n[-v, --vendor] Vendor information",
+      "description": "",
+      "commands": [],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "programming"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.130",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.artix_7_configuration_memory_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Artix 7 Configuration Memory Devices",
+      "page_start": 334,
+      "page_end": 334,
+      "code": "[-b, --board] Name of the board/product being programmed\n[-d, -desc, -description] A short description of the board\n-fi, -filein Input file with all fields to be written\n[-fo, -fileout] File to which the FDI EEPROM should be read back\n[-lh, -longhelp] Get long help description for program_ftdi util",
+      "description": "",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.131",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.artix_7_configuration_memory_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Artix 7 Configuration Memory Devices",
+      "page_start": 334,
+      "page_end": 334,
+      "code": "Examples:\nprogram_ftdi -write -ftdi FT2232H -serial 0ABCO1 -vendor \"my vendor co\" -board \"my board\"\n-desc \"my product desc\"\nprogram_ftdi -write -filein <path_to_config_file>\nprogram_ftdi -read\nprogram_ftdi -read -fileout <path_to_config_file>\nprogram_ftdi -erase",
+      "description": "",
+      "commands": [
+        "Examples:",
+        "program_ftdi"
+      ],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.132",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.related_information_7",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Related Information",
+      "page_start": 21,
+      "page_end": 21,
+      "code": "set_property BITSTREAM.STARTUP.DONE_CYCLE 4 [current_design]",
+      "description": "★ Tip: You can type a property in the Search field. For example, type jtag into the Search text field to find and select properties related to JTAG programming. You can also set the bitstream properties using the set\\_property command in an XDC file. For instance, here is an example on how to change the start-up DON...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.133",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_the_hardware_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming the Hardware Device",
+      "page_start": 27,
+      "page_end": 27,
+      "code": "set_property PROGRAM.FILE {C:/<path_to_programming_file>} [lindex [get_hw_devices] 0]",
+      "description": "✎ Note: As a convenience, Vivado IDE automatically uses the programming file for the current implemented design as the value for the Programming File property of the first matching device in the open hardware target. This feature is only available when using the Vivado IDE in project mode. When using the Vivado IDE...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.134",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_the_hardware_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming the Hardware Device",
+      "page_start": 27,
+      "page_end": 27,
+      "code": "program_hw_devices [lindex [get_hw_devices] 0]",
+      "description": "Once the programming file is associated with the hardware device, you can program the hardware device by right-clicking on the device in the Hardware window and selecting the Program Device menu option. You can also use the program\\_hw\\_device Tcl command. For instance, to program the first device in the JTAG chain,...",
+      "commands": [
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.135",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_the_hardware_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming the Hardware Device",
+      "page_start": 28,
+      "page_end": 28,
+      "code": "get_property REGISTER.IR.BIT5_DONE [lindex [get_hw_devices] 0]",
+      "description": "Once the progress dialog has indicated that the programming is 100% complete, you can check that the hardware device has been programmed successfully by examining the DONE status in the Hardware Device Properties view. Figure: Checking the DONE Status of a Device You can also use the get\\_property Tcl command to che...",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.136",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_the_hardware_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming the Hardware Device",
+      "page_start": 28,
+      "page_end": 28,
+      "code": "get_property REGISTER.JTAG_STATUS.BIT[34]_DONE [lindex [get_hw_devices] 1]",
+      "description": "You can also use the get\\_property Tcl command to check the DONE status. For instance, to check the DONE status of an AMD KintexTM 7 device that is the first device in the JTAG chain, use the following Tcl command: get\\_property REGISTER.IR.BIT5\\_DONE [lindex [get\\_hw\\_devices] 0] On Versal devices, the command diff...",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.137",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.programming_the_hardware_device",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Programming the Hardware Device",
+      "page_start": 28,
+      "page_end": 28,
+      "code": "get_property C_USER_SCAN_CHAIN [get_debug_cores dbg_hub]",
+      "description": "!! Important: User SCAN Chain: For non-Versal architectures, Vivado Programmer tries to detect debug cores on the user scan chain specified in the design by default. It does the detection by issuing a JTAG\\_CHAIN 1 command to the device. If you have programmed a device with a design that does not have any debug core...",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.138",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.closing_the_hardware_target",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Closing the Hardware Target",
+      "page_start": 30,
+      "page_end": 30,
+      "code": "close_hw_target {localhost/xilinx_tcf/Digilent/210203339395A}",
+      "description": "You can close a hardware target by right-clicking on the hardware target in the Hardware window and selecting Close Target from the pop-up menu. You can also close the hardware target using a Tcl command. For instance, to close the xilinx\\_platformusb/USB21 target on the local host server, use the following Tcl comm...",
+      "commands": [
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.139",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.init_option",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Init Option",
+      "page_start": 32,
+      "page_end": 32,
+      "code": "open_hw_manager",
+      "description": "You should attempt to open with a default JTAG clock frequency that is 15 MHz for the Digilent cable connection and 6 MHz for the USB cable connection. If it is not possible to connect at these speeds, AMD recommends that you lower the default JTAG clock frequency even further as described as follows. To change the...",
+      "commands": [
+        "open_hw_manager"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.140",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.init_option",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Init Option",
+      "page_start": 32,
+      "page_end": 32,
+      "code": "connect_hw_server -url machinename:3121",
+      "description": "You should attempt to open with a default JTAG clock frequency that is 15 MHz for the Digilent cable connection and 6 MHz for the USB cable connection. If it is not possible to connect at these speeds, AMD recommends that you lower the default JTAG clock frequency even further as described as follows. To change the...",
+      "commands": [
+        "connect_hw_server"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.141",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.init_option",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Init Option",
+      "page_start": 32,
+      "page_end": 32,
+      "code": "set_property PARAM.FREQUENCY 250000 [get_hw_targets */xilinx_tcf/Digilent/210203327962A]",
+      "description": "Alternately, you can use the following sequence of Tcl commands: open\\_hw\\_manager connect\\_hw\\_server -url machinename:3121 current\\_hw\\_target [get\\_hw\\_targets \\*/xilinx\\_tcf/Digilent/210203327962A]",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.142",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.init_option",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Init Option",
+      "page_start": 32,
+      "page_end": 32,
+      "code": "open_hw_target",
+      "description": "open\\_hw\\_manager connect\\_hw\\_server -url machinename:3121 current\\_hw\\_target [get\\_hw\\_targets \\*/xilinx\\_tcf/Digilent/210203327962A] set\\_property PARAM.FREQUENCY 250000 [get\\_hw\\_targets \\*/xilinx\\_tcf/Digilent/210203327962A]",
+      "commands": [
+        "open_hw_target"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.143",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.efuse_register_access_and_programming_for_7_series_devices",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "eFUSE Register Access and Programming for 7 Series Devices",
+      "page_start": 80,
+      "page_end": 80,
+      "code": "get_property [lindex [get_hw_device] 0] REGISTER.EFUSE.FUSE_DNA",
+      "description": "FUSE\\_DNA: Unique Device DNA Each 7 series device has a unique device ID called device DNA that has already been programmed into it by AMD. 7 series devices have a 64-bit DNA. You can read these bits by running the following Tcl command in the Vivado Design Suite Tcl Console:",
+      "commands": [
+        "get_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.144",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.w_dis_user_128",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "W\\_DIS\\_USER\\_128",
+      "page_start": 89,
+      "page_end": 89,
+      "code": "program_hw_devices -control_efuse {20} [lindex [get_hw_devices] \\$deviceIdx]",
+      "description": "When set, disables programming of the 128-bit user bits (FUSE\\_USER128). For more details on the FUSE\\_SEC register refer to the UltraScale Architecture Configuration User Guide (UG570). Disabling Control Registers Setup To disable the Control Register programming, run the following Tcl command:",
+      "commands": [
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.145",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.disabling_the_jtag_interface",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Disabling the JTAG Interface",
+      "page_start": 90,
+      "page_end": 90,
+      "code": "program_hw_devices -force_efuse -security_efuse {08} [lindex [get_hw_devices] \\$deviceIdx]",
+      "description": "Click Finish to bring up the Program eFUSE confirmation dialog box: Click OK to program the specified fuse bits. To disable the JTAG interface through the eFUSE registers, run the following Tcl command:",
+      "commands": [
+        "program_hw_devices"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.146",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "write_hw_stapl my_good_xcvc1902.stapl",
+      "description": "The first program command only captures the chain definition containing the first device. The second program command includes both devices in the chain when writing out the STAPL instructions. Therefore, if you attempt to play this STAPL file on a chain with two devices, the first programming operations fail because...",
+      "commands": [
+        "write_hw_stapl"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.147",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Example",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "close_hw_target",
+      "description": "The first program command only captures the chain definition containing the first device. The second program command includes both devices in the chain when writing out the STAPL instructions. Therefore, if you attempt to play this STAPL file on a chain with two devices, the first programming operations fail because...",
+      "commands": [
+        "close_hw_target"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.148",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_xdc_commands_to_insert_debug_cores",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using XDC Commands to Insert Debug Cores",
+      "page_start": 133,
+      "page_end": 133,
+      "code": "set_property ALL_PROBE_SAME_MU_CNT 10 [get_debug_cores u_ila_0]",
+      "description": "After you have inserted the ILA core on a post-synthesized netlist it is possible for you to set the number of comparators used to anywhere from 1 to 16. To do that in the Vivado IDE, go to the Debug Core Options tab of the ILA core and set the ALL\\_PROBE\\_SAME\\_MU\\_CNT property to the desired number of comparators....",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.149",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.debug_core_insertion_in_non_project_mode",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Debug Core Insertion in Non-Project Mode",
+      "page_start": 135,
+      "page_end": 135,
+      "code": "set_property (on any debug_core or debug_port object)",
+      "description": "For more information on these and other related Tcl commands, type help -category ChipScope in the Tcl Console of the Vivado Design Suite. You need to save constraints after using the Set up Debug wizard, using Vivado Design Suite to create debug cores or ports, and/or running the following XDC commands:",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.150",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.custom",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Custom",
+      "page_start": 162,
+      "page_end": 162,
+      "code": "% set_property PROBES.FILE {C:/myprobes.ltx} [lindex [get_hw_devices] 0] % refresh_hw_device [lindex [get_hw_devices] 0]",
+      "description": "The debug probes file is automatically associated with the hardware device if the Vivado IDE is in project mode and a probes file is called debug\\_nets.ltx is found in the same directory as the bitstream programming (.bit) file that is associated with the device. You can also specify the location of the probes file:...",
+      "commands": [
+        "%"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.151",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_basic_trigger_mode",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Basic Trigger Mode",
+      "page_start": 170,
+      "page_end": 170,
+      "code": "set_property CONTROL.TRIGGER_MODE BASIC_ONLY [get_hw_ilas hw_ila_1]",
+      "description": "Use the basic trigger mode to describe a trigger condition that is a global Boolean equation of participating debug probe comparators. Basic trigger mode is enabled when the Trigger Mode is set to either BASIC\\_ONLY or BASIC\\_OR\\_TRIG\\_IN. Use the Basic Trigger Setup window (see the following figure) to create this...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.152",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.setting_basic_trigger_condition",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Setting Basic Trigger Condition",
+      "page_start": 172,
+      "page_end": 172,
+      "code": "set_property CONTROL.TRIGGER_CONDITION AND [get_hw_ilas hw_ila_1]",
+      "description": "You can set up the trigger condition using the toolbar button on the left side of the Basic Trigger Setup window that has an icon in the shape of a logic gate on it (see the following figure). You can also use the set\\_property Tcl command to change the trigger condition of the ILA core:",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.153",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.related_information_26",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Related Information",
+      "page_start": 177,
+      "page_end": 177,
+      "code": "set_property CONTROL.CAPTURE_MODE BASIC [get_hw_ilas hw_ila_1]",
+      "description": "Store a data sample during a given clock cycle only if the capture condition evaluates \"true\" You can also use the set\\_property Tcl command to change the capture mode of the ILA core. For instance, to change the capture mode of ILA core hw\\_ila\\_1 to BASIC, use the following command:",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.154",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.related_information_27",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Related Information",
+      "page_start": 179,
+      "page_end": 179,
+      "code": "set_property CONTROL.TRIGGER_POSITION 512 [get_hw_ilas hw_ila_1]",
+      "description": "Use the Trigger position control in the Capture Mode Settings window (or the Trigger Position property in the ILA Core Properties window) to set the position of the trigger marker in the captured data window. You can set the trigger position to any sample number in the captured data window. For instance, in the case...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.155",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.figure_ila_core_trigger_commands",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Figure: ILA Core Trigger Commands",
+      "page_start": 180,
+      "page_end": 180,
+      "code": "set_property CONTROL.DATA_DEPTH 512 [get_hw_ilas hw_ila_1]",
+      "description": "✎ Note: Refer to Setting the Data Depth of the Capture Window for more details on how to set the maximum capture buffer data depth on ILA cores that are added to the design using the Netlist Insertion probing flow. You can also use the set\\_property Tcl command to change the ILA core data depth:",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.156",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_waveform_ila_trigger_and_export_features",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Waveform ILA Trigger and Export Features",
+      "page_start": 185,
+      "page_end": 185,
+      "code": "set_property PROBES.FILE {C:/myprobes.ltx} [lindex [get_hw_devices] 0]",
+      "description": "The ILA probe file is automatically associated with the FPGA or adaptive SoC hardware device if the probes file is called debug\\_nets.ltx and is found in the same directory as the bitstream programming (.bit) file that is associated with the device. You can also specify the location of the probes file: You can also...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.157",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.saving_captured_ila_data_to_a_file",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Saving Captured ILA Data to a File",
+      "page_start": 187,
+      "page_end": 187,
+      "code": "write_hw_ila_data my_hw_ila_data_file.ila [upload_hw_ila_data hw_ila_1]",
+      "description": "In addition to displaying the captured data directly uploaded from the ILA core, you can also write the captured data to a file, read the data from a file, and display it in the waveform viewer. Currently, the only way to upload captured data from an ILA core and save it to a file is to use the following Tcl command:",
+      "commands": [
+        "write_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.158",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.enumeration_of_probe_values",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Enumeration of Probe Values",
+      "page_start": 189,
+      "page_end": 189,
+      "code": "display_hw_ila_data [read_hw_ila_data my_hw_ila_data_file.ila]",
+      "description": "An example of listing the samples associated with probe fast\\_cnt\\_incr\\_val\\_1 on ILA named i\\_fast\\_ila is as follows: Currently, the only way to restore captured data from a file and display it in the waveform viewer is to use the following Tcl command:",
+      "commands": [
+        "display_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.159",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_enumerations_in_capture_setup_window",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Enumerations in Capture Setup Window",
+      "page_start": 193,
+      "page_end": 193,
+      "code": "set_property ENUM.FIFTEEN eq5'h0F [get_hw_probes fast_vio_slice5_fb -of_objects [get_hw_ilas hw_ila_1]]",
+      "description": "Enumerations are stored as hw\\_probe properties, so set\\_property, get\\_property, and report\\_property commands can be used on these properties. The enumeration properties have a prefix ENUM, which needs to be used when using it with set\\_property and get\\_property commands. See the following example.",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.160",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_enumerations_in_capture_setup_window",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Enumerations in Capture Setup Window",
+      "page_start": 193,
+      "page_end": 193,
+      "code": "set_property TRIGGER_COMPARE_VALUE eq2'ethree [get_hw_probes U_SINEGEN/sel -of_objects [get_hw_ilas -of_objects [get_hw_devices xc7k325t_0] -filter {CELL_NAME=\\~\"u_ila_0\"}]]",
+      "description": "set\\_property ENUM.FIFTEEN eq5'h0F [get\\_hw\\_probes fast\\_vio\\_slice5\\_fb -of\\_objects [get\\_hw\\_ilas hw\\_ila\\_1]] Setting compare values with enumerations in the Trigger Setup window, has similar syntax to numeric compare values. The radix char is 'e'. Only the operators 'eq' and 'neq' are supported for enumeration...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.161",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.using_enumerations_in_the_waveform_window",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Using Enumerations in the Waveform Window",
+      "page_start": 195,
+      "page_end": 195,
+      "code": "write_hw_ila_data -force data_ila_3.ila [upload_hw_ila_data hw_ila_3] display_hw_ila_data [read_hw_ila_data ./data_ila_3.ila]",
+      "description": "When a waveform object has Show as Enumeration selected, enumeration names are displayed. If there is no matching Enumeration for the waveform value, it is displayed according to the selected radix. !! Important: If the waveform has been created prior to creating the enumerations, you can apply new enumerations to t...",
+      "commands": [
+        "write_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.162",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.setting_the_vio_input_display_type_and_radix",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Setting the VIO Input Display Type and Radix",
+      "page_start": 208,
+      "page_end": 208,
+      "code": "set_property CORE_REFRESH_RATE_MS 1000 [get_hw_vios hw_vio_1]",
+      "description": "The VIO input probes can be viewed using the VIO Probes window of the VIO Dashboard window. Each input probe is viewed as a separate row in the table. The value of the VIO input probes are shown in the Value column of the table (see Interacting with VIO Core Input Probes). The VIO core input values are periodically...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.163",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.observing_and_controlling_vio_input_activity",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Observing and Controlling VIO Input Activity",
+      "page_start": 209,
+      "page_end": 209,
+      "code": "set_property INPUT_VALUE_RADIX HEX [get_hw_probes BUTTON_IBUF]",
+      "description": "Radix > Unsigned to change the radix to unsigned decimal. Radix > Signed to change the radix to signed decimal. You can also set the radix of the VIO input probe using a Tcl command. For instance, to change the radix of a VIO input probe called \"BUTTON\\_IBUF\", run the following Tcl command:",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.164",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.observing_and_controlling_vio_input_activity",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Observing and Controlling VIO Input Activity",
+      "page_start": 209,
+      "page_end": 209,
+      "code": "set_property ACTIVITY_PERSISTENCE LONG [get_hw_probes BUTTON_IBUF]",
+      "description": "The persistence of how long the input activity status is displayed can be controlled by rightclicking a VIO input probe in the VIO Probes window of the VIO Dashboard window and selecting: You can also set the activity persistence using a Tcl command. For instance, to change the activity persistence on the VIO input...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.165",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.related_information_38",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Related Information",
+      "page_start": 211,
+      "page_end": 211,
+      "code": "set_property OUTPUT_VALUE_RADIX HEX [get_hw_probes vio_slice5_fb_2]",
+      "description": "When the display type of the VIO output probe is set to Text, you can change the radix by rightclicking a VIO output probe in the VIO Cores tabbed view of the Debug Probes window and selecting: You can also set the radix of the VIO output probe using a Tcl command. For instance, to change the radix of a VIO output p...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.166",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.trigger_at_startup",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Trigger At Startup",
+      "page_start": 222,
+      "page_end": 222,
+      "code": "display_hw_ila_data [current_hw_ila_data]",
+      "description": "Here is an example Tcl command script that interacts with the following example system:",
+      "commands": [
+        "display_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug908.2024_2.example.167",
+      "doc_id": "xilinx.ug908.2024_2",
+      "topic_id": "xilinx.ug908.2024_2.topic.trigger_at_startup",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Trigger At Startup",
+      "page_start": 222,
+      "page_end": 222,
+      "code": "write_hw_ila_data my_hw_ila_data [current_hw_ila_data]",
+      "description": "display\\_hw\\_ila\\_data [current\\_hw\\_ila\\_data]",
+      "commands": [
+        "write_hw_ila_data"
+      ],
+      "tags": [
+        "example",
+        "hardware_debug",
+        "hardware_manager",
+        "hw_server",
+        "ila",
+        "inline_cli",
+        "jtag",
+        "programming",
+        "vio",
+        "vivado"
+      ]
+    }
+  ]
+}

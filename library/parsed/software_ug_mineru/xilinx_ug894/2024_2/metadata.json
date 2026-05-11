@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug894.2024_2",
+  "title": "Vivado Design Suite User Guide: Using Tcl Scripting (UG894)",
+  "vendor": "xilinx",
+  "tool": "vivado",
+  "tool_version": "2024.2",
+  "source_file": "library/files/fpga_ug_pdfs/ug894.pdf",
+  "source_type": "pdf",
+  "parser": "mineru-open-api extract; flash channel not used",
+  "page_count": 135,
+  "section_count": 122,
+  "example_count": 190,
+  "command_count": 0,
+  "parsed_dir": "parsed/software_ug_mineru/xilinx_ug894/2024_2",
+  "mineru_source_dir": "library/work/ug_ingest/xilinx_ug894/2024_2/mineru",
+  "structured_artifacts": [
+    "parsed/software_ug_mineru/xilinx_ug894/2024_2/sections.json",
+    "parsed/software_ug_mineru/xilinx_ug894/2024_2/examples.json",
+    "parsed/software_ug_mineru/xilinx_ug894/2024_2/chunks.jsonl",
+    "parsed/software_ug_mineru/xilinx_ug894/2024_2/quality_report.json"
+  ],
+  "notes": [
+    "Built for AI-assisted Vivado Tcl script generation and debug.",
+    "UG894 is normalized as scripting topics, examples, and full-text chunks.",
+    "Use UG835 command records for precise command syntax."
+  ]
+}

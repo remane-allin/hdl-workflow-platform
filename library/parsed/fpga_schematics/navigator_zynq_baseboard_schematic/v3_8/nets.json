@@ -8184,7 +8184,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8203,7 +8203,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8222,7 +8222,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8241,7 +8241,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8260,7 +8260,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8279,7 +8279,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8298,7 +8298,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8317,7 +8317,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8336,7 +8336,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8355,7 +8355,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8374,7 +8374,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."
@@ -8393,7 +8393,7 @@
       "bank": null,
       "voltage": null,
       "linked_io_signal": "",
-      "source_sheet": "mineru_raw",
+      "source_sheet": "structured_schematic_index",
       "confidence": "medium",
       "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
       "notes": "Extracted from schematic text/OCR token stream; verify against PDF before hardware signoff."

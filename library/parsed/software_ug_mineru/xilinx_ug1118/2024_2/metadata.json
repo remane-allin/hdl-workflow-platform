@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug1118.2024_2",
+  "title": "Vivado Design Suite User Guide: Creating and Packaging Custom IP (UG1118)",
+  "vendor": "xilinx",
+  "tool": "vivado",
+  "tool_version": "2024.2",
+  "source_file": "library/files/fpga_ug_pdfs/ug1118.pdf",
+  "source_type": "pdf",
+  "parser": "mineru-open-api extract; flash channel not used",
+  "page_count": 111,
+  "section_count": 362,
+  "example_count": 25,
+  "command_count": 0,
+  "parsed_dir": "parsed/software_ug_mineru/xilinx_ug1118/2024_2",
+  "mineru_source_dir": "library/work/ug_ingest/xilinx_ug1118/2024_2/mineru",
+  "structured_artifacts": [
+    "parsed/software_ug_mineru/xilinx_ug1118/2024_2/sections.json",
+    "parsed/software_ug_mineru/xilinx_ug1118/2024_2/examples.json",
+    "parsed/software_ug_mineru/xilinx_ug1118/2024_2/chunks.jsonl",
+    "parsed/software_ug_mineru/xilinx_ug1118/2024_2/quality_report.json"
+  ],
+  "notes": [
+    "Built for AI-assisted Vivado custom IP packaging, IP-XACT, interface definition, and encryption workflows.",
+    "UG1118 is normalized as IP packaging topics, Tcl examples, and full-text chunks.",
+    "Use UG835 command records for precise Tcl command syntax."
+  ]
+}

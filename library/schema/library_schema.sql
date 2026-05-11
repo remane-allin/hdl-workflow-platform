@@ -146,3 +146,109 @@ CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_aliases ON fpga_hardware_
 CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_interface ON fpga_hardware_resources(interface);
 CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_package_pin ON fpga_hardware_resources(package_pin);
 CREATE INDEX IF NOT EXISTS idx_fpga_hardware_resources_mio_pin ON fpga_hardware_resources(mio_pin);
+
+CREATE TABLE IF NOT EXISTS software_tool_documents (
+    doc_id TEXT PRIMARY KEY,
+    title TEXT,
+    vendor TEXT,
+    tool TEXT,
+    tool_version TEXT,
+    source_file TEXT,
+    source_type TEXT,
+    parser TEXT,
+    page_count INTEGER,
+    command_count INTEGER,
+    parsed_dir TEXT,
+    notes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS software_tcl_commands (
+    command_id TEXT PRIMARY KEY,
+    doc_id TEXT NOT NULL,
+    tool TEXT,
+    tool_version TEXT,
+    command TEXT NOT NULL,
+    summary TEXT,
+    syntax TEXT,
+    returns_text TEXT,
+    categories TEXT,
+    description TEXT,
+    arguments_text TEXT,
+    examples_text TEXT,
+    see_also TEXT,
+    source_pages TEXT,
+    source_file TEXT,
+    full_text TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_software_tcl_commands_command ON software_tcl_commands(command);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_commands_tool ON software_tcl_commands(tool);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_commands_version ON software_tcl_commands(tool_version);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_commands_categories ON software_tcl_commands(categories);
+
+CREATE TABLE IF NOT EXISTS software_tcl_command_options (
+    command_id TEXT NOT NULL,
+    option_name TEXT NOT NULL,
+    description TEXT,
+    source TEXT,
+    PRIMARY KEY (command_id, option_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_software_tcl_options_name ON software_tcl_command_options(option_name);
+
+CREATE TABLE IF NOT EXISTS software_doc_chunks (
+    chunk_id TEXT PRIMARY KEY,
+    doc_id TEXT NOT NULL,
+    tool TEXT,
+    tool_version TEXT,
+    section_type TEXT,
+    anchor TEXT,
+    page_start INTEGER,
+    page_end INTEGER,
+    text TEXT
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS software_doc_chunks_fts USING fts5(
+    chunk_id UNINDEXED,
+    doc_id UNINDEXED,
+    tool UNINDEXED,
+    tool_version UNINDEXED,
+    anchor UNINDEXED,
+    text
+);
+
+CREATE TABLE IF NOT EXISTS software_tcl_topics (
+    topic_id TEXT PRIMARY KEY,
+    doc_id TEXT NOT NULL,
+    tool TEXT,
+    tool_version TEXT,
+    title TEXT,
+    section_type TEXT,
+    summary TEXT,
+    page_start INTEGER,
+    page_end INTEGER,
+    tags TEXT,
+    text TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_software_tcl_topics_doc ON software_tcl_topics(doc_id);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_topics_title ON software_tcl_topics(title);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_topics_type ON software_tcl_topics(section_type);
+
+CREATE TABLE IF NOT EXISTS software_tcl_examples (
+    example_id TEXT PRIMARY KEY,
+    doc_id TEXT NOT NULL,
+    topic_id TEXT,
+    tool TEXT,
+    tool_version TEXT,
+    title TEXT,
+    page_start INTEGER,
+    page_end INTEGER,
+    code TEXT,
+    description TEXT,
+    commands TEXT,
+    tags TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_software_tcl_examples_doc ON software_tcl_examples(doc_id);
+CREATE INDEX IF NOT EXISTS idx_software_tcl_examples_topic ON software_tcl_examples(topic_id);

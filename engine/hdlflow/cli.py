@@ -11,22 +11,37 @@ from .config import load_project, load_workspace, validate_config
 from .doctor import run_doctor
 from .library import (
     build_library,
+    cleanup_library_temp_outputs,
+    finalize_library_database,
     format_detail,
     format_hardware_resources,
     format_io_pins,
     format_schematic_nets,
+    format_tcl_command_detail,
+    format_tcl_command_rows,
+    format_tcl_example_rows,
+    format_tcl_topic_rows,
     format_toc,
     get_entry,
+    get_software_tcl_command,
     query_diagnostics,
     query_fpga_hardware_resources,
     query_fpga_io_pins,
     query_fpga_schematic_nets,
+    query_software_tcl_commands,
+    query_software_tcl_examples,
+    query_software_tcl_topics,
+    search_software_doc_chunks,
     query_toc,
 )
 from .pipeline import build_pipeline, format_pipeline
 from .reports import write_config_run_report
 from .scaffold import create_project
+from .ug1118 import extract_ug1118
+from .ug835 import extract_ug835
+from .ug894 import extract_ug894
 from .validate import validate_project
+from .vitis_guides import extract_vitis_guide
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -68,6 +83,35 @@ def build_parser() -> argparse.ArgumentParser:
 
     library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
     library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+
+    library_clean_parser = subparsers.add_parser("library-clean-temp", help="Remove library parser temporary outputs.")
+    library_clean_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+
+    library_finalize_parser = subparsers.add_parser(
+        "library-finalize",
+        help="Build the SQLite library index, then remove parser temporary outputs.",
+    )
+    library_finalize_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+
+    ug835_parser = subparsers.add_parser("ingest-ug835", help="Extract UG835 into software Tcl database artifacts.")
+    ug835_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    ug835_parser.add_argument("--pdf", help="Path to UG835 PDF. Defaults to library/files/fpga_ug_pdfs/UG835.pdf.")
+
+    ug894_parser = subparsers.add_parser("ingest-ug894", help="Extract UG894 into software Tcl scripting guide artifacts.")
+    ug894_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    ug894_parser.add_argument("--pdf", help="Path to UG894 PDF. Defaults to library/files/fpga_ug_pdfs/ug894.pdf.")
+    ug894_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory containing ug894.md/json.")
+
+    ug1118_parser = subparsers.add_parser("ingest-ug1118", help="Extract UG1118 into software Tcl custom IP guide artifacts.")
+    ug1118_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    ug1118_parser.add_argument("--pdf", help="Path to UG1118 PDF. Defaults to library/files/fpga_ug_pdfs/ug1118.pdf.")
+    ug1118_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory containing ug1118.md/json.")
+
+    vitis_guide_parser = subparsers.add_parser("ingest-vitis-guide", help="Extract a Vitis/PDM guide into software guide artifacts.")
+    vitis_guide_parser.add_argument("guide", choices=["ug908", "ug1553", "ug1556", "ug1701", "ug1702"], help="Guide key.")
+    vitis_guide_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    vitis_guide_parser.add_argument("--pdf", help="Optional PDF path.")
+    vitis_guide_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory.")
 
     toc_parser = subparsers.add_parser("get-workflow-toc", help="List library entries for a workflow or context.")
     toc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
@@ -122,6 +166,45 @@ def build_parser() -> argparse.ArgumentParser:
     hw_parser.add_argument("--keyword", help="Keyword in description, group, or cross references.")
     hw_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
 
+    tcl_search_parser = subparsers.add_parser("search-tcl-commands", help="Search software Tcl commands.")
+    tcl_search_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_search_parser.add_argument("--command", dest="tcl_command", help="Exact command name or command ID.")
+    tcl_search_parser.add_argument("--keyword", help="Keyword in summary, syntax, arguments, examples, or description.")
+    tcl_search_parser.add_argument("--option", help="Exact Tcl option name, for example -file.")
+    tcl_search_parser.add_argument("--tool", default="vivado", help="Tool name. Defaults to vivado.")
+    tcl_search_parser.add_argument("--version", default="2024.2", help="Tool version. Defaults to 2024.2.")
+    tcl_search_parser.add_argument("--category", help="Command category substring.")
+    tcl_search_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    tcl_detail_parser = subparsers.add_parser("get-tcl-command-detail", help="Read a software Tcl command by ID or name.")
+    tcl_detail_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_detail_parser.add_argument("--id", required=True, help="Command ID or command name.")
+
+    tcl_chunk_parser = subparsers.add_parser("search-tcl-doc", help="Full-text search software Tcl document chunks.")
+    tcl_chunk_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_chunk_parser.add_argument("--query", required=True, help="Search text.")
+    tcl_chunk_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_chunk_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_chunk_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_chunk_parser.add_argument("--limit", type=int, default=10, help="Maximum chunks to print.")
+
+    tcl_topic_parser = subparsers.add_parser("search-tcl-topics", help="Search software Tcl guide topics.")
+    tcl_topic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_topic_parser.add_argument("--keyword", help="Keyword in title, summary, tags, or text.")
+    tcl_topic_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_topic_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_topic_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_topic_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    tcl_example_parser = subparsers.add_parser("search-tcl-examples", help="Search software Tcl guide examples.")
+    tcl_example_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_example_parser.add_argument("--keyword", help="Keyword in title, description, tags, or code.")
+    tcl_example_parser.add_argument("--command", dest="example_command", help="Command name used in the example.")
+    tcl_example_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_example_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_example_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_example_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
     return parser
 
 
@@ -171,6 +254,54 @@ def main(argv: list[str] | None = None) -> int:
             db_path = build_library(Path(args.workspace))
             print(f"library: {db_path}")
             print("library build: PASS")
+            return 0
+        if args.command == "library-clean-temp":
+            removed = cleanup_library_temp_outputs(Path(args.workspace))
+            for path in removed:
+                print(f"removed: {path}")
+            print(f"library clean temp: PASS ({len(removed)} removed)")
+            return 0
+        if args.command == "library-finalize":
+            db_path, removed = finalize_library_database(Path(args.workspace))
+            print(f"library: {db_path}")
+            for path in removed:
+                print(f"removed: {path}")
+            print(f"library finalize: PASS ({len(removed)} temp paths removed)")
+            return 0
+        if args.command == "ingest-ug835":
+            pdf_path = Path(args.pdf) if args.pdf else None
+            out_dir = extract_ug835(Path(args.workspace), pdf_path)
+            db_path = build_library(Path(args.workspace))
+            print(f"ug835 parsed: {out_dir}")
+            print(f"library: {db_path}")
+            print("ingest ug835: PASS")
+            return 0
+        if args.command == "ingest-ug894":
+            pdf_path = Path(args.pdf) if args.pdf else None
+            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
+            out_dir = extract_ug894(Path(args.workspace), pdf_path=pdf_path, mineru_dir=mineru_dir)
+            db_path = build_library(Path(args.workspace))
+            print(f"ug894 parsed: {out_dir}")
+            print(f"library: {db_path}")
+            print("ingest ug894: PASS")
+            return 0
+        if args.command == "ingest-ug1118":
+            pdf_path = Path(args.pdf) if args.pdf else None
+            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
+            out_dir = extract_ug1118(Path(args.workspace), pdf_path=pdf_path, mineru_dir=mineru_dir)
+            db_path = build_library(Path(args.workspace))
+            print(f"ug1118 parsed: {out_dir}")
+            print(f"library: {db_path}")
+            print("ingest ug1118: PASS")
+            return 0
+        if args.command == "ingest-vitis-guide":
+            pdf_path = Path(args.pdf) if args.pdf else None
+            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
+            out_dir = extract_vitis_guide(Path(args.workspace), args.guide, pdf_path=pdf_path, mineru_dir=mineru_dir)
+            db_path = build_library(Path(args.workspace))
+            print(f"{args.guide} parsed: {out_dir}")
+            print(f"library: {db_path}")
+            print(f"ingest {args.guide}: PASS")
             return 0
         if args.command == "get-workflow-toc":
             entries = query_toc(
@@ -242,6 +373,63 @@ def main(argv: list[str] | None = None) -> int:
                 limit=args.limit,
             )
             for line in format_hardware_resources(rows):
+                print(line)
+            return 0
+        if args.command == "search-tcl-commands":
+            rows = query_software_tcl_commands(
+                Path(args.workspace),
+                command=args.tcl_command,
+                keyword=args.keyword,
+                option=args.option,
+                tool=args.tool,
+                tool_version=args.version,
+                category=args.category,
+                limit=args.limit,
+            )
+            for line in format_tcl_command_rows(rows):
+                print(line)
+            return 0
+        if args.command == "get-tcl-command-detail":
+            row = get_software_tcl_command(Path(args.workspace), args.id)
+            for line in format_tcl_command_detail(row):
+                print(line)
+            return 0
+        if args.command == "search-tcl-doc":
+            rows = search_software_doc_chunks(
+                Path(args.workspace),
+                query_text=args.query,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for row in rows:
+                text = " ".join(str(row.get("text") or "").split())
+                print(f"{row.get('chunk_id')} | {row.get('anchor')} | {text[:240]}")
+            return 0
+        if args.command == "search-tcl-topics":
+            rows = query_software_tcl_topics(
+                Path(args.workspace),
+                keyword=args.keyword,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for line in format_tcl_topic_rows(rows):
+                print(line)
+            return 0
+        if args.command == "search-tcl-examples":
+            rows = query_software_tcl_examples(
+                Path(args.workspace),
+                keyword=args.keyword,
+                command=args.example_command,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for line in format_tcl_example_rows(rows):
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary

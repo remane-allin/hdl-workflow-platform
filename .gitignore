@@ -29,8 +29,6 @@ projects/*/_archive/memory_history/**
 # Review source-document redistribution rights before publishing these.
 projects/*/00_SPEC/raw_docs/*.pdf
 projects/*/01_DocParse/mineru_raw/**
-!projects/*/01_DocParse/mineru_raw/
-!projects/*/01_DocParse/mineru_raw/.gitkeep
 
 # Python/tool cache
 __pycache__/
@@ -39,6 +37,7 @@ __pycache__/
 
 # Local generated library database and large uploaded source files.
 library/.local/
+library/work/
 library/files/**/*.pdf
 library/files/**/*.zip
 library/files/**/*.tar
@@ -54,6 +53,8 @@ library/parsed/**/images/
 library/parsed/**/mineru_raw/
 library/parsed/**/mineru_extract/
 library/parsed/**/text_raw/
+library/parsed/**/chunks/
+library/parsed/**/extracted_tables/
 library/parsed/**/*.pdf
 library/parsed/**/*.zip
 

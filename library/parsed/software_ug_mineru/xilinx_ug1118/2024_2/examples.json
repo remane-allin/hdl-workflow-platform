@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug1118.2024_2",
+  "examples": [
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.001",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.custom_functions_in_hdl",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Custom Functions in HDL",
+      "page_start": 11,
+      "page_end": 11,
+      "code": "module top({in1, in2}, out[0], out[1]);\ninput in1, in2;\noutput [1:0] out;\nendmodule",
+      "description": "✎ Recommended: Modify the module declaration to remove these port types, or create a wrapper file around the module to contain only the supported port types for packaging your design. As an example, the following module declaration contains unsupported complex and split port types:",
+      "commands": [
+        "module",
+        "input",
+        "output",
+        "endmodule"
+      ],
+      "tags": [
+        "example",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.002",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.common_block_definition",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Common Block Definition",
+      "page_start": 89,
+      "page_end": 89,
+      "code": "`protect version = 2`",
+      "description": "The following sections define different sections of the definition area, and related pragmas that must be defined in the IP source code to support encryption. The examples are written in VHDL form. The Verilog and SystemVerilog syntax is the same except the \\`pragma protect keywords in Verilog replaces the \\`protect...",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.003",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.common_block_definition",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Common Block Definition",
+      "page_start": 89,
+      "page_end": 89,
+      "code": "'protect encrypt_agent = \"XILINX\"\n'protect encrypt_agent_info = \"Xilinx Encryption Tool 2022\"",
+      "description": "★ Tip: Version 1 (V1) of IEEE-1735 -2014 is supported by AMD under an early access program. Improper use of V1 can inadvertently expose your design. Contact your local sales office or Applications Engineer for more information. The encryption tool might add some optional pragmas to identify itself, as follows:",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example",
+        "tcl_store"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.004",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.vendor_specific_tool_block_definition",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Vendor-Specific Tool Block Definition",
+      "page_start": 91,
+      "page_end": 91,
+      "code": "'protect begin_toolblock\n...\n'protect end_toolblock=\"",
+      "description": "Tool vendor specific rights are placed into vendor specific toolblock sections. There has to be at least one tool block for each encrypted block. This block also contains the encryption key definition for the tool vendor. The beginning and end of this block are defined by the following pragmas:",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.005",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.rights_definition",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Rights Definition",
+      "page_start": 92,
+      "page_end": 92,
+      "code": "`protect key_keyowner = \"Xilinx\"\n`protect key_method = \"rsa\"\n`protect key_keyname = \"xilinxt_2019_11\"\n`protect rights_digest_method = \"sha256\"\n`protect key_public_key\n...",
+      "description": "The encryption key and rights digest method must be defined as part of a vendor specific toolblock. These are a set of mandatory pragmas which define the vendor public encryption key, key related attributes, and method for calculating the digest for rights in the toolblock of each vendor. The following example shows...",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.006",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.for_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "For example:",
+      "page_start": 93,
+      "page_end": 93,
+      "code": "`protect control <right> = <rights_expression>",
+      "description": "The basic syntax for expressing an access right uses the control keyword introduced for IEEE-1735-2014 V2. Generally, the pragma looks as follows:",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.007",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.for_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "For example:",
+      "page_start": 93,
+      "page_end": 93,
+      "code": "`protect control xilinx_configuration_visible = \"false\"`",
+      "description": "!! Important: Valid values for the rights\\_expression are case sensitive. For example:",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.008",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.for_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "For example:",
+      "page_start": 93,
+      "page_end": 93,
+      "code": "`protect control <right> = <condition> ? <true_expression> : <false_expression>",
+      "description": "For example: Conditional rights let IP authors specify different access rights under different evaluated conditions. The basic syntax for defining a conditional access right is:",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.009",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.for_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "For example:",
+      "page_start": 93,
+      "page_end": 93,
+      "code": "`protect control decryption = (xilinx_activity==simulation) ? \"false\" : \"true\"",
+      "description": "",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.010",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.for_example",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "For example:",
+      "page_start": 94,
+      "page_end": 94,
+      "code": "`protect begin_commonblock\n`protect control error_handling = \"srcrefs\"\n`protect end_commonblock\n`protect begin_toolblock",
+      "description": "The following is a partial VHDL encryption sample that shows a valid specification of the error\\_handling. Although the commonblock specifies a value of \"srcrefs\", which AMD does not support; that value is overridden in the AMD-specific toolblock. In the following example, the IP author has defined the error\\_handli...",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "error_handling",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.011",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.understanding_how_rights_affect_vivado_tools",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Understanding How Rights Affect Vivado Tools",
+      "page_start": 95,
+      "page_end": 95,
+      "code": "`protect key_keyowner=\"Xilinx\",...`\n`protect control error_handling = \"delegated\"",
+      "description": "The following is a partial VHDL encryption sample that shows a valid specification of the error\\_handling. Although the commonblock specifies a value of \"srcrefs\", which AMD does not support; that value is overridden in the AMD-specific toolblock. In the following example, the IP author has defined the error\\_handli...",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "error_handling",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.012",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.understanding_how_rights_affect_vivado_tools",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Understanding How Rights Affect Vivado Tools",
+      "page_start": 95,
+      "page_end": 95,
+      "code": "`protect begin commonblock\n`protect control error_handling = \"srcrefs\"\n`protect end_commonblock\n`protect begin_toolblock\n`protect key_keyowner=\"Xilinx\", ...\n`protect control error_handling = (xilinx_activity==synthesis)? \"srcrefs\" : \"delegated\"",
+      "description": "In the following invalid example, error\\_handling specifies a value of \"srcrefs\" in the commonblock, which AMD does not support. The AMD toolblock contains a conditional statement to override the error\\_handling right; however, when the xilinx\\_activity condition evaluates to TRUE, the unsupported value \"srcrefs\" is...",
+      "commands": [],
+      "tags": [
+        "error_handling",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.013",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.understanding_how_rights_affect_vivado_tools",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Understanding How Rights Affect Vivado Tools",
+      "page_start": 95,
+      "page_end": 95,
+      "code": "`protect begin\n...\n`protect end",
+      "description": "In the following example, the Vivado tool issues an error and stops when attempting to decrypt this block. This is the IP RTL source code which needs to be protected. The beginning and end of the source code to be encrypted is defined using the following pragmas:",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "error_handling",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.014",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.vhdl_syntax",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "VHDL Syntax",
+      "page_start": 98,
+      "page_end": 98,
+      "code": "`protect version = 2\n`protect begin_commonblock\n`protect control error_handling = \"delegated\"\n`protect control decryption = (activity==simulation)? \"false\" : \"true\"",
+      "description": "Then, an AMD tool-specific block hides the configuration, prevents modification, and prevents probing of the encrypted logic. These are the three most-recommended AMD-specific rights. The tool-specific block also overrides the common block, granting the decryption right during simulation with the xilinx\\_activity co...",
+      "commands": [],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.015",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.verilog_syntax",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Verilog Syntax",
+      "page_start": 99,
+      "page_end": 99,
+      "code": "`protect end_commonblock\n`protect begin_toolblock\n`protect rights_digest_method=\"sha256\"\n`protect key_keyowner = \"Xilinx\", key_method = \"rsa\", key_keyname = \"xilinx_2019_11\",\nkey_keyowner\n...\n`protect control xilinx_configuration_visible = \"false\"\n`protect control xilinx_enable_modification = \"false\"\n`protect control xilinx_enable_probing = \"false\"\n`protect control decryption = (xilinx_activity==simulation)? \"false\" : \"true\"\n`protect end_toolblock = \"\"\n`protect begin\n-- Secure Data Block\n-- Protected IP source code is inserted here.\n...\n...\n...\n`protect end",
+      "description": "Then, an AMD tool-specific block hides the configuration, prevents modification, and prevents probing of the encrypted logic. These are the three most-recommended AMD-specific rights. The tool-specific block also overrides the common block, granting the decryption right during simulation with the xilinx\\_activity co...",
+      "commands": [
+        "key_keyowner"
+      ],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.016",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.verilog_syntax",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Verilog Syntax",
+      "page_start": 99,
+      "page_end": 99,
+      "code": "`pragma protect version = 2\n`pragma protect begin_commonblock\n`pragma protect control error_handling = \"delegated\"\n`pragma protect control decryption = (activity==simulation)? \"false\" : \"true\"\n`pragma protect end_commonblock\n`pragma protect begin_toolblock\n`pragma protect rights_digest_method=\"sha256\"\n`pragma protect key_keyowner = \"Xilinx\", key_method = \"rsa\", key_keyname = \"xilinx_2019_11\", key_public_key\n...\n`pragma protect control xilinx_configuration_visible = \"false\"\n`pragma protect control xilinx_enable_modification = \"false\"\n`pragma protect control xilinx_enable_probing = \"false\"\n`pragma protect control decryption = (xilinx_activity==simulation)? \"false\" : \"true\"\n`pragma protect end_toolblock = \"\"\n`pragma protect begin\n// Secure Data Block\n// Protected IP source code is inserted here.\n...\n...\n...",
+      "description": "★ Tip: In Verilog and SystemVerilog, the \\`pragma protect keyword replaces the \\`protect keyword in VHDL. The following example is a Verilog version of the preceding VHDL example:",
+      "commands": [],
+      "tags": [
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.017",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.impact_on_qor",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Impact on QoR",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "error_handling = \"delegated\"",
+      "description": "Design modules that you have already encrypted are not affected by this command, and carry the same access rights defined for them. Modules which are not encrypted by user would be encrypted using IEEE-1735-2014 V2 standard. By default, only the AMD encryption key is used for encryption and following default access...",
+      "commands": [
+        "error_handling"
+      ],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.018",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.impact_on_qor",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Impact on QoR",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "xilinx_configuration_visible = \"false\"\nxilinx_enable_modification = \"false\"\nxilinx_enable_probing = \"false\"\nxilinx_enable_netlist_export = \"false\"",
+      "description": "Design modules that you have already encrypted are not affected by this command, and carry the same access rights defined for them. Modules which are not encrypted by user would be encrypted using IEEE-1735-2014 V2 standard. By default, only the AMD encryption key is used for encryption and following default access...",
+      "commands": [
+        "xilinx_configuration_visible",
+        "xilinx_enable_modification",
+        "xilinx_enable_probing",
+        "xilinx_enable_netlist_export"
+      ],
+      "tags": [
+        "encryption",
+        "example"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.019",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.introduction_4",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Introduction",
+      "page_start": 40,
+      "page_end": 40,
+      "code": "set_property xpm_libraries {list of xpm libraries} [ipx::current_core]",
+      "description": "✎ Note: In the 2017.1 Vivado release and beyond, XPMs are enabled automatically in project mode, and in non-project mode are used automatically during Vivado synthesis and implementation. ✎ Recommended: It is a best practice to explicitly set the XPM library for use in your design. To do so, use the set\\_property Tc...",
+      "commands": [
+        "set_property"
+      ],
+      "tags": [
+        "example",
+        "inline_tcl",
+        "non_project",
+        "project"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.020",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.top_entity_name_2",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Top entity name",
+      "page_start": 64,
+      "page_end": 64,
+      "code": "ipx::merge_project_changes ports [ipx::current_core]",
+      "description": "For cases where ancillary files are modified and the Merge changes from Ports and Interfaces Wizard banner is not present, the same behavior can be accessed through the Tcl design environment. To merge changes from Ports and Interfaces page using Tcl, type the following in the Tcl Console:",
+      "commands": [
+        "merge_project_changes"
+      ],
+      "tags": [
+        "environment",
+        "example",
+        "inline_tcl"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.021",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.encrypting_a_checkpoint_with_vivado",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Encrypting a Checkpoint with Vivado",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "encrypt -lang verilog -ext .vp -key keyfile.txt myip.v",
+      "description": "If -key is not specified, the Vivado tool looks for encryption keys and pragmas embedded within the source files that is being encrypted. The following example uses the -key option to do the following: Specify a new file extension to use when generating the encrypted files to prevent overwriting the original source...",
+      "commands": [
+        "encrypt"
+      ],
+      "tags": [
+        "encryption",
+        "example",
+        "inline_tcl"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.022",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.encrypting_a_checkpoint_with_vivado",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Encrypting a Checkpoint with Vivado",
+      "page_start": 101,
+      "page_end": 101,
+      "code": "encrypt -lang verilog -ext .vp my_ip.v",
+      "description": "The final example searches for the encryption key inside the design source file, specifies the target language as Verilog, specifies the design file to encrypt, and specifies a new file extension to use when generating the encrypted files to prevent overwriting the original source files:",
+      "commands": [
+        "encrypt"
+      ],
+      "tags": [
+        "encryption",
+        "example",
+        "inline_tcl"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.023",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.impact_on_qor",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Impact on QoR",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "write_checkpoint [-key <arg>] -encrypt <file>",
+      "description": "If custom access rights are required, the -key option can be used to supply a valid key file similar to the encrypt Tcl command. !! Important: Custom key file must have AMD encryption key for Vivado to read the checkpoint. ★ Tip: This feature supports checkpoints and EDIF files as input design sources and RTL sources.",
+      "commands": [
+        "write_checkpoint"
+      ],
+      "tags": [
+        "encryption",
+        "example",
+        "inline_tcl"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.024",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.impact_on_qor",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Impact on QoR",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "write_checkpoint -encrypt my_ip.dcp",
+      "description": "✎ Note: The -encrypt option works only when writing out a full design checkpoint. Using the -cell option with -encrypt option does not work. In the following example, the checkpoint my\\_ip.dcp is written out with all unencrypted modules encrypted and default access rights specified.",
+      "commands": [
+        "write_checkpoint"
+      ],
+      "tags": [
+        "encryption",
+        "example",
+        "inline_tcl"
+      ]
+    },
+    {
+      "example_id": "xilinx.ug1118.2024_2.example.025",
+      "doc_id": "xilinx.ug1118.2024_2",
+      "topic_id": "xilinx.ug1118.2024_2.topic.impact_on_qor",
+      "tool": "vivado",
+      "tool_version": "2024.2",
+      "title": "Impact on QoR",
+      "page_start": 102,
+      "page_end": 102,
+      "code": "write_checkpoint -key keyfile.txt -encrypt my_ip.dcp",
+      "description": "In the following example, the checkpoint my\\_ip.dcp is written out with all unencrypted modules encrypted and default access rights specified. write\\_checkpoint -encrypt my\\_ip.dcp This example writes out the same checkpoint my\\_ip.dcp, but with the encryption keys and access rights defined in the key file keyfile.txt.",
+      "commands": [
+        "write_checkpoint"
+      ],
+      "tags": [
+        "encryption",
+        "example",
+        "inline_tcl"
+      ]
+    }
+  ]
+}

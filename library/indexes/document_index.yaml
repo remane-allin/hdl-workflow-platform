@@ -2,21 +2,195 @@ schema_version: 1
 documents:
   xilinx.ug835:
     title: Vivado Design Suite Tcl Command Reference Guide
-    domain: fpga
+    domain: eda_tcl
     vendor: xilinx
     doc_type: official_ug
     versions:
       indexed:
-        - "2023.2"
-        - "2024.1"
+        - "2024.2"
     short_description: Official Vivado Tcl command reference.
     local_pdf_dir: files/fpga_ug_pdfs
-    parsed_dir: parsed/fpga_ug_mineru/xilinx_ug835
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug835/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug835
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
     local_copy_allowed: false
     official_url: ""
     tags:
       - vivado
       - tcl
+      - 2024.2
+      - official_ug
+  xilinx.ug894:
+    title: "Vivado Design Suite User Guide: Using Tcl Scripting"
+    domain: eda_tcl
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Official Vivado Tcl scripting guide with scripting flows, examples, objects, DRCs, and Tcl Store guidance.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug894/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug894/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vivado
+      - tcl
+      - scripting
+      - examples
+      - 2024.2
+      - official_ug
+  xilinx.ug1118:
+    title: "Vivado Design Suite User Guide: Creating and Packaging Custom IP"
+    domain: eda_tcl
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Official Vivado custom IP creation and packaging guide for IP Packager, IP-XACT, interfaces, file groups, customization, and encryption workflows.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug1118/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug1118/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vivado
+      - tcl
+      - custom_ip
+      - ip_packager
+      - ip_xact
+      - encryption
+      - 2024.2
+      - official_ug
+  xilinx.ug908:
+    title: "Vivado Design Suite User Guide: Programming and Debugging"
+    domain: eda_tcl
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Vivado programming and debugging guide for hardware manager, bitstream/PDI programming, hw_server, ILA/VIO, JTAG-to-AXI, STAPL/SVF, eFUSE, and debug flows.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug908/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug908/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vivado
+      - programming
+      - hardware_debug
+      - hardware_manager
+      - ila
+      - vio
+      - hw_server
+      - jtag
+      - 2024.2
+      - official_ug
+  xilinx.ug1553:
+    title: Vitis Unified IDE and Common Command-Line Reference Manual
+    domain: vitis
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Vitis Unified IDE and common command-line reference for IDE flows, v++, vitis-run, configuration files, and Python XSDB commands.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug1553/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug1553/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vitis
+      - unified_ide
+      - command_line
+      - v++
+      - vitis-run
+      - 2024.2
+      - official_ug
+  xilinx.ug1556:
+    title: Power Design Manager User Guide
+    domain: pdm
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Power Design Manager guide for early power estimation, thermal settings, design rule checks, and report workflows.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug1556/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug1556/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - pdm
+      - power
+      - thermal
+      - estimation
+      - 2024.2
+      - official_ug
+  xilinx.ug1701:
+    title: Embedded Design Development Using Vitis User Guide
+    domain: vitis
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Embedded design development guide for Vitis platforms, XPFM, embedded flows, packaging, debugging, and profiling.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug1701/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug1701/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vitis
+      - embedded
+      - platform
+      - xpfm
+      - debug
+      - 2024.2
+      - official_ug
+  xilinx.ug1702:
+    title: Vitis Reference Guide
+    domain: vitis
+    vendor: xilinx
+    doc_type: official_ug
+    versions:
+      indexed:
+        - "2024.2"
+    short_description: Vitis reference guide for commands and utilities such as v++, vitis-run, xbutil, xbmgmt, xclbinutil, xrt.ini, and Vitis IDE flows.
+    local_pdf_dir: files/fpga_ug_pdfs
+    parsed_dir: parsed/software_ug_mineru/xilinx_ug1702/2024_2
+    temp_parse_dir: work/ug_ingest/xilinx_ug1702/2024_2
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
+    local_copy_allowed: false
+    official_url: ""
+    tags:
+      - vitis
+      - reference
+      - command_line
+      - v++
+      - xbutil
+      - xclbinutil
+      - 2024.2
       - official_ug
   alientek.navigator_zynq_fpga_dev_guide_v3_3_ch5:
     title: Navigator ZYNQ FPGA Development Guide V3.3 Chapter 5
@@ -29,7 +203,10 @@ documents:
     short_description: Hardware resources chapter indexed for board resources, IO table links, and schematic links.
     local_pdf_dir: files/fpga_ug_pdfs
     parsed_dir: parsed/fpga_ug_mineru/navigator_zynq_fpga_dev_guide/v3_3
+    temp_parse_dir: work/ug_ingest/navigator_zynq_fpga_dev_guide/v3_3
     detail_path: sources/hardware_guides/navigator_zynq_fpga_dev_guide_v3_3_ch5.md
+    retention: structured_db_only
+    cleanup_command: python -m hdlflow.cli library-finalize --workspace .
     local_copy_allowed: false
     official_url: ""
     tags:

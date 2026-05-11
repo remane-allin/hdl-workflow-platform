@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import json
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,18 @@ INDEX_SPECS = [
     ("document_index.yaml", "documents", "document"),
     ("connection_index.yaml", "connections", "connection"),
     ("diagnostic_index.yaml", "diagnostics", "diagnostic"),
+]
+
+
+LIBRARY_TEMP_DIR_NAMES = {
+    "mineru_raw",
+    "mineru_extract",
+    "text_raw",
+    "images",
+}
+
+LIBRARY_TEMP_ROOTS = [
+    "library/work",
 ]
 
 
@@ -95,7 +108,43 @@ def build_library(workspace: Path) -> Path:
         _import_fpga_io_tables(conn, library_root)
         _import_fpga_schematics(conn, library_root)
         _import_fpga_hardware_guides(conn, library_root)
+        _import_software_tcl_library(conn, library_root)
     return db_path
+
+
+def cleanup_library_temp_outputs(workspace: Path) -> list[Path]:
+    workspace = workspace.resolve()
+    removed: list[Path] = []
+    library_root = workspace / "library"
+    if not library_root.exists():
+        return removed
+
+    candidates: list[Path] = []
+    for rel_root in LIBRARY_TEMP_ROOTS:
+        candidates.append(workspace / rel_root)
+    parsed_root = library_root / "parsed"
+    if parsed_root.is_dir():
+        for path in parsed_root.rglob("*"):
+            if path.is_dir() and path.name in LIBRARY_TEMP_DIR_NAMES:
+                candidates.append(path)
+
+    for candidate in sorted(set(candidates), key=lambda item: len(item.parts), reverse=True):
+        if not candidate.exists():
+            continue
+        resolved = candidate.resolve()
+        if not _is_relative_to(resolved, workspace):
+            raise ValueError(f"refusing to remove path outside workspace: {resolved}")
+        if resolved == workspace or resolved == library_root:
+            raise ValueError(f"refusing to remove protected path: {resolved}")
+        shutil.rmtree(resolved)
+        removed.append(resolved)
+    return removed
+
+
+def finalize_library_database(workspace: Path) -> tuple[Path, list[Path]]:
+    db_path = build_library(workspace)
+    removed = cleanup_library_temp_outputs(workspace)
+    return db_path, removed
 
 
 def query_toc(
@@ -342,8 +391,14 @@ def query_fpga_hardware_resources(
         clauses.append("mio_pin = ?")
         params.append(_normalize_mio(mio_pin))
     if keyword:
-        clauses.append("(description LIKE ? OR resource_group LIKE ? OR io_table_links LIKE ? OR schematic_links LIKE ?)")
-        params.extend([f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"])
+        clauses.append(
+            "("
+            "signal_name LIKE ? OR aliases LIKE ? OR description LIKE ? OR "
+            "resource_group LIKE ? OR source_table LIKE ? OR io_table_links LIKE ? OR "
+            "schematic_links LIKE ?"
+            ")"
+        )
+        params.extend([f"%{keyword}%"] * 7)
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     query = f"""
         SELECT guide_id, domain, source_table, resource_group, signal_name,
@@ -375,6 +430,237 @@ def query_fpga_hardware_resources(
         "source_file",
     ]
     return [_decode_resource_links(dict(zip(keys, row))) for row in rows]
+
+
+def query_software_tcl_commands(
+    workspace: Path,
+    *,
+    command: str | None = None,
+    keyword: str | None = None,
+    option: str | None = None,
+    tool: str | None = None,
+    tool_version: str | None = None,
+    category: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    join = ""
+    if option:
+        join = "JOIN software_tcl_command_options o ON o.command_id = c.command_id"
+        clauses.append("o.option_name = ?")
+        params.append(option)
+    if command:
+        clauses.append("(c.command = ? OR c.command_id = ?)")
+        params.extend([command, command])
+    if keyword:
+        clauses.append(
+            "("
+            "c.command LIKE ? OR c.summary LIKE ? OR c.syntax LIKE ? OR "
+            "c.categories LIKE ? OR c.description LIKE ? OR c.arguments_text LIKE ? OR "
+            "c.examples_text LIKE ?"
+            ")"
+        )
+        params.extend([f"%{keyword}%"] * 7)
+    if tool:
+        clauses.append("c.tool = ?")
+        params.append(tool)
+    if tool_version:
+        clauses.append("c.tool_version = ?")
+        params.append(tool_version)
+    if category:
+        clauses.append("c.categories LIKE ?")
+        params.append(f"%{category}%")
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT DISTINCT c.command_id, c.command, c.tool, c.tool_version,
+               c.summary, c.syntax, c.categories, c.source_pages
+        FROM software_tcl_commands c
+        {join}
+        {where}
+        ORDER BY c.command
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = ["command_id", "command", "tool", "tool_version", "summary", "syntax", "categories", "source_pages"]
+    return [_decode_json_fields(dict(zip(keys, row)), ("source_pages",)) for row in rows]
+
+
+def get_software_tcl_command(
+    workspace: Path,
+    command_id: str,
+) -> dict[str, Any]:
+    db_path = _ensure_db(workspace)
+    with sqlite3.connect(db_path) as conn:
+        row = conn.execute(
+            """
+            SELECT command_id, doc_id, tool, tool_version, command, summary,
+                   syntax, returns_text, categories, description, arguments_text,
+                   examples_text, see_also, source_pages, source_file, full_text
+            FROM software_tcl_commands
+            WHERE command_id = ? OR command = ?
+            """,
+            (command_id, command_id),
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"software Tcl command not found: {command_id}")
+        options = conn.execute(
+            """
+            SELECT option_name, description, source
+            FROM software_tcl_command_options
+            WHERE command_id = ?
+            ORDER BY option_name
+            """,
+            (row[0],),
+        ).fetchall()
+    keys = [
+        "command_id",
+        "doc_id",
+        "tool",
+        "tool_version",
+        "command",
+        "summary",
+        "syntax",
+        "returns_text",
+        "categories",
+        "description",
+        "arguments_text",
+        "examples_text",
+        "see_also",
+        "source_pages",
+        "source_file",
+        "full_text",
+    ]
+    result = _decode_json_fields(dict(zip(keys, row)), ("see_also", "source_pages"))
+    result["options"] = [
+        {"name": option_name, "description": description or "", "source": source or ""}
+        for option_name, description, source in options
+    ]
+    return result
+
+
+def query_software_tcl_topics(
+    workspace: Path,
+    *,
+    keyword: str | None = None,
+    doc_id: str | None = None,
+    tool: str | None = None,
+    tool_version: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    if keyword:
+        clauses.append("(title LIKE ? OR summary LIKE ? OR tags LIKE ? OR text LIKE ?)")
+        params.extend([f"%{keyword}%"] * 4)
+    if doc_id:
+        clauses.append("doc_id = ?")
+        params.append(doc_id)
+    if tool:
+        clauses.append("tool = ?")
+        params.append(tool)
+    if tool_version:
+        clauses.append("tool_version = ?")
+        params.append(tool_version)
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT topic_id, doc_id, tool, tool_version, title, section_type,
+               summary, page_start, page_end, tags
+        FROM software_tcl_topics
+        {where}
+        ORDER BY page_start, topic_id
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = ["topic_id", "doc_id", "tool", "tool_version", "title", "section_type", "summary", "page_start", "page_end", "tags"]
+    return [_decode_json_fields(dict(zip(keys, row)), ("tags",)) for row in rows]
+
+
+def query_software_tcl_examples(
+    workspace: Path,
+    *,
+    keyword: str | None = None,
+    command: str | None = None,
+    doc_id: str | None = None,
+    tool: str | None = None,
+    tool_version: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    if keyword:
+        clauses.append("(title LIKE ? OR description LIKE ? OR code LIKE ? OR tags LIKE ?)")
+        params.extend([f"%{keyword}%"] * 4)
+    if command:
+        clauses.append("commands LIKE ?")
+        params.append(f"%{command}%")
+    if doc_id:
+        clauses.append("doc_id = ?")
+        params.append(doc_id)
+    if tool:
+        clauses.append("tool = ?")
+        params.append(tool)
+    if tool_version:
+        clauses.append("tool_version = ?")
+        params.append(tool_version)
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT example_id, doc_id, topic_id, tool, tool_version, title,
+               page_start, page_end, description, code, commands, tags
+        FROM software_tcl_examples
+        {where}
+        ORDER BY page_start, example_id
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = [
+        "example_id", "doc_id", "topic_id", "tool", "tool_version", "title",
+        "page_start", "page_end", "description", "code", "commands", "tags",
+    ]
+    return [_decode_json_fields(dict(zip(keys, row)), ("commands", "tags")) for row in rows]
+
+
+def search_software_doc_chunks(
+    workspace: Path,
+    *,
+    query_text: str,
+    doc_id: str | None = None,
+    tool: str | None = None,
+    tool_version: str | None = None,
+    limit: int = 20,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses = ["software_doc_chunks_fts MATCH ?"]
+    params: list[Any] = [_fts_query(query_text)]
+    if doc_id:
+        clauses.append("doc_id = ?")
+        params.append(doc_id)
+    if tool:
+        clauses.append("tool = ?")
+        params.append(tool)
+    if tool_version:
+        clauses.append("tool_version = ?")
+        params.append(tool_version)
+    sql = f"""
+        SELECT chunk_id, doc_id, tool, tool_version, anchor, text
+        FROM software_doc_chunks_fts
+        WHERE {' AND '.join(clauses)}
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(sql, params).fetchall()
+    keys = ["chunk_id", "doc_id", "tool", "tool_version", "anchor", "text"]
+    return [dict(zip(keys, row)) for row in rows]
 
 
 def format_toc(entries: list[LibraryEntry]) -> list[str]:
@@ -487,6 +773,116 @@ def format_hardware_resources(rows: list[dict[str, Any]]) -> list[str]:
                 ]
             )
         )
+    return lines
+
+
+def format_tcl_command_rows(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching software Tcl commands"]
+    lines = ["command_id | command | tool | version | pages | summary"]
+    lines.append("--- | --- | --- | --- | --- | ---")
+    for row in rows:
+        pages = row.get("source_pages") or {}
+        if isinstance(pages, dict):
+            page_text = f"{pages.get('start', '')}-{pages.get('end', '')}"
+        else:
+            page_text = ""
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("command_id") or ""),
+                    str(row.get("command") or ""),
+                    str(row.get("tool") or ""),
+                    str(row.get("tool_version") or ""),
+                    page_text,
+                    _one_line(row.get("summary") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def format_tcl_topic_rows(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching software Tcl topics"]
+    lines = ["topic_id | title | doc | pages | summary"]
+    lines.append("--- | --- | --- | --- | ---")
+    for row in rows:
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("topic_id") or ""),
+                    str(row.get("title") or ""),
+                    str(row.get("doc_id") or ""),
+                    f"{row.get('page_start') or ''}-{row.get('page_end') or ''}",
+                    _one_line(row.get("summary") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def format_tcl_example_rows(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching software Tcl examples"]
+    lines = ["example_id | title | doc | pages | commands | preview"]
+    lines.append("--- | --- | --- | --- | --- | ---")
+    for row in rows:
+        commands = row.get("commands") or []
+        if isinstance(commands, list):
+            command_text = ",".join(str(item) for item in commands[:8])
+        else:
+            command_text = str(commands)
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("example_id") or ""),
+                    str(row.get("title") or ""),
+                    str(row.get("doc_id") or ""),
+                    f"{row.get('page_start') or ''}-{row.get('page_end') or ''}",
+                    command_text,
+                    _one_line(row.get("code") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def format_tcl_command_detail(row: dict[str, Any]) -> list[str]:
+    pages = row.get("source_pages") or {}
+    page_text = f"{pages.get('start', '')}-{pages.get('end', '')}" if isinstance(pages, dict) else ""
+    lines = [
+        f"command_id: {row.get('command_id', '')}",
+        f"doc_id: {row.get('doc_id', '')}",
+        f"tool: {row.get('tool', '')}",
+        f"version: {row.get('tool_version', '')}",
+        f"source_pages: {page_text}",
+        f"source_file: {row.get('source_file', '')}",
+        f"categories: {row.get('categories', '')}",
+        "",
+        "summary:",
+        (row.get("summary") or "").rstrip(),
+        "",
+        "syntax:",
+        (row.get("syntax") or "").rstrip(),
+        "",
+        "options:",
+    ]
+    options = row.get("options") or []
+    if options:
+        for option in options:
+            description = _one_line(option.get("description") or "")
+            lines.append(f"- {option.get('name', '')}: {description}")
+    else:
+        lines.append("- none indexed")
+    if row.get("description"):
+        lines.extend(["", "description:", str(row.get("description")).rstrip()])
+    if row.get("examples_text"):
+        lines.extend(["", "examples:", str(row.get("examples_text")).rstrip()])
+    if row.get("see_also"):
+        see_also = row.get("see_also")
+        if isinstance(see_also, list):
+            lines.extend(["", f"see_also: {', '.join(str(item) for item in see_also)}"])
     return lines
 
 
@@ -697,6 +1093,186 @@ def _import_fpga_hardware_guides(conn: sqlite3.Connection, library_root: Path) -
             )
 
 
+def _import_software_tcl_library(conn: sqlite3.Connection, library_root: Path) -> None:
+    parsed_root = library_root / "parsed" / "software_ug_mineru"
+    if not parsed_root.is_dir():
+        return
+    for metadata_path in parsed_root.glob("*/*/metadata.json"):
+        parsed_dir = metadata_path.parent
+        commands_path = parsed_dir / "commands.json"
+        sections_path = parsed_dir / "sections.json"
+        examples_path = parsed_dir / "examples.json"
+        chunks_path = parsed_dir / "chunks.jsonl"
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        doc_id = str(metadata.get("doc_id") or "")
+        if not doc_id:
+            continue
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO software_tool_documents (
+                doc_id, title, vendor, tool, tool_version, source_file,
+                source_type, parser, page_count, command_count, parsed_dir, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                doc_id,
+                str(metadata.get("title") or ""),
+                str(metadata.get("vendor") or ""),
+                str(metadata.get("tool") or ""),
+                str(metadata.get("tool_version") or ""),
+                str(metadata.get("source_file") or ""),
+                str(metadata.get("source_type") or ""),
+                str(metadata.get("parser") or ""),
+                metadata.get("page_count"),
+                metadata.get("command_count"),
+                str(parsed_dir.relative_to(library_root)).replace("\\", "/"),
+                json.dumps(metadata.get("notes") or [], ensure_ascii=False),
+            ),
+        )
+        if commands_path.is_file():
+            commands_data = json.loads(commands_path.read_text(encoding="utf-8"))
+            for command in commands_data.get("commands", []):
+                command_id = str(command.get("command_id") or "")
+                if not command_id:
+                    continue
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO software_tcl_commands (
+                        command_id, doc_id, tool, tool_version, command, summary,
+                        syntax, returns_text, categories, description, arguments_text,
+                        examples_text, see_also, source_pages, source_file, full_text
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        command_id,
+                        str(command.get("doc_id") or doc_id),
+                        str(command.get("tool") or ""),
+                        str(command.get("tool_version") or ""),
+                        str(command.get("command") or ""),
+                        str(command.get("summary") or ""),
+                        str(command.get("syntax") or ""),
+                        str(command.get("returns_text") or ""),
+                        str(command.get("categories") or ""),
+                        str(command.get("description") or ""),
+                        str(command.get("arguments_text") or ""),
+                        str(command.get("examples_text") or ""),
+                        json.dumps(command.get("see_also") or [], ensure_ascii=False),
+                        json.dumps(command.get("source_pages") or {}, ensure_ascii=False),
+                        str(command.get("source_file") or ""),
+                        str(command.get("full_text") or ""),
+                    ),
+                )
+                for option in command.get("options", []):
+                    option_name = str(option.get("name") or "")
+                    if not option_name:
+                        continue
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO software_tcl_command_options (
+                            command_id, option_name, description, source
+                        ) VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            command_id,
+                            option_name,
+                            str(option.get("description") or ""),
+                            str(option.get("source") or ""),
+                        ),
+                    )
+        if sections_path.is_file():
+            sections_data = json.loads(sections_path.read_text(encoding="utf-8"))
+            for topic in sections_data.get("sections", []):
+                topic_id = str(topic.get("topic_id") or topic.get("section_id") or "")
+                if not topic_id:
+                    continue
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO software_tcl_topics (
+                        topic_id, doc_id, tool, tool_version, title, section_type,
+                        summary, page_start, page_end, tags, text
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        topic_id,
+                        str(topic.get("doc_id") or doc_id),
+                        str(topic.get("tool") or ""),
+                        str(topic.get("tool_version") or ""),
+                        str(topic.get("title") or ""),
+                        str(topic.get("section_type") or ""),
+                        str(topic.get("summary") or ""),
+                        topic.get("page_start"),
+                        topic.get("page_end"),
+                        json.dumps(topic.get("tags") or [], ensure_ascii=False),
+                        str(topic.get("text") or ""),
+                    ),
+                )
+        if examples_path.is_file():
+            examples_data = json.loads(examples_path.read_text(encoding="utf-8"))
+            for example in examples_data.get("examples", []):
+                example_id = str(example.get("example_id") or "")
+                if not example_id:
+                    continue
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO software_tcl_examples (
+                        example_id, doc_id, topic_id, tool, tool_version, title,
+                        page_start, page_end, code, description, commands, tags
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        example_id,
+                        str(example.get("doc_id") or doc_id),
+                        str(example.get("topic_id") or ""),
+                        str(example.get("tool") or ""),
+                        str(example.get("tool_version") or ""),
+                        str(example.get("title") or ""),
+                        example.get("page_start"),
+                        example.get("page_end"),
+                        str(example.get("code") or ""),
+                        str(example.get("description") or ""),
+                        json.dumps(example.get("commands") or [], ensure_ascii=False),
+                        json.dumps(example.get("tags") or [], ensure_ascii=False),
+                    ),
+                )
+        if chunks_path.is_file():
+            with chunks_path.open("r", encoding="utf-8") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    chunk = json.loads(line)
+                    chunk_id = str(chunk.get("chunk_id") or "")
+                    if not chunk_id:
+                        continue
+                    values = (
+                        chunk_id,
+                        str(chunk.get("doc_id") or doc_id),
+                        str(chunk.get("tool") or ""),
+                        str(chunk.get("tool_version") or ""),
+                        str(chunk.get("section_type") or ""),
+                        str(chunk.get("anchor") or ""),
+                        chunk.get("page_start"),
+                        chunk.get("page_end"),
+                        str(chunk.get("text") or ""),
+                    )
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO software_doc_chunks (
+                            chunk_id, doc_id, tool, tool_version, section_type,
+                            anchor, page_start, page_end, text
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        values,
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO software_doc_chunks_fts (
+                            chunk_id, doc_id, tool, tool_version, anchor, text
+                        ) VALUES (?, ?, ?, ?, ?, ?)
+                        """,
+                        (values[0], values[1], values[2], values[3], values[5], values[8]),
+                    )
+
+
 def _entry_from_mapping(entry_id: str, kind: str, raw: dict[str, Any], source_index: str) -> LibraryEntry:
     return LibraryEntry(
         id=entry_id,
@@ -724,6 +1300,14 @@ def _ensure_db(workspace: Path) -> Path:
     if not db_path.exists():
         return build_library(workspace)
     return db_path
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
 
 
 def _as_text(value: Any) -> str:
@@ -770,6 +1354,31 @@ def _decode_resource_links(row: dict[str, Any]) -> dict[str, Any]:
             except json.JSONDecodeError:
                 row[key] = []
     return row
+
+
+def _decode_json_fields(row: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
+    for key in keys:
+        value = row.get(key)
+        if isinstance(value, str):
+            try:
+                row[key] = json.loads(value)
+            except json.JSONDecodeError:
+                row[key] = {} if value.startswith("{") else []
+    return row
+
+
+def _one_line(value: Any, *, limit: int = 160) -> str:
+    text = " ".join(str(value or "").split())
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip() + "..."
+
+
+def _fts_query(value: str) -> str:
+    tokens = _tokens(value)
+    if not tokens:
+        return '""'
+    return " AND ".join(f'"{token}"' for token in tokens)
 
 
 def _format_first_io_link(links: list[dict[str, Any]]) -> str:
