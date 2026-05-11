@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -91,6 +92,7 @@ def build_library(workspace: Path) -> Path:
                         entry.source_index,
                     ),
                 )
+        _import_fpga_io_tables(conn, library_root)
     return db_path
 
 
@@ -189,6 +191,61 @@ def query_diagnostics(workspace: Path, *, tool: str | None = None, text: str | N
     return [entry for _, entry in scored] or entries
 
 
+def query_fpga_io_pins(
+    workspace: Path,
+    *,
+    table_id: str | None = None,
+    connector: str | None = None,
+    signal: str | None = None,
+    bank: str | None = None,
+    category: str | None = None,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    db_path = _ensure_db(workspace)
+    clauses: list[str] = []
+    params: list[Any] = []
+    if table_id:
+        clauses.append("table_id = ?")
+        params.append(table_id)
+    if connector:
+        clauses.append("connector = ?")
+        params.append(connector)
+    if signal:
+        clauses.append("signal_name LIKE ?")
+        params.append(f"%{signal}%")
+    if bank:
+        clauses.append("bank = ?")
+        params.append(bank)
+    if category:
+        clauses.append("category = ?")
+        params.append(category)
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = f"""
+        SELECT table_id, connector, connector_pin, signal_name, zynq_pin,
+               raw_zynq_pin, bank, voltage, category, source_file
+        FROM fpga_io_pins
+        {where}
+        ORDER BY table_id, connector, connector_pin
+        LIMIT ?
+    """
+    params.append(limit)
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(query, params).fetchall()
+    keys = [
+        "table_id",
+        "connector",
+        "connector_pin",
+        "signal_name",
+        "zynq_pin",
+        "raw_zynq_pin",
+        "bank",
+        "voltage",
+        "category",
+        "source_file",
+    ]
+    return [dict(zip(keys, row)) for row in rows]
+
+
 def format_toc(entries: list[LibraryEntry]) -> list[str]:
     if not entries:
         return ["no matching library entries"]
@@ -216,6 +273,84 @@ def format_detail(entry: LibraryEntry, detail: str) -> list[str]:
         detail.rstrip(),
     ]
     return lines
+
+
+def format_io_pins(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["no matching FPGA IO pins"]
+    lines = ["table_id | connector | pin | signal | zynq_pin | bank | voltage | category"]
+    lines.append("--- | --- | --- | --- | --- | --- | --- | ---")
+    for row in rows:
+        lines.append(
+            " | ".join(
+                [
+                    str(row.get("table_id") or ""),
+                    str(row.get("connector") or ""),
+                    str(row.get("connector_pin") or ""),
+                    str(row.get("signal_name") or ""),
+                    str(row.get("zynq_pin") or ""),
+                    str(row.get("bank") or ""),
+                    str(row.get("voltage") or ""),
+                    str(row.get("category") or ""),
+                ]
+            )
+        )
+    return lines
+
+
+def _import_fpga_io_tables(conn: sqlite3.Connection, library_root: Path) -> None:
+    parsed_root = library_root / "parsed" / "fpga_io_tables"
+    if not parsed_root.is_dir():
+        return
+    for metadata_path in parsed_root.glob("*/*/metadata.json"):
+        parsed_dir = metadata_path.parent
+        pins_path = parsed_dir / "pins.json"
+        if not pins_path.is_file():
+            continue
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        pins_data = json.loads(pins_path.read_text(encoding="utf-8"))
+        table_id = str(metadata.get("table_id") or pins_data.get("table_id") or "")
+        if not table_id:
+            continue
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO fpga_io_tables (
+                table_id, title, source_file, source_type, parser,
+                page_count, pin_count, parsed_dir
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                table_id,
+                str(metadata.get("title") or ""),
+                str(metadata.get("source_file") or ""),
+                str(metadata.get("source_type") or ""),
+                str(metadata.get("parser") or ""),
+                metadata.get("page_count"),
+                metadata.get("pin_count"),
+                str(parsed_dir.relative_to(library_root)).replace("\\", "/"),
+            ),
+        )
+        for pin in pins_data.get("pins", []):
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO fpga_io_pins (
+                    table_id, connector, connector_pin, signal_name, zynq_pin,
+                    raw_zynq_pin, bank, voltage, category, source_file
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    table_id,
+                    str(pin.get("connector") or ""),
+                    pin.get("connector_pin"),
+                    str(pin.get("signal_name") or ""),
+                    pin.get("zynq_pin"),
+                    str(pin.get("raw_zynq_pin") or ""),
+                    pin.get("bank"),
+                    pin.get("voltage"),
+                    str(pin.get("category") or ""),
+                    str(pin.get("source_file") or ""),
+                ),
+            )
 
 
 def _entry_from_mapping(entry_id: str, kind: str, raw: dict[str, Any], source_index: str) -> LibraryEntry:

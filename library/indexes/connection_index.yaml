@@ -25,3 +25,17 @@ connections:
       - pins
       - schematic
       - constraints
+  fpga.zynq_core_board_pin_map_v1_0:
+    title: ZYNQ core board pin map V1.0
+    domain: fpga
+    category: io_table
+    workflow_node: 04_Loop3_FPGA_Prototype
+    short_description: Normalized X3/X4 connector pin map extracted from the ZYNQ core board IO PDF.
+    detail_path: sources/schematic_patterns/zynq_core_board_pin_map_v1_0.md
+    tags:
+      - fpga
+      - zynq
+      - io
+      - pins
+      - x3
+      - x4

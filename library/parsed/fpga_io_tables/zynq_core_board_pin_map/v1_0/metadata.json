@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "table_id": "zynq_core_board_pin_map.v1_0",
+  "title": "ZYNQ Core Board Pin Map V1.0",
+  "source_file": "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf",
+  "source_type": "pdf",
+  "parser": "mineru-open-api flash-extract + local table normalizer",
+  "mineru_markdown": "library/parsed/fpga_io_tables/zynq_core_board_pin_map/v1_0/mineru_raw/ZYNQ核心板引脚分配图V1.0.md",
+  "page_count": 4,
+  "connectors": [
+    "X3",
+    "X4"
+  ],
+  "pin_count": 200,
+  "notes": [
+    "Raw PDF remains local under library/files/fpga_io_tables.",
+    "Parsed table is intended for AI/library lookup, not as a replacement for board signoff.",
+    "Some OCR cells are preserved in raw_zynq_pin when normalized package pin is uncertain."
+  ]
+}

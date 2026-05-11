@@ -9,7 +9,16 @@ from pathlib import Path
 from .artifacts import ensure_output_dirs
 from .config import load_project, load_workspace, validate_config
 from .doctor import run_doctor
-from .library import build_library, format_detail, format_toc, get_entry, query_diagnostics, query_toc
+from .library import (
+    build_library,
+    format_detail,
+    format_io_pins,
+    format_toc,
+    get_entry,
+    query_diagnostics,
+    query_fpga_io_pins,
+    query_toc,
+)
 from .pipeline import build_pipeline, format_pipeline
 from .reports import write_config_run_report
 from .scaffold import create_project
@@ -80,6 +89,15 @@ def build_parser() -> argparse.ArgumentParser:
     diagnostic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
     diagnostic_parser.add_argument("--tool", help="Tool name, for example vivado.")
     diagnostic_parser.add_argument("--text", help="Error text or log excerpt to match.")
+
+    io_parser = subparsers.add_parser("get-fpga-io-pins", help="Query normalized FPGA IO table pins.")
+    io_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    io_parser.add_argument("--table-id", help="IO table ID.")
+    io_parser.add_argument("--connector", help="Connector name, for example X3.")
+    io_parser.add_argument("--signal", help="Signal name substring.")
+    io_parser.add_argument("--bank", help="Bank name, for example Bank35.")
+    io_parser.add_argument("--category", help="Signal category, for example pl_io.")
+    io_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
 
     return parser
 
@@ -161,6 +179,19 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "get-diagnostic-candidates":
             entries = query_diagnostics(Path(args.workspace), tool=args.tool, text=args.text)
             for line in format_toc(entries):
+                print(line)
+            return 0
+        if args.command == "get-fpga-io-pins":
+            rows = query_fpga_io_pins(
+                Path(args.workspace),
+                table_id=args.table_id,
+                connector=args.connector,
+                signal=args.signal,
+                bank=args.bank,
+                category=args.category,
+                limit=args.limit,
+            )
+            for line in format_io_pins(rows):
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary

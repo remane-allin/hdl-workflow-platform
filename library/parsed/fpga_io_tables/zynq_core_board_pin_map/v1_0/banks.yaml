@@ -1,0 +1,63 @@
+schema_version: 1
+table_id: "zynq_core_board_pin_map.v1_0"
+banks:
+  Bank13:
+    voltage: "3.3V"
+    pin_count: 25
+    connectors:
+      - "X4"
+    categories:
+      pl_io: 25
+  Bank34:
+    voltage: "3.3V"
+    pin_count: 49
+    connectors:
+      - "X4"
+    categories:
+      pl_io: 49
+  Bank35:
+    voltage: "3.3V"
+    pin_count: 49
+    connectors:
+      - "X3"
+    categories:
+      pl_io: 49
+  ETH_PHY:
+    voltage: null
+    pin_count: 10
+    connectors:
+      - "X3"
+    categories:
+      ethernet_phy: 10
+  JTAG:
+    voltage: null
+    pin_count: 4
+    connectors:
+      - "X3"
+    categories:
+      jtag: 4
+  PS:
+    voltage: null
+    pin_count: 29
+    connectors:
+      - "X3"
+    categories:
+      ps_or_dedicated: 29
+  UNASSIGNED:
+    voltage: null
+    pin_count: 32
+    connectors:
+      - "X3"
+      - "X4"
+    categories:
+      ground: 20
+      power: 8
+      special: 1
+      unused: 3
+  XADC:
+    voltage: null
+    pin_count: 2
+    connectors:
+      - "X3"
+    categories:
+      ps_or_dedicated: 2
