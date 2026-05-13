@@ -20,6 +20,8 @@ Purpose:
 
 ### File And Module
 
+- A project must have exactly one project top module.
+- The project top module must be hierarchy-only: it may declare ports, parameters, and interconnect wires, and may instantiate submodules, but it must not contain behavioral logic such as `always`, `initial`, continuous `assign`, functions, tasks, local datapath/control mutation, or protocol decisions.
 - Use one primary module per file.
 - Match file name and module name.
 - Use Verilog-2001 ANSI-style declarations for synthesizable modules.
@@ -195,6 +197,8 @@ Use this checklist before claiming RTL completion in loop work:
 
 - File name matches module name.
 - One primary module exists per file.
+- Exactly one project top module is selected.
+- The project top module is hierarchy-only and contains no behavioral logic.
 - Module ports use Verilog-2001 ANSI-style declaration.
 - Ports and internal signals are explicit.
 - No implicit wires remain.

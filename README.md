@@ -39,6 +39,15 @@ projects/    Local project workspace, ignored for concrete project contents
 .codex/      Project-local Codex hooks and prompt fragments
 ```
 
+## Project Creation Rule
+
+`templates/` is the template project source. Directories under `projects/`
+must be created by the unified workflow script entry point, not by manually
+creating folders or copying files. Use `scripts/New-HdlProject.ps1` first, then
+add project-specific RTL, TB, FPGA, software, reports, and scripts under the
+created project. Each generated project carries `project_scaffold.yaml`; project
+validation treats that marker as required evidence that the script path was used.
+
 ## Project Layout
 
 Every project created from the template follows this structure:
@@ -70,17 +79,16 @@ directories keep scripts, runtime state, tracking records, and process context.
 From the repository root:
 
 ```powershell
-cd engine
-python -m hdlflow.cli init-project <project_name> --workspace ..
+powershell -ExecutionPolicy Bypass -File scripts\New-HdlProject.ps1 -Name <project_name>
 ```
 
 Then validate the created project:
 
 ```powershell
+cd engine
 python -m hdlflow.cli doctor --workspace .. --project ..\projects\<project_name>
 python -m hdlflow.cli plan --project ..\projects\<project_name>
 python -m hdlflow.cli run-config --workspace .. --project ..\projects\<project_name>
-python -m hdlflow.cli ensure-output --project ..\projects\<project_name>
 ```
 
 ## Agent Library
@@ -120,6 +128,45 @@ The current software guide set is Vivado UG835, UG894, UG908, UG1118 and Vitis
 UG1553, UG1556, UG1701, UG1702 for the 2024.2 database target. UG PDFs belong
 under `library/files/fpga_ug_pdfs/`, not under project requirement folders.
 Large PDF files and generated SQLite databases are local-only by default.
+
+Before any Loop3 FPGA prototype script generation, run the database preflight:
+
+```powershell
+cd engine
+python -m hdlflow.cli prototype-preflight --workspace .. --project ..\projects\<project_name> --mode pl
+python -m hdlflow.cli prototype-preflight --workspace .. --project ..\projects\<project_name> --mode ps_pl
+```
+
+The generated report belongs in `05_Output/reports/loop3/preflight/` and must be
+used as the source for board pins, PS MIO mappings, DDR ownership, and Vivado or
+Vitis Tcl command choices.
+
+Loop3 generators are available for repeatable prototype work:
+
+```powershell
+python -m hdlflow.cli validate-prototype-plan --workspace .. --project ..\projects\<project_name>
+python -m hdlflow.cli generate-xdc --workspace .. --project ..\projects\<project_name> --port sys_clk=PL_GCLK_50MHZ --clock sys_clk=20.000 --port pl_led0=PL_LED0 --port uart_rx_i=UART3_RX --port uart_tx_o=UART3_TX
+python -m hdlflow.cli generate-ps-pl-bd --project ..\projects\<project_name>
+python -m hdlflow.cli generate-vitis-boot --project ..\projects\<project_name>
+```
+
+For PS_PL designs, `prototype_plan.yaml` is the checked planning source for AXI
+address maps, DDR test windows, cache maintenance rules, PS MIO assignments, and
+PL external ports.
+
+## Memory Synchronization
+
+Project memory has one canonical machine-readable iteration source:
+`memory/index.yaml`. Workflow commands auto-record successful micro-steps.
+For a real stage handoff or user-visible checkpoint, write a closed iteration
+through the CLI so the index, node-local iteration table, active version table,
+and current state stay aligned:
+
+```powershell
+cd engine
+python -m hdlflow.cli memory-record --project ..\projects\<project_name> --iteration-id <id> --node 04_Loop3_FPGA_Prototype --gate-level process --gate-result PASS --memory-record memory/00_global/DECISIONS.md --report 05_Output/reports/loop3/preflight/prototype_plan_check.md --notes "short note"
+python -m hdlflow.cli memory-check --project ..\projects\<project_name>
+```
 
 ## Configuration Model
 

@@ -34,7 +34,15 @@ from .library import (
     search_software_doc_chunks,
     query_toc,
 )
+from .memory import auto_record_workflow_event, check_memory, record_memory_iteration
 from .pipeline import build_pipeline, format_pipeline
+from .prototype import write_prototype_preflight
+from .prototype import (
+    generate_ps_pl_bd_tcl,
+    generate_vitis_boot_files,
+    generate_xdc_from_database,
+    validate_prototype_plan,
+)
 from .reports import write_config_run_report
 from .scaffold import create_project
 from .ug1118 import extract_ug1118
@@ -80,6 +88,61 @@ def build_parser() -> argparse.ArgumentParser:
 
     ensure_parser = subparsers.add_parser("ensure-output", help="Ensure canonical 05_Output directories exist.")
     ensure_parser.add_argument("--project", required=True, help="Project path.")
+
+    preflight_parser = subparsers.add_parser(
+        "prototype-preflight",
+        help="Run required Loop3 database lookups and write a preflight report.",
+    )
+    preflight_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    preflight_parser.add_argument("--project", required=True, help="Project path.")
+    preflight_parser.add_argument("--mode", choices=["pl", "ps_pl"], required=True, help="Prototype mode.")
+    preflight_parser.add_argument("--board", default="navigator_zynq_7020", help="Board ID.")
+    preflight_parser.add_argument("--signal", action="append", help="Hardware signal/resource to query. Repeatable.")
+    preflight_parser.add_argument("--tcl-command", action="append", help="Vivado Tcl command to query. Repeatable.")
+    preflight_parser.add_argument("--tool-version", default="2024.2", help="Tool database version.")
+
+    xdc_parser = subparsers.add_parser("generate-xdc", help="Generate XDC constraints from the local FPGA database.")
+    xdc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    xdc_parser.add_argument("--project", required=True, help="Project path.")
+    xdc_parser.add_argument("--port", action="append", required=True, help="Port mapping PORT=DATABASE_SIGNAL. Repeatable.")
+    xdc_parser.add_argument("--clock", action="append", help="Clock mapping PORT=PERIOD_NS. Repeatable.")
+    xdc_parser.add_argument("--output", help="Project-relative output XDC path.")
+
+    plan_check_parser = subparsers.add_parser("validate-prototype-plan", help="Check AXI, MIO, PL IO, DDR, and cache plan rules.")
+    plan_check_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    plan_check_parser.add_argument("--project", required=True, help="Project path.")
+    plan_check_parser.add_argument("--plan", help="Project-relative prototype plan path.")
+
+    bd_parser = subparsers.add_parser("generate-ps-pl-bd", help="Generate a PS7 + AXI-Lite Block Design Tcl skeleton.")
+    bd_parser.add_argument("--project", required=True, help="Project path.")
+    bd_parser.add_argument("--plan", help="Project-relative prototype plan path.")
+    bd_parser.add_argument("--output", help="Project-relative Tcl output path.")
+
+    boot_parser = subparsers.add_parser("generate-vitis-boot", help="Generate Vitis boot image template files.")
+    boot_parser.add_argument("--project", required=True, help="Project path.")
+    boot_parser.add_argument("--output-dir", help="Project-relative output directory.")
+
+    launcher_parser = subparsers.add_parser("get-tool-launcher", help="Print a configured tool launcher path.")
+    launcher_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    launcher_parser.add_argument("--tool", required=True, help="Tool name under config/global/toolchains/toolchains.yaml.")
+    launcher_parser.add_argument("--launcher", required=True, help="Launcher key, for example vivado_bat or xsct_bat.")
+
+    memory_record_parser = subparsers.add_parser("memory-record", help="Write a synchronized project memory iteration.")
+    memory_record_parser.add_argument("--project", required=True, help="Project path.")
+    memory_record_parser.add_argument("--iteration-id", required=True)
+    memory_record_parser.add_argument("--node", required=True)
+    memory_record_parser.add_argument("--gate-level", required=True)
+    memory_record_parser.add_argument("--gate-result", required=True)
+    memory_record_parser.add_argument("--memory-record", required=True)
+    memory_record_parser.add_argument("--report", required=True)
+    memory_record_parser.add_argument("--notes", required=True)
+    memory_record_parser.add_argument("--version")
+    memory_record_parser.add_argument("--artifact", action="append", help="Project-relative artifact path. Repeatable.")
+    memory_record_parser.add_argument("--latest-summary")
+    memory_record_parser.add_argument("--next-action")
+
+    memory_check_parser = subparsers.add_parser("memory-check", help="Validate project memory synchronization.")
+    memory_check_parser.add_argument("--project", required=True, help="Project path.")
 
     library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
     library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
@@ -250,6 +313,158 @@ def main(argv: list[str] | None = None) -> int:
             for line in result.messages:
                 print(line)
             return 0
+        if args.command == "prototype-preflight":
+            result = write_prototype_preflight(
+                Path(args.workspace),
+                Path(args.project),
+                mode=args.mode,
+                board=args.board,
+                signals=args.signal,
+                tcl_commands=args.tcl_command,
+                tool_version=args.tool_version,
+            )
+            print(f"report: {result.report_path}")
+            if result.missing_items:
+                for item in result.missing_items:
+                    print(f"missing: {item}")
+                return 1
+            print("prototype preflight: PASS")
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-database-preflight",
+                    node="04_Loop3_FPGA_Prototype",
+                    gate_level="preflight",
+                    gate_result="PASS",
+                    memory_record=result.report_path,
+                    report=result.report_path,
+                    notes=f"Database preflight passed for {args.mode} on {args.board}",
+                    artifacts=[result.report_path],
+                )
+            )
+            return 0
+        if args.command == "generate-xdc":
+            result = generate_xdc_from_database(
+                Path(args.workspace),
+                Path(args.project),
+                ports=args.port,
+                output=args.output,
+                clock_ports=args.clock,
+            )
+            print(f"xdc: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-xdc",
+                    node="04_Loop3_FPGA_Prototype",
+                    gate_level="constraints",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated database-backed XDC constraints",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "validate-prototype-plan":
+            result = validate_prototype_plan(Path(args.workspace), Path(args.project), plan=args.plan)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="loop3-prototype-plan-check",
+                        node="04_Loop3_FPGA_Prototype",
+                        gate_level="process",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Prototype plan check passed",
+                        artifacts=[result.report_path],
+                    )
+                )
+            return 0 if result.ok else 1
+        if args.command == "generate-ps-pl-bd":
+            result = generate_ps_pl_bd_tcl(Path(args.project), plan=args.plan, output=args.output)
+            print(f"bd_tcl: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-ps-pl-bd",
+                    node="04_Loop3_FPGA_Prototype",
+                    gate_level="bd_generation",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated PS_PL Block Design Tcl skeleton",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "generate-vitis-boot":
+            result = generate_vitis_boot_files(Path(args.project), output_dir=args.output_dir)
+            print(f"boot_dir: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-vitis-boot",
+                    node="04_Loop3_FPGA_Prototype",
+                    gate_level="boot_template",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated Vitis boot image template files",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "get-tool-launcher":
+            workspace = load_workspace(Path(args.workspace))
+            tool = workspace.data.get("toolchains", {}).get("toolchains", {}).get(args.tool, {})
+            launchers = tool.get("launchers", {}) if isinstance(tool, dict) else {}
+            value = launchers.get(args.launcher) if isinstance(launchers, dict) else None
+            if not value:
+                print(f"error: launcher not configured: {args.tool}.{args.launcher}", file=sys.stderr)
+                return 1
+            print(value)
+            return 0
+        if args.command == "memory-record":
+            result = record_memory_iteration(
+                Path(args.project),
+                iteration_id=args.iteration_id,
+                node=args.node,
+                gate_level=args.gate_level,
+                gate_result=args.gate_result,
+                memory_record=args.memory_record,
+                report=args.report,
+                notes=args.notes,
+                version=args.version,
+                artifacts=args.artifact,
+                latest_summary=args.latest_summary,
+                next_action=args.next_action,
+            )
+            for message in result.messages:
+                print(message)
+            print("memory record: PASS")
+            return 0
+        if args.command == "memory-check":
+            result = check_memory(Path(args.project))
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            return 0 if result.ok else 1
         if args.command == "library-build":
             db_path = build_library(Path(args.workspace))
             print(f"library: {db_path}")
@@ -438,6 +653,11 @@ def main(argv: list[str] | None = None) -> int:
 
     parser.error(f"unknown command: {args.command}")
     return 2
+
+
+def _print_memory_messages(result) -> None:
+    for message in result.messages:
+        print(f"memory: {message}")
 
 
 if __name__ == "__main__":  # pragma: no cover

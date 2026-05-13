@@ -10,6 +10,8 @@ deliverables:
   tb: []
   uvm: []
   fpga: []
+  vivado: []
+  vitis: []
 reports:
   index:
     - 05_Output/reports/README.md

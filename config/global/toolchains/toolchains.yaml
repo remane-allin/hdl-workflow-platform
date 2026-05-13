@@ -15,9 +15,22 @@ toolchains:
   vivado:
     required: false
     purpose: Loop3 FPGA implementation
+    version: "2024.2"
+    install_root: "E:/Vivado/Vivado/2024.2"
+    launchers:
+      vivado_bat: "E:/Vivado/Vivado/2024.2/bin/vivado.bat"
+      vivado_exe: "E:/Vivado/Vivado/2024.2/bin/vivado.exe"
+    default_mode: batch
     version_policy: record_actual_version_in_project_memory
   vitis:
     required: false
     purpose: Loop3 embedded software build
+    version: "2024.2"
+    install_root: "E:/Vivado/Vitis/2024.2"
+    launchers:
+      xsct_bat: "E:/Vivado/Vitis/2024.2/bin/xsct.bat"
+      vitis_bat: "E:/Vivado/Vitis/2024.2/bin/vitis.bat"
+      vitis_exe: "E:/Vivado/Vitis/2024.2/bin/vitis.exe"
+      bootgen_bat: "E:/Vivado/Vitis/2024.2/bin/bootgen.bat"
+    default_mode: batch
     version_policy: record_actual_version_in_project_memory
-

@@ -1,19 +1,10 @@
 schema_version: 1
 project: change_me
-iterations: []
+iterations: {}
 
-# Iteration entries should use this shape:
-# - iteration_id: LOOP1-0001
-#   node: 02_Loop1_RTL_TB
-#   started_at: 2026-01-01T00:00:00
-#   completed_at: null
-#   owner: project_local
-#   memory_record: memory/02_loop1/archive/LOOP1-0001.md
-#   snapshot: 02_Loop1_RTL_TB/snapshots/LOOP1-0001
-#   report: 05_Output/reports/loop1/LOOP1-0001.md
-#   artifacts:
-#     - 05_Output/rtl
-#     - 05_Output/tb
-#   gate_level: develop
-#   gate_result: pending
-#   change_request: null
+# Use `python -m hdlflow.cli memory-record ...` to write synchronized memory.
+# `iterations` is the canonical mapping keyed by iteration_id.
+# Derived views:
+# - memory/<node>/iterations.md
+# - memory/active_versions.md
+# - memory/00_global/CURRENT_STATE.md

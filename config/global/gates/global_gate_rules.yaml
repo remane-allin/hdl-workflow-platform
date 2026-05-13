@@ -36,6 +36,8 @@ gates:
       requirement_coverage_percent: 100
   loop3_exit:
     required:
+      - database_preflight_report_available
+      - prototype_plan_check_report_available
       - synthesis_or_implementation_pass
       - timing_report_available
       - board_test_report_available

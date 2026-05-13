@@ -15,3 +15,12 @@ This template uses a linear, numbered pipeline layout.
 - `_archive` owns inactive history.
 
 Node-local `_runtime/` folders are disposable.
+
+## Hard Rules
+
+- A project instance is valid only when created through the unified script path.
+  The generated `project_scaffold.yaml` records that evidence.
+- Loop3 FPGA prototype work starts with a local library/database preflight report.
+- Loop3 PS_PL plans must pass `validate-prototype-plan` before BD, XDC, Vitis, or boot-image generation.
+- Vivado artifacts live under `05_Output/fpga/vivado/`.
+- Vitis artifacts live under `05_Output/fpga/vitis/`.

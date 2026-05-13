@@ -5,6 +5,12 @@ project:
   description: change_me
   simulator: modelsim
   project_memory_scope: project_local_only
+creation:
+  required_entrypoint: scripts/New-HdlProject.ps1
+  engine_command: python -m hdlflow.cli init-project
+  template_source: templates/project
+  marker: project_scaffold.yaml
+  manual_project_directory_creation: forbidden
 gate_policy:
   default_level: develop
   final_required_level: release
@@ -95,10 +101,25 @@ nodes:
       fpga_sources: 05_Output/fpga
     outputs:
       fpga: 05_Output/fpga
+      vivado: 05_Output/fpga/vivado
+      vitis: 05_Output/fpga/vitis
       reports: 05_Output/reports/loop3
     runtime: 04_Loop3_FPGA_Prototype/_runtime
+    prototype_policy:
+      database_preflight_required: true
+      database_preflight_report: 05_Output/reports/loop3/preflight/database_preflight.md
+      prototype_plan: 04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml
+      prototype_plan_check_report: 05_Output/reports/loop3/preflight/prototype_plan_check.md
+      toolchain_config: config/global/toolchains/toolchains.yaml
+      vivado_project_root: 05_Output/fpga/vivado
+      vitis_project_root: 05_Output/fpga/vitis
+      xdc_generation: database_required
+      bd_generation: plan_required
+      boot_image_generation: template_required
     gates:
       exit:
+        - database_preflight_report_available
+        - prototype_plan_check_report_available
         - implementation_report_available
         - timing_report_available
         - board_test_report_available

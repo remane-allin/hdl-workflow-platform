@@ -10,6 +10,7 @@
 **/*.pb
 **/*.rpt.tmp
 *.statebak
+.Xil/
 
 # Local project instances are not published from this platform repository.
 projects/*/

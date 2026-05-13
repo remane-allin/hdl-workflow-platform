@@ -12,3 +12,8 @@ path_rules:
   no_project_files_at_workspace_root: true
   no_runtime_files_in_output: true
   no_generated_files_in_00_SPEC: true
+  project_creation_script_required: true
+  project_scaffold_marker_required: true
+  loop3_database_preflight_required: true
+  vivado_project_root: 05_Output/fpga/vivado
+  vitis_project_root: 05_Output/fpga/vitis

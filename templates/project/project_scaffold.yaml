@@ -1,0 +1,7 @@
+schema_version: 1
+project: change_me
+created_by: hdlflow.cli init-project
+creation_mode: script_only
+template_source: templates/project
+created_at: GENERATED_AT
+manual_project_directory_creation: forbidden

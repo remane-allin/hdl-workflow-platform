@@ -1,0 +1,41 @@
+schema_version: 1
+mode: ps_pl
+board: navigator_zynq_7020
+rtl_top_module: change_me_top
+bd_name: ps_pl_system
+fclk_mhz: 100
+axi_regions:
+  pl_ctrl:
+    base: 0x43C00000
+    range: 64K
+    instance: change_me_top_0
+    slave_interface: s00_axi
+ddr_regions:
+  ps_ddr:
+    base: 0x00100000
+    size: 0x3FF00000
+  test_window:
+    base: 0x01000000
+    size: 4
+cache_policy:
+  flush_after_ps_write: true
+  invalidate_before_ps_read: true
+  document_cache_lines: true
+ps_mio_assignments:
+  ps_key0: PS_KEY0
+  ps_led1: PS_LED1
+pl_port_assignments:
+  sys_clk: PL_GCLK_50MHZ
+  pl_led0: PL_LED0
+  uart_rx_i: UART3_RX
+  uart_tx_o: UART3_TX
+bd_external_ports:
+  uart_rx_i:
+    direction: I
+    bd_pin: uart_rx_i
+  uart_tx_o:
+    direction: O
+    bd_pin: uart_tx_o
+  pl_led0:
+    direction: O
+    bd_pin: pl_led0

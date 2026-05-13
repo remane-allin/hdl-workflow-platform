@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 
@@ -42,9 +43,11 @@ def _personalize_project(project_path: Path, config_path: Path, name: str) -> No
         "owner: change_me": "owner: project_local",
         "description: change_me": f"description: {name} HDL workflow project",
         "project: change_me": f"project: {name}",
+        "created_at: GENERATED_AT": f"created_at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     }
     for path in [
         config_path,
+        project_path / "project_scaffold.yaml",
         project_path / "05_Output" / "manifest.yaml",
         project_path / "memory" / "index.yaml",
     ]:
