@@ -1,0 +1,33 @@
+# Loop3 Vivado Implementation Report
+
+Navigation: [Report index](../README.md) | [Loop3 reports](README.md) | [FPGA package area](../../fpga/)
+
+- project:
+- generated_at:
+- vivado_version:
+- top_module:
+- mode: pl/ps_pl
+- bitstream:
+- xsa:
+- implementation_status: PASS/FAIL/BLOCKED
+
+## Generated Inputs
+
+| Artifact | Status | Evidence |
+| --- | --- | --- |
+| Database-generated XDC | TODO | `05_Output/fpga/vivado/constraints/generated_board.xdc` |
+| PS_PL BD Tcl, if applicable | TODO | `05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl` |
+| Prototype plan checked | TODO | `05_Output/reports/loop3/preflight/prototype_plan_check.md` |
+
+## Vivado Results
+
+| Step | Status | Log/report |
+| --- | --- | --- |
+| Synthesis | TODO |  |
+| Implementation | TODO |  |
+| Bitstream generation | TODO |  |
+| Hardware platform export | TODO |  |
+
+## Notes
+
+- none/TODO

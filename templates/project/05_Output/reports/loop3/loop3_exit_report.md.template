@@ -1,0 +1,33 @@
+# Loop3 Exit Report
+
+Navigation: [Report index](../README.md) | [Loop3 reports](README.md)
+
+- project:
+- generated_at:
+- status: PASS/FAIL/BLOCKED
+- loop2_exit_report: [../loop2/loop2_exit_report.md](../loop2/loop2_exit_report.md)
+- database_preflight: [preflight/database_preflight.md](preflight/database_preflight.md)
+- prototype_plan_check: [preflight/prototype_plan_check.md](preflight/prototype_plan_check.md)
+
+## Gate Criteria
+
+| Criterion | Status | Evidence |
+| --- | --- | --- |
+| Loop2 exit is PASS before Loop3 closure | TODO |  |
+| Database preflight is PASS | TODO | `preflight/database_preflight.md` |
+| Prototype plan check is PASS | TODO | `preflight/prototype_plan_check.md` |
+| XDC generated from database | TODO | `05_Output/fpga/vivado/constraints/generated_board.xdc` |
+| PS_PL BD generated from plan, if applicable | TODO | `05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl` |
+| Vitis boot/app artifacts generated, if applicable | TODO | `vitis_boot_report.md` |
+| Vivado synthesis and implementation pass | TODO | `vivado_implementation_report.md` |
+| Timing and DRC pass or have approved waivers | TODO | `timing_drc_report.md` |
+| Board smoke/prototype checks pass | TODO | `board_smoke_report.md` |
+| RTL changes during Loop3 reran Loop1 and Loop2 | TODO |  |
+
+## Blocking Issues
+
+- none/TODO
+
+## Conclusion
+
+Loop3 exit gate:

@@ -1,0 +1,33 @@
+# Loop3 Vitis Boot Report
+
+Navigation: [Report index](../README.md) | [Loop3 reports](README.md) | [Vitis area](../../fpga/vitis/)
+
+- project:
+- generated_at:
+- mode: ps_pl
+- vitis_version:
+- platform:
+- app:
+- boot_status: PASS/FAIL/BLOCKED/NOT_APPLICABLE
+
+## Generated Software Artifacts
+
+| Artifact | Status | Evidence |
+| --- | --- | --- |
+| XSA input | TODO |  |
+| Platform | TODO | `05_Output/fpga/vitis/platform/` |
+| Application source | TODO | `05_Output/fpga/vitis/src/` |
+| ELF | TODO |  |
+| BOOT.bin/BIF template | TODO | `05_Output/fpga/vitis/boot/` |
+
+## Cache And DDR Notes
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| PS write flush documented | TODO | `04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml` |
+| PS read invalidate documented | TODO | `04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml` |
+| DDR test window matches plan | TODO |  |
+
+## Notes
+
+- none/TODO

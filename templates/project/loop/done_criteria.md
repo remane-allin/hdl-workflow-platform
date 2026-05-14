@@ -31,7 +31,13 @@ trace evidence.
 ## Loop3
 
 1. Loop2 exit is PASS before FPGA implementation starts.
-2. Vivado synthesis and implementation pass.
-3. Timing and DRC meet `config/flow_policy.yaml` or have approved waivers.
-4. Board smoke/prototype evidence is captured under `05_Output/reports/loop3/`.
-5. If RTL changed during Loop3, Loop1 and Loop2 reran before final signoff.
+2. `prototype-preflight` creates `05_Output/reports/loop3/preflight/database_preflight.md`
+   from `library/.local/library.sqlite`.
+3. `validate-prototype-plan` creates `05_Output/reports/loop3/preflight/prototype_plan_check.md`
+   and passes AXI, DDR, MIO, PL IO, and cache-policy checks.
+4. XDC, PS_PL BD, and Vitis boot templates are generated through the Loop3 CLI/scripts,
+   not copied from memory.
+5. Vivado synthesis and implementation pass.
+6. Timing and DRC meet `config/flow_policy.yaml` or have approved waivers.
+7. Board smoke/prototype evidence is captured under `05_Output/reports/loop3/`.
+8. If RTL changed during Loop3, Loop1 and Loop2 reran before final signoff.

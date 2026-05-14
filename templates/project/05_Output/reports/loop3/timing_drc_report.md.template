@@ -1,0 +1,29 @@
+# Loop3 Timing And DRC Report
+
+Navigation: [Report index](../README.md) | [Loop3 reports](README.md)
+
+- project:
+- generated_at:
+- timing_status: PASS/FAIL/BLOCKED
+- drc_status: PASS/FAIL/BLOCKED
+
+## Timing Summary
+
+| Check | Status | Value | Evidence |
+| --- | --- | --- | --- |
+| WNS >= 0 | TODO |  |  |
+| WHS >= 0 | TODO |  |  |
+| Unconstrained clocks | TODO |  |  |
+| Unconstrained paths | TODO |  |  |
+
+## DRC Summary
+
+| Severity | Count | Status | Evidence |
+| --- | --- | --- | --- |
+| Error | TODO | TODO |  |
+| Critical warning | TODO | TODO |  |
+| Warning | TODO | TODO |  |
+
+## Waivers
+
+- none/TODO
