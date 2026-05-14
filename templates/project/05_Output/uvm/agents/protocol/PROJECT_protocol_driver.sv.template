@@ -1,0 +1,31 @@
+class PROJECT_protocol_driver extends uvm_driver #(PROJECT_protocol_item);
+  `uvm_component_utils(PROJECT_protocol_driver)
+
+  PROJECT_env_cfg cfg;
+  virtual PROJECT_dut_if dut_vif;
+
+  function new(string name = "PROJECT_protocol_driver", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(PROJECT_env_cfg)::get(this, "", "cfg", cfg)) begin
+      `uvm_fatal("NO_CFG", "PROJECT_env_cfg was not provided to driver")
+    end
+    dut_vif = cfg.dut_vif;
+  endfunction
+
+  task run_phase(uvm_phase phase);
+    PROJECT_protocol_item req;
+    forever begin
+      seq_item_port.get_next_item(req);
+      drive_item(req);
+      seq_item_port.item_done();
+    end
+  endtask
+
+  virtual task drive_item(PROJECT_protocol_item item);
+    // Drive one legal protocol operation through dut_vif.
+  endtask
+endclass

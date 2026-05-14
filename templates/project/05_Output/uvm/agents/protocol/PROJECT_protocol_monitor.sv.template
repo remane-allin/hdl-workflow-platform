@@ -1,0 +1,34 @@
+class PROJECT_protocol_monitor extends uvm_component;
+  `uvm_component_utils(PROJECT_protocol_monitor)
+
+  PROJECT_env_cfg cfg;
+  virtual PROJECT_dut_if dut_vif;
+  uvm_analysis_port #(PROJECT_protocol_item) item_ap;
+
+  function new(string name = "PROJECT_protocol_monitor", uvm_component parent = null);
+    super.new(name, parent);
+    item_ap = new("item_ap", this);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(PROJECT_env_cfg)::get(this, "", "cfg", cfg)) begin
+      `uvm_fatal("NO_CFG", "PROJECT_env_cfg was not provided to monitor")
+    end
+    dut_vif = cfg.dut_vif;
+  endfunction
+
+  task run_phase(uvm_phase phase);
+    forever begin
+      collect_item();
+    end
+  endtask
+
+  virtual task collect_item();
+    PROJECT_protocol_item item;
+    item = PROJECT_protocol_item::type_id::create("item");
+    // Observe one completed legal protocol operation from dut_vif.
+    item.observed = 1'b1;
+    item_ap.write(item);
+  endtask
+endclass

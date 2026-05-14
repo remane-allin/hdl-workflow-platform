@@ -43,14 +43,15 @@ def _personalize_project(project_path: Path, config_path: Path, name: str) -> No
         "owner: change_me": "owner: project_local",
         "description: change_me": f"description: {name} HDL workflow project",
         "project: change_me": f"project: {name}",
+        '"project": "change_me"': f'"project": "{name}"',
+        "__PROJECT_NAME__": name,
         "created_at: GENERATED_AT": f"created_at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     }
-    for path in [
-        config_path,
-        project_path / "project_scaffold.yaml",
-        project_path / "05_Output" / "manifest.yaml",
-        project_path / "memory" / "index.yaml",
-    ]:
+    text_suffixes = {".do", ".f", ".json", ".md", ".ps1", ".sv", ".template", ".tcl", ".vh", ".yaml", ".yml"}
+    paths = [config_path]
+    paths.extend(path for path in project_path.rglob("*") if path.is_file() and path.suffix in text_suffixes)
+
+    for path in paths:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")

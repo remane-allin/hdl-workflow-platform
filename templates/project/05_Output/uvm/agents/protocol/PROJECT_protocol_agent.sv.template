@@ -1,0 +1,31 @@
+class PROJECT_protocol_agent extends uvm_agent;
+  `uvm_component_utils(PROJECT_protocol_agent)
+
+  PROJECT_env_cfg cfg;
+  PROJECT_protocol_sequencer sequencer;
+  PROJECT_protocol_driver driver;
+  PROJECT_protocol_monitor monitor;
+
+  function new(string name = "PROJECT_protocol_agent", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(PROJECT_env_cfg)::get(this, "", "cfg", cfg)) begin
+      `uvm_fatal("NO_CFG", "PROJECT_env_cfg was not provided to agent")
+    end
+    monitor = PROJECT_protocol_monitor::type_id::create("monitor", this);
+    if (cfg.protocol_is_active) begin
+      sequencer = PROJECT_protocol_sequencer::type_id::create("sequencer", this);
+      driver = PROJECT_protocol_driver::type_id::create("driver", this);
+    end
+  endfunction
+
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    if (cfg.protocol_is_active) begin
+      driver.seq_item_port.connect(sequencer.seq_item_export);
+    end
+  endfunction
+endclass

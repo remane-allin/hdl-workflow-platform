@@ -1,0 +1,18 @@
+{
+  "project": "change_me",
+  "version": "0.1",
+  "template_notes": {
+    "purpose": "Structured requirement source for path partition, system blueprint, module contracts, RTL trace, and UVM trace.",
+    "loop_scope": [
+      "loop1_spec_to_rtl",
+      "loop2_spec_rtl_to_uvm"
+    ],
+    "authoring_rules": [
+      "Keep ids stable once used by path partition, system blueprint, or module contracts.",
+      "Prefer rtl_targets at feature level so module contracts can be scaffolded before RTL exists.",
+      "Keep verification_targets aligned with TB or UVM ownership.",
+      "Use source_refs to point back to normalized spec or parsed sections."
+    ]
+  },
+  "epics": []
+}

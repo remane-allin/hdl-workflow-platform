@@ -1,0 +1,24 @@
+class PROJECT_reg_adapter extends uvm_reg_adapter;
+  `uvm_object_utils(PROJECT_reg_adapter)
+
+  function new(string name = "PROJECT_reg_adapter");
+    super.new(name);
+    supports_byte_enable = 0;
+    provides_responses = 0;
+  endfunction
+
+  virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);
+    PROJECT_protocol_item item;
+    item = PROJECT_protocol_item::type_id::create("item");
+    // Translate rw.addr, rw.data, and rw.kind into the project bus item.
+    return item;
+  endfunction
+
+  virtual function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
+    PROJECT_protocol_item item;
+    if (!$cast(item, bus_item)) begin
+      `uvm_fatal("BAD_BUS_ITEM", "bus_item is not a PROJECT_protocol_item")
+    end
+    // Translate the project bus item back into rw.
+  endfunction
+endclass

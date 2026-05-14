@@ -1,0 +1,150 @@
+{
+  "project": "change_me",
+  "done_criteria": [
+    {
+      "id": "normalized-spec-ready",
+      "description": "The parsed and normalized design intent is usable.",
+      "status": "pending"
+    },
+    {
+      "id": "loop1-functional-pass",
+      "description": "The RTL/TB functional flow passes before UVM starts.",
+      "status": "pending"
+    },
+    {
+      "id": "loop2-uvm-pass",
+      "description": "The UVM baseline and regression have intentional pass/fail summaries.",
+      "status": "pending"
+    },
+    {
+      "id": "loop3-board-pass",
+      "description": "The FPGA prototype flow has timing/build/board evidence.",
+      "status": "pending"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "ingest_source_docs",
+      "title": "Ingest source design requirements",
+      "kind": "document_ingest",
+      "status": "pending",
+      "priority": 10,
+      "depends_on": [],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {}
+    },
+    {
+      "id": "normalize_specs",
+      "title": "Refresh normalized specs and test intent",
+      "kind": "spec_normalization",
+      "status": "pending",
+      "priority": 20,
+      "depends_on": ["ingest_source_docs"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {}
+    },
+    {
+      "id": "implement_rtl",
+      "title": "Implement RTL from the normalized spec",
+      "kind": "rtl_update",
+      "status": "pending",
+      "priority": 40,
+      "depends_on": ["normalize_specs"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {}
+    },
+    {
+      "id": "build_functional_tb",
+      "title": "Build a self-checking Loop1 testbench",
+      "kind": "tb_update",
+      "status": "pending",
+      "priority": 50,
+      "depends_on": ["implement_rtl"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {}
+    },
+    {
+      "id": "run_loop1",
+      "title": "Run Loop1 RTL/TB functional simulation",
+      "kind": "sim_run",
+      "status": "pending",
+      "priority": 60,
+      "depends_on": ["implement_rtl", "build_functional_tb"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {
+        "root": "02_Loop1_RTL_TB",
+        "do_file": "02_Loop1_RTL_TB/sim/rtl_functional.do",
+        "gui": false
+      }
+    },
+    {
+      "id": "build_uvm_env",
+      "title": "Build or update the RKV-style UVM environment",
+      "kind": "uvm_update",
+      "status": "pending",
+      "priority": 80,
+      "depends_on": ["run_loop1"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {
+        "root": "05_Output/uvm",
+        "source_intent": "01_DocParse/structured_spec/test_intent.yaml"
+      }
+    },
+    {
+      "id": "run_uvm_baseline",
+      "title": "Run the Loop2 UVM baseline",
+      "kind": "sim_run",
+      "status": "pending",
+      "priority": 90,
+      "depends_on": ["build_uvm_env"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {
+        "do_file": "03_Loop2_UVM_Verify/sim/uvm_baseline.do",
+        "gui": false
+      }
+    },
+    {
+      "id": "run_regression",
+      "title": "Run Loop2 UVM regression",
+      "kind": "sim_run",
+      "status": "pending",
+      "priority": 110,
+      "depends_on": ["run_uvm_baseline"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {
+        "do_file": "03_Loop2_UVM_Verify/sim/regression.do",
+        "gui": false
+      }
+    },
+    {
+      "id": "run_loop3",
+      "title": "Run FPGA prototype preflight/build/board smoke",
+      "kind": "fpga_run",
+      "status": "pending",
+      "priority": 130,
+      "depends_on": ["run_regression"],
+      "attempts": 0,
+      "last_update": "",
+      "last_note": "",
+      "action": {
+        "root": "04_Loop3_FPGA_Prototype"
+      }
+    }
+  ]
+}

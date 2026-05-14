@@ -1,0 +1,17 @@
+{
+  "project": "change_me",
+  "loop1": {
+    "status": "pending",
+    "line": null,
+    "branch": null,
+    "fsm": null,
+    "requirement": null
+  },
+  "loop2": {
+    "status": "pending",
+    "code": null,
+    "functional": null,
+    "requirement": null
+  },
+  "waivers": []
+}

@@ -1,0 +1,45 @@
+# Loop1 RTL/TB Run Report
+
+Navigation: [Report index](../README.md) | [Loop1 reports](README.md) | [RTL](../../rtl/) | [TB](../../tb/)
+
+- project:
+- generated_at:
+- status: PASS/FAIL/BLOCKED
+- simulator: ModelSim/Questa
+- do_file: [02_Loop1_RTL_TB/sim/rtl_functional.do](../../../02_Loop1_RTL_TB/sim/rtl_functional.do)
+- compile_script: [02_Loop1_RTL_TB/sim/compile.do](../../../02_Loop1_RTL_TB/sim/compile.do)
+- latest_log:
+- rtl_source_dir: [05_Output/rtl](../../rtl/)
+- tb_source_dir: [05_Output/tb](../../tb/)
+
+## Compile Evidence
+
+- compile_errors:
+- compile_warnings:
+- blocking_warnings:
+- elaboration_status:
+
+## Simulation Evidence
+
+- tb_top_list:
+- pass_markers:
+- fail_markers:
+- assertion_failures:
+- self_check_summary:
+
+## Requirement Evidence
+
+- requirements_exercised:
+- req_to_rtl_trace: [trace matrix](../trace_matrix/)
+- req_to_test_trace: [trace matrix](../trace_matrix/)
+
+## Source Links
+
+- RTL files:
+- TB files:
+
+## Conclusion
+
+Loop1 status:
+
+Next action:

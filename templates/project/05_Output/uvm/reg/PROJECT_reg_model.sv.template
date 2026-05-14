@@ -1,0 +1,13 @@
+class PROJECT_reg_block extends uvm_reg_block;
+  `uvm_object_utils(PROJECT_reg_block)
+
+  function new(string name = "PROJECT_reg_block");
+    super.new(name, UVM_NO_COVERAGE);
+  endfunction
+
+  virtual function void build();
+    default_map = create_map("default_map", 0, 4, UVM_LITTLE_ENDIAN);
+    // Add spec-derived registers and fields here.
+    lock_model();
+  endfunction
+endclass

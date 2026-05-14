@@ -1,0 +1,58 @@
+# Loop2 UVM Regression Report
+
+Navigation: [Report index](../README.md) | [Loop2 reports](README.md) | [Coverage index](coverage_index.md) | [UVM](../../uvm/)
+
+- project:
+- generated_at:
+- status: PASS/FAIL/BLOCKED
+- simulator: ModelSim/Questa
+- do_file: [03_Loop2_UVM_Verify/sim/regression.do](../../../03_Loop2_UVM_Verify/sim/regression.do)
+- baseline_do_file: [03_Loop2_UVM_Verify/sim/uvm_baseline.do](../../../03_Loop2_UVM_Verify/sim/uvm_baseline.do)
+- compile_script: [03_Loop2_UVM_Verify/sim/compile.do](../../../03_Loop2_UVM_Verify/sim/compile.do)
+- latest_log:
+- uvm_test_name:
+- seed_count:
+- coverage_report:
+
+## UVM Regression Evidence
+
+- compile_errors:
+- compile_warnings:
+- `UVM_ERROR` count:
+- `UVM_FATAL` count:
+- assertion_failure_count:
+- scoreboard_checks:
+- scoreboard_failures:
+- regression_pass_marker:
+
+## Coverage Evidence
+
+- code_coverage:
+- functional_coverage:
+- requirement_coverage:
+- coverage_thresholds_source: [config/flow_policy.yaml](../../../config/flow_policy.yaml)
+- waivers: [coverage_waiver.json](../../../loop/coverage_waiver.json)
+
+## Scope Covered
+
+- reset/default behavior:
+- legal transactions:
+- illegal/error scenarios:
+- corner cases:
+- random or sweep scenarios:
+
+## Source Links
+
+- UVM package:
+- top-level UVM TB:
+- tests:
+- virtual sequences:
+- scoreboard:
+- coverage:
+- assertions:
+
+## Conclusion
+
+Loop2 UVM regression status:
+
+Next action:

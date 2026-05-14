@@ -1,0 +1,3 @@
+module PROJECT_top_sva(PROJECT_dut_if dut_if);
+  // Bind non-invasive protocol and reset assertions here.
+endmodule

@@ -1,0 +1,26 @@
+package PROJECT_uvm_pkg;
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
+
+  `include "PROJECT_env_cfg.sv"
+
+  // Instantiate one protocol directory from agents/protocol/*.template, then
+  // replace these includes with the project-specific protocol names.
+  // `include "PROJECT_protocol_item.sv"
+  // `include "PROJECT_protocol_sequencer.sv"
+  // `include "PROJECT_protocol_driver.sv"
+  // `include "PROJECT_protocol_monitor.sv"
+  // `include "PROJECT_protocol_agent.sv"
+
+  // Add these when a register map exists.
+  // `include "PROJECT_reg_model.sv"
+  // `include "PROJECT_reg_adapter.sv"
+
+  `include "PROJECT_coverage.sv"
+  `include "PROJECT_scoreboard.sv"
+  `include "PROJECT_virtual_sequencer.sv"
+  `include "PROJECT_env.sv"
+  // `include "PROJECT_element_sequences.svh"
+  `include "PROJECT_virtual_sequences.svh"
+  `include "PROJECT_tests.svh"
+endpackage

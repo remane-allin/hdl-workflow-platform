@@ -1,0 +1,27 @@
+{
+  "project": "change_me",
+  "updated_at": "",
+  "requirements": {
+    "epics_total": 0,
+    "tasks_total": 0,
+    "tasks_done": 0,
+    "average_task_score": 0
+  },
+  "execution": {
+    "loop_tasks_total": 0,
+    "loop_tasks_done": 0,
+    "loop_tasks_blocked": 0,
+    "feature_tasks_total": 0,
+    "feature_tasks_done": 0
+  },
+  "bugs": {
+    "total": 0,
+    "open": 0,
+    "critical_open": 0
+  },
+  "overall": {
+    "completion_percent": 0,
+    "quality_score": 0,
+    "risk_score": 0
+  }
+}

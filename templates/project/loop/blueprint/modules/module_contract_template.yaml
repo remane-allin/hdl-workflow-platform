@@ -1,0 +1,11 @@
+schema_version: 1
+module: change_me
+requirements: []
+ports: []
+parameters: []
+clock_reset:
+  clocks: []
+  resets: []
+verification:
+  loop1_tests: []
+  loop2_tests: []

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "project": "change_me",
+  "owner": "hdl-three-loop",
+  "version": "test-numbered",
+  "required_events": {
+    "PreToolUse": "missing",
+    "SessionStart": "missing",
+    "PostToolUse": "missing",
+    "Stop": "missing"
+  },
+  "last_doctor_result": "not_started",
+  "updated_at": ""
+}

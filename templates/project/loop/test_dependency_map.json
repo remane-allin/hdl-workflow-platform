@@ -1,0 +1,9 @@
+{
+  "project": "change_me",
+  "rtl_to_tests": {},
+  "uvm_to_tests": {},
+  "always_run": [
+    "loop1_smoke",
+    "uvm_baseline"
+  ]
+}

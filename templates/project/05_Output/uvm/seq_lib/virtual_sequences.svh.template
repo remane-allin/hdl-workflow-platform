@@ -1,0 +1,34 @@
+class PROJECT_base_vseq extends uvm_sequence;
+  `uvm_object_utils(PROJECT_base_vseq)
+  `uvm_declare_p_sequencer(PROJECT_virtual_sequencer)
+
+  PROJECT_env_cfg cfg;
+  // PROJECT_reg_block rgm;
+
+  function new(string name = "PROJECT_base_vseq");
+    super.new(name);
+  endfunction
+
+  virtual task body();
+    if (p_sequencer != null) begin
+      cfg = p_sequencer.cfg;
+      // rgm = p_sequencer.rgm;
+    end
+  endtask
+endclass
+
+class PROJECT_smoke_vseq extends PROJECT_base_vseq;
+  `uvm_object_utils(PROJECT_smoke_vseq)
+
+  function new(string name = "PROJECT_smoke_vseq");
+    super.new(name);
+  endfunction
+
+  task body();
+    super.body();
+    // Add one deterministic legal end-to-end scenario.
+    // PROJECT_protocol_smoke_sequence protocol_seq;
+    // protocol_seq = PROJECT_protocol_smoke_sequence::type_id::create("protocol_seq");
+    // protocol_seq.start(p_sequencer.protocol_sqr);
+  endtask
+endclass

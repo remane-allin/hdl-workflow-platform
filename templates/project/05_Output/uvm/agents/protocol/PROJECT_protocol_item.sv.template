@@ -1,0 +1,15 @@
+class PROJECT_protocol_item extends uvm_sequence_item;
+  rand bit [7:0] data;
+  rand bit       is_read;
+  bit            observed;
+
+  `uvm_object_utils_begin(PROJECT_protocol_item)
+    `uvm_field_int(data, UVM_ALL_ON)
+    `uvm_field_int(is_read, UVM_ALL_ON)
+    `uvm_field_int(observed, UVM_ALL_ON)
+  `uvm_object_utils_end
+
+  function new(string name = "PROJECT_protocol_item");
+    super.new(name);
+  endfunction
+endclass

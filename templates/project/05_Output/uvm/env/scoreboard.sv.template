@@ -1,0 +1,35 @@
+class PROJECT_scoreboard extends uvm_component;
+  `uvm_component_utils(PROJECT_scoreboard)
+
+  PROJECT_env_cfg cfg;
+  uvm_analysis_imp #(uvm_sequence_item, PROJECT_scoreboard) observed_export;
+  int unsigned check_count;
+  int unsigned fail_count;
+
+  function new(string name = "PROJECT_scoreboard", uvm_component parent = null);
+    super.new(name, parent);
+    observed_export = new("observed_export", this);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(PROJECT_env_cfg)::get(this, "", "cfg", cfg)) begin
+      `uvm_fatal("NO_CFG", "PROJECT_env_cfg was not provided to scoreboard")
+    end
+  endfunction
+
+  function void write(uvm_sequence_item item);
+    // Replace this with spec-derived comparison logic and typed transactions.
+    check_count++;
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    if (fail_count == 0 && check_count > 0) begin
+      `uvm_info("PROJECT_SCOREBOARD", $sformatf("PROJECT_SCOREBOARD_PASS checks=%0d failures=0", check_count), UVM_LOW)
+    end
+    else begin
+      `uvm_error("PROJECT_SCOREBOARD", $sformatf("PROJECT_SCOREBOARD_FAIL checks=%0d failures=%0d", check_count, fail_count))
+    end
+  endfunction
+endclass

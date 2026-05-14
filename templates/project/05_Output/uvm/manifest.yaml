@@ -1,0 +1,23 @@
+schema_version: 1
+template_family: rkv_style_uvm
+database_entries:
+  framework: uvm.rkv_style_framework
+  reference_profile: uvm.rkv_i2c_reference_profile
+source_reference:
+  name: rkv_v2pro_i2c-RKV_I2C_TB_00
+  reuse_policy: structure_only_no_source_copy
+layout:
+  cfg: environment and agent configuration
+  agents: protocol items, sequencers, drivers, monitors, agents
+  cov: legal functional coverage
+  env: scoreboard, virtual sequencer, env, package hub
+  reg: optional RAL model and bus adapter
+  seq_lib: virtual sequences and element sequences
+  tests: base and scenario tests
+  tb: DUT interface and UVM harness
+  assertions: non-invasive SVA
+closure_policy:
+  compile_only_closes_loop2: false
+  requires_scoreboard_checks: true
+  requires_functional_coverage: true
+  requires_req_to_test_trace: true

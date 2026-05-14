@@ -12,3 +12,34 @@ templates:
       - rtl
       - style
       - module
+  uvm.rkv_style_framework:
+    title: RKV-style UVM framework template
+    domain: uvm_templates
+    category: verification_framework
+    language: systemverilog
+    workflow_node: 03_Loop2_UVM_Verify
+    stage: loop2
+    short_description: Reusable cfg/agents/cov/env/reg/seq_lib/tests/tb UVM framework derived from the RKV I2C template structure.
+    detail_path: sources/uvm_templates/rkv_style_uvm_framework.md
+    tags:
+      - uvm
+      - rkv
+      - loop2
+      - scoreboard
+      - coverage
+      - ral
+  uvm.rkv_i2c_reference_profile:
+    title: RKV I2C reference profile
+    domain: uvm_templates
+    category: reference_profile
+    language: systemverilog
+    workflow_node: 03_Loop2_UVM_Verify
+    stage: loop2
+    short_description: Analysis profile of rkv_v2pro_i2c-RKV_I2C_TB_00 showing the reusable parts and the TODO gaps that must not be copied blindly.
+    detail_path: sources/uvm_templates/rkv_i2c_reference_profile.md
+    tags:
+      - uvm
+      - rkv
+      - i2c
+      - apb
+      - reference

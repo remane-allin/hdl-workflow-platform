@@ -1,0 +1,62 @@
+schema_version: 1
+project: change_me
+
+loop1:
+  compile_policy:
+    zero_error: true
+    block_unwaived_blocking_warning: true
+  coverage_thresholds:
+    line: 80
+    branch: 70
+    fsm: 100
+    requirement: 100
+
+loop2:
+  compile_policy:
+    zero_error: true
+    block_unwaived_blocking_warning: true
+  uvm_policy:
+    require_rkv_layout: true
+    require_template_database_preflight: true
+    required_template_entries:
+      - uvm.rkv_style_framework
+      - uvm.rkv_i2c_reference_profile
+    require_spec_driven_scoreboard: true
+    require_deterministic_baseline: true
+    require_regression_do: true
+    forbid_false_pass_when_uvm_sources_missing: true
+  assertion_policy:
+    require_compile: true
+    require_bound_in_closed_loop: true
+    block_on_failure: true
+  coverage_thresholds:
+    code: 80
+    functional: 80
+    requirement: 100
+
+loop3:
+  require_loop2_pass: true
+  rtl_change_requires_loop1_loop2: true
+  timing_policy:
+    require_wns_ge_0: true
+    require_whs_ge_0: true
+    block_unconstrained_clocks: true
+    block_unconstrained_paths: true
+  drc_policy:
+    block_error: true
+    block_critical_warning: true
+  debug_policy:
+    debug_build_allowed: true
+    debug_build_counts_for_exit: false
+    require_release_rerun_after_debug: true
+
+waiver:
+  forbidden_types:
+    - compile_error
+    - assertion_failure
+    - uvm_error
+    - uvm_fatal
+    - critical_bug
+    - major_bug
+    - loop3_synthesis_error
+    - loop3_implementation_error

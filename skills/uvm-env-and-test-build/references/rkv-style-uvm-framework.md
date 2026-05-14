@@ -27,7 +27,12 @@ For a DUT or protocol prefix `<dut>`, use:
     <dut>_virtual_sequencer.sv
     <dut>_env.sv
     <dut>_uvm_pkg.sv
+  reg/
+    <dut>_reg_model.sv          # optional, required for register-backed IP
+    <dut>_reg_adapter.sv        # optional bus/RAL adapter
   seq_lib/
+    elem_seqs/
+      <dut>_<protocol>_base_sequence.sv
     <dut>_base_virtual_sequence.sv
     <dut>_<scenario>_virtual_sequence.sv
     <dut>_virtual_sequences.svh
@@ -54,6 +59,8 @@ project README. Remove old root-level monolithic files after updating scripts.
   scoreboard.
 - `env/`: instantiate agents, scoreboard, coverage, virtual sequencer, and
   register model adapters. Connect analysis ports here.
+- `reg/`: register model and bus adapter. Keep it optional for pure datapath
+  designs, but include the directory in the Loop2 compile path.
 - `seq_lib/`: virtual sequences own scenario intent and route element work to
   sub-sequencers. Put reusable helper tasks in the base virtual sequence.
 - `tests/`: create config and env in the base test. Scenario tests select and
@@ -80,6 +87,9 @@ package <dut>_uvm_pkg;
   `include "<dut>_<protocol>_monitor.sv"
   `include "<dut>_<protocol>_agent.sv"
 
+  `include "<dut>_reg_model.sv"
+  `include "<dut>_reg_adapter.sv"
+
   `include "<dut>_scoreboard.sv"
   `include "<dut>_coverage.sv"
   `include "<dut>_virtual_sequencer.sv"
@@ -92,6 +102,18 @@ endpackage
 
 Omit monitor include only for a first active-driver-only baseline bring-up, but
 leave the agent boundary ready for a monitor.
+Omit `reg_model` and `reg_adapter` includes only when `register_map.yaml` says
+the design has no software-visible registers.
+
+## Template Database
+
+The local Test library registers this framework as:
+
+- `uvm.rkv_style_framework`
+- `uvm.rkv_i2c_reference_profile`
+
+Use `hdlflow get-template-detail --workspace Test --id uvm.rkv_style_framework`
+to retrieve the reusable template contract.
 
 ## Coverage Pattern
 

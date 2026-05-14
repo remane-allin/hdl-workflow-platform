@@ -1,0 +1,16 @@
+class PROJECT_protocol_base_sequence extends uvm_sequence #(PROJECT_protocol_item);
+  `uvm_object_utils(PROJECT_protocol_base_sequence)
+  `uvm_declare_p_sequencer(PROJECT_protocol_sequencer)
+
+  PROJECT_env_cfg cfg;
+
+  function new(string name = "PROJECT_protocol_base_sequence");
+    super.new(name);
+  endfunction
+
+  virtual task body();
+    if (p_sequencer != null) begin
+      cfg = p_sequencer.cfg;
+    end
+  endtask
+endclass

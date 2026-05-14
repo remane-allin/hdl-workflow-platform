@@ -1,0 +1,10 @@
+{
+  "project": "change_me",
+  "loop": "loop2",
+  "status": "pending",
+  "iteration": 0,
+  "uvm_layout": "rkv",
+  "latest_compile_log": "",
+  "latest_regression_log": "",
+  "open_blockers": []
+}

@@ -22,5 +22,7 @@ Node-local `_runtime/` folders are disposable.
   The generated `project_scaffold.yaml` records that evidence.
 - Loop3 FPGA prototype work starts with a local library/database preflight report.
 - Loop3 PS_PL plans must pass `validate-prototype-plan` before BD, XDC, Vitis, or boot-image generation.
+- Loop1 simulation entry is `02_Loop1_RTL_TB/sim/rtl_functional.do`.
+- Loop2 simulation entries are under `03_Loop2_UVM_Verify/sim/`.
 - Vivado artifacts live under `05_Output/fpga/vivado/`.
 - Vitis artifacts live under `05_Output/fpga/vitis/`.

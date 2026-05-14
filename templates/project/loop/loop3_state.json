@@ -1,0 +1,9 @@
+{
+  "project": "change_me",
+  "loop": "loop3",
+  "status": "pending",
+  "iteration": 0,
+  "latest_vivado_report": "",
+  "latest_board_log": "",
+  "open_blockers": []
+}

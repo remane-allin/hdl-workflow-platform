@@ -1,0 +1,25 @@
+class PROJECT_coverage extends uvm_subscriber #(uvm_sequence_item);
+  `uvm_component_utils(PROJECT_coverage)
+
+  int unsigned sample_count;
+
+  covergroup legal_scenarios_cg;
+    option.per_instance = 1;
+    // Add spec-derived coverpoints and crosses here.
+  endgroup
+
+  function new(string name = "PROJECT_coverage", uvm_component parent = null);
+    super.new(name, parent);
+    legal_scenarios_cg = new();
+  endfunction
+
+  function void write(uvm_sequence_item t);
+    sample_count++;
+    legal_scenarios_cg.sample();
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    `uvm_info("PROJECT_COVERAGE", $sformatf("PROJECT_COVERAGE legal_scenarios_cg=%0.2f samples=%0d", legal_scenarios_cg.get_inst_coverage(), sample_count), UVM_LOW)
+  endfunction
+endclass

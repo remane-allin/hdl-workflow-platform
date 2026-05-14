@@ -1,0 +1,60 @@
+class PROJECT_base_test extends uvm_test;
+  `uvm_component_utils(PROJECT_base_test)
+
+  PROJECT_env_cfg cfg;
+  PROJECT_env env;
+
+  function new(string name = "PROJECT_base_test", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    cfg = PROJECT_env_cfg::type_id::create("cfg");
+    if (!uvm_config_db#(virtual PROJECT_dut_if)::get(this, "", "dut_vif", cfg.dut_vif)) begin
+      `uvm_fatal("NO_VIF", "virtual PROJECT_dut_if was not provided")
+    end
+    uvm_config_db#(PROJECT_env_cfg)::set(this, "*", "cfg", cfg);
+    env = PROJECT_env::type_id::create("env", this);
+  endfunction
+
+  function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    uvm_root::get().set_report_max_quit_count(10);
+    uvm_root::get().set_timeout(10ms);
+  endfunction
+
+  task run_phase(uvm_phase phase);
+    phase.raise_objection(this);
+    run_top_virtual_sequence();
+    phase.drop_objection(this);
+  endtask
+
+  virtual task run_top_virtual_sequence();
+  endtask
+endclass
+
+class baseline_test extends PROJECT_base_test;
+  `uvm_component_utils(baseline_test)
+
+  function new(string name = "baseline_test", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  virtual task run_top_virtual_sequence();
+    PROJECT_smoke_vseq seq;
+    seq = PROJECT_smoke_vseq::type_id::create("seq");
+    if (env.vseqr == null) begin
+      `uvm_fatal("NO_VSEQR", "PROJECT_virtual_sequencer was not created")
+    end
+    seq.start(env.vseqr);
+  endtask
+endclass
+
+class full_regression_test extends baseline_test;
+  `uvm_component_utils(full_regression_test)
+
+  function new(string name = "full_regression_test", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+endclass

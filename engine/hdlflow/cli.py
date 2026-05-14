@@ -34,6 +34,11 @@ from .library import (
     search_software_doc_chunks,
     query_toc,
 )
+from .loop2_bindings import (
+    build_loop2_binding_database,
+    format_loop2_binding_rows,
+    write_loop2_database_preflight,
+)
 from .memory import auto_record_workflow_event, check_memory, record_memory_iteration
 from .pipeline import build_pipeline, format_pipeline
 from .prototype import write_prototype_preflight
@@ -143,6 +148,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     memory_check_parser = subparsers.add_parser("memory-check", help="Validate project memory synchronization.")
     memory_check_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop2_bind_parser = subparsers.add_parser("loop2-build-bindings", help="Build the Loop2 requirement/UVM binding SQLite database.")
+    loop2_bind_parser.add_argument("--project", required=True, help="Project path.")
+    loop2_bind_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    loop2_bind_parser.add_argument("--db", help="Optional project-relative or absolute SQLite output path.")
+
+    loop2_preflight_parser = subparsers.add_parser(
+        "loop2-database-preflight",
+        help="Run required Loop2 template database lookups and write a preflight report.",
+    )
+    loop2_preflight_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    loop2_preflight_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop2_query_parser = subparsers.add_parser("loop2-query-bindings", help="Query the Loop2 binding SQLite database.")
+    loop2_query_parser.add_argument("--project", required=True, help="Project path.")
+    loop2_query_parser.add_argument("--req", help="Optional requirement ID filter.")
 
     library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
     library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
@@ -465,6 +486,30 @@ def main(argv: list[str] | None = None) -> int:
             for error in result.errors:
                 print(f"error: {error}")
             return 0 if result.ok else 1
+        if args.command == "loop2-build-bindings":
+            db_path = Path(args.db) if args.db else None
+            result = build_loop2_binding_database(Path(args.project), db_path=db_path, workspace=Path(args.workspace))
+            print(f"loop2_binding_db: {result.db_path}")
+            print(f"requirements: {result.requirement_count}")
+            print(f"artifacts: {result.artifact_count}")
+            print(f"bindings: {result.binding_count}")
+            print(f"evidence: {result.evidence_count}")
+            print(f"missing_artifacts: {result.missing_artifacts}")
+            print(f"missing_database_items: {result.missing_database_items}")
+            ok = result.missing_artifacts == 0 and result.missing_database_items == 0
+            print("loop2 binding database: PASS" if ok else "loop2 binding database: FAIL")
+            return 0 if ok else 1
+        if args.command == "loop2-database-preflight":
+            result = write_loop2_database_preflight(Path(args.workspace), Path(args.project))
+            print(f"report: {result.report_path}")
+            for item in result.missing_items:
+                print(f"missing: {item}")
+            print("loop2 database preflight: PASS" if not result.missing_items else "loop2 database preflight: FAIL")
+            return 0 if not result.missing_items else 1
+        if args.command == "loop2-query-bindings":
+            for line in format_loop2_binding_rows(Path(args.project), req_id=args.req):
+                print(line)
+            return 0
         if args.command == "library-build":
             db_path = build_library(Path(args.workspace))
             print(f"library: {db_path}")

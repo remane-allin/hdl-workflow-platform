@@ -1,0 +1,11 @@
+class PROJECT_virtual_sequencer extends uvm_sequencer;
+  `uvm_component_utils(PROJECT_virtual_sequencer)
+
+  PROJECT_env_cfg cfg;
+  // PROJECT_protocol_sequencer protocol_sqr;
+  // PROJECT_reg_block rgm;
+
+  function new(string name = "PROJECT_virtual_sequencer", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+endclass

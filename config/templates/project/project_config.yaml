@@ -86,8 +86,18 @@ nodes:
       reports: 05_Output/reports/loop2
     runtime: 03_Loop2_UVM_Verify/_runtime
     rtl_change_policy: controlled_loop1_patch_required
+    uvm_policy:
+      database_preflight_required: true
+      database_preflight_report: 05_Output/reports/loop2/preflight/database_preflight.md
+      binding_database: 03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite
+      template_library: library/.local/library.sqlite
+      required_template_entries:
+        - uvm.rkv_style_framework
+        - uvm.rkv_i2c_reference_profile
     gates:
       exit:
+        - database_preflight_report_available
+        - binding_database_available
         - uvm_compile_zero_error
         - uvm_regression_pass
         - zero_uvm_error

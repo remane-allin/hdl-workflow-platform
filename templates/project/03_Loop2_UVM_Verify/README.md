@@ -8,5 +8,11 @@ Owns UVM environment, full regression, coverage, and bug closure.
 - `bug_tracking/` - bug triage, root cause, fix evidence, and closure records.
 - `coverage_tracking/` - coverage closure records and waivers.
 - `05_Output/reports/loop2/` - final Loop2 reports.
+- `05_Output/reports/loop2/preflight/database_preflight.md` - generated
+  template-library preflight evidence. Build it with
+  `python -m engine.hdlflow.cli loop2-database-preflight --workspace . --project projects/<project_name>`.
+- `_runtime/loop2_bindings.sqlite` - generated requirement-to-UVM/evidence
+  binding database. Build it with
+  `python -m engine.hdlflow.cli loop2-build-bindings --workspace . --project projects/<project_name>`.
 
 RTL changes discovered in Loop2 are made in `05_Output/rtl` and must be rerun through Loop1 and Loop2.

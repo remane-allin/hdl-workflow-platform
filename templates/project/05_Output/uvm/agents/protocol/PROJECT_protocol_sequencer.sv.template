@@ -1,0 +1,14 @@
+class PROJECT_protocol_sequencer extends uvm_sequencer #(PROJECT_protocol_item);
+  `uvm_component_utils(PROJECT_protocol_sequencer)
+
+  PROJECT_env_cfg cfg;
+
+  function new(string name = "PROJECT_protocol_sequencer", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    void'(uvm_config_db#(PROJECT_env_cfg)::get(this, "", "cfg", cfg));
+  endfunction
+endclass

@@ -1,0 +1,9 @@
+{
+  "project": "change_me",
+  "loop1_exit": "pending",
+  "loop2_entry": "pending",
+  "loop2_exit": "pending",
+  "loop3_entry": "pending",
+  "loop3_exit": "pending",
+  "final_gate": "pending"
+}

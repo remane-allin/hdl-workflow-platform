@@ -30,6 +30,9 @@ Use this skill for verification code under `05_Output/uvm/` and related TB helpe
    - `tests/`
    - `tb/`
    Read [references/rkv-style-uvm-framework.md](references/rkv-style-uvm-framework.md) before doing this split.
+   Also query the local template database entries when available:
+   - `uvm.rkv_style_framework`
+   - `uvm.rkv_i2c_reference_profile`
 5. Create or refine:
    - environment
    - package

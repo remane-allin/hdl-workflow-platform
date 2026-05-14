@@ -1,0 +1,37 @@
+schema_version: 1
+project: change_me
+layout: test_numbered_three_loop
+
+paths:
+  source_spec: 00_SPEC
+  raw_docs: 00_SPEC/raw_docs
+  requirements: 00_SPEC/requirements
+  parsed_docs: 01_DocParse
+  parsed_mineru: 01_DocParse/parsed/mineru
+  structured_spec: 01_DocParse/structured_spec
+  req_decompose: 01_DocParse/req_decompose
+  doc_review: 01_DocParse/review
+  trace_matrix: 01_DocParse/trace_matrix
+  loop1: 02_Loop1_RTL_TB
+  loop1_sim: 02_Loop1_RTL_TB/sim
+  loop2: 03_Loop2_UVM_Verify
+  loop2_sim: 03_Loop2_UVM_Verify/sim
+  loop3: 04_Loop3_FPGA_Prototype
+  output: 05_Output
+  rtl: 05_Output/rtl
+  tb: 05_Output/tb
+  uvm: 05_Output/uvm
+  reports: 05_Output/reports
+  traces: traces
+  memory: memory
+
+tools:
+  simulator: modelsim
+  fpga_tool: vivado
+  software_tool: vitis
+
+simulation:
+  loop1_do: 02_Loop1_RTL_TB/sim/rtl_functional.do
+  loop2_compile_do: 03_Loop2_UVM_Verify/sim/compile.do
+  loop2_baseline_do: 03_Loop2_UVM_Verify/sim/uvm_baseline.do
+  loop2_regression_do: 03_Loop2_UVM_Verify/sim/regression.do
