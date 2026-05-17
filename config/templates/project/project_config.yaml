@@ -48,12 +48,19 @@ nodes:
       raw_docs: 00_SPEC/raw_docs
       requirements: 00_SPEC/requirements
     outputs:
-      mineru_raw: 01_DocParse/mineru_raw
+      architecture: 01_DocParse/architecture
+      verification: 01_DocParse/verification
+      prototype: 01_DocParse/prototype
+      review: 01_DocParse/review
       structured_spec: 01_DocParse/structured_spec
       req_decompose: 01_DocParse/req_decompose
       trace_matrix: 01_DocParse/trace_matrix
     gates:
       exit:
+        - requirements_frontdoor_ready
+        - architecture_plan_available
+        - verification_plan_available
+        - prototype_plan_available
         - structured_spec_available
         - requirement_decomposition_available
         - trace_matrix_available
@@ -67,6 +74,53 @@ nodes:
     outputs:
       reports: 05_Output/reports/loop1
     runtime: 02_Loop1_RTL_TB/_runtime
+    source_policy:
+      rtl:
+        language: Verilog-2001
+        root: 05_Output/rtl
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      directed_tb:
+        language: Verilog-2001
+        root: 05_Output/tb
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+    skill_policy:
+      required_skills:
+        hdl-workflow-orchestrator:
+          path: skills/hdl-workflow-orchestrator/SKILL.md
+          required_markers:
+            - "05_Output/rtl/"
+            - "05_Output/tb/"
+            - "$rtl-architecture-and-gen"
+            - "$modelsim-run-triage-debug"
+        rtl-architecture-and-gen:
+          path: skills/rtl-architecture-and-gen/SKILL.md
+          required_markers:
+            - "Generate or patch synthesizable Verilog-2001 `.v` files in `05_Output/rtl/`."
+            - "Directed Loop1 TB under `05_Output/tb/` is also Verilog-2001 `.v` only."
+            - "Preserve official bus/protocol/IP signal names exactly"
+            - "no `.sv` or `.svh` files exist under `05_Output/rtl/` or `05_Output/tb/`"
+        modelsim-run-triage-debug:
+          path: skills/modelsim-run-triage-debug/SKILL.md
+          required_markers:
+            - "02_Loop1_RTL_TB/sim/"
+            - "Do not edit RTL or UVM blindly before classifying the failure."
+    evidence:
+      reports:
+        run: 05_Output/reports/loop1/loop1_rtl_tb_run_report.md
+        exit: 05_Output/reports/loop1/loop1_exit_report.md
+      required_markers:
+        directed_pass_any:
+          - PASS
+        zero_errors_any:
+          - "Errors: 0"
     gates:
       exit:
         - rtl_compile_zero_error
@@ -86,7 +140,65 @@ nodes:
       reports: 05_Output/reports/loop2
     runtime: 03_Loop2_UVM_Verify/_runtime
     rtl_change_policy: controlled_loop1_patch_required
+    source_policy:
+      rtl:
+        language: Verilog-2001
+        root: 05_Output/rtl
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      directed_tb:
+        language: Verilog-2001
+        root: 05_Output/tb
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      uvm:
+        language: SystemVerilog
+        root: 05_Output/uvm
+        allowed_extensions:
+          - .sv
+          - .svh
+        forbidden_extensions:
+          - .template
+    skill_policy:
+      required_skills:
+        hdl-workflow-orchestrator:
+          path: skills/hdl-workflow-orchestrator/SKILL.md
+          required_markers:
+            - "05_Output/uvm/"
+            - "$uvm-env-and-test-build"
+            - "$modelsim-run-triage-debug"
+        rtl-architecture-and-gen:
+          path: skills/rtl-architecture-and-gen/SKILL.md
+          required_markers:
+            - "RTL under `05_Output/rtl/` is Verilog-2001 `.v` only."
+            - "SystemVerilog is reserved for UVM under `05_Output/uvm/`."
+            - "Preserve official bus/protocol/IP signal names exactly"
+        uvm-env-and-test-build:
+          path: skills/uvm-env-and-test-build/SKILL.md
+          required_markers:
+            - "Use this skill for SystemVerilog/UVM verification code under `05_Output/uvm/`."
+            - "Keep SystemVerilog in `05_Output/uvm/`."
+            - "Build the scoreboard and reference model from the spec, not from the buggy DUT behavior."
+            - "The binding database is an intermediate trace artifact, not the Loop2 completion result."
+        modelsim-run-triage-debug:
+          path: skills/modelsim-run-triage-debug/SKILL.md
+          required_markers:
+            - "03_Loop2_UVM_Verify/sim/"
+            - "Route the smallest justified next action:"
     uvm_policy:
+      require_loop1_gate_pass: true
+      template_artifacts_forbidden: true
+      full_uvm_required: true
+      baseline_artifacts_transient: true
+      final_functional_evidence_only: true
+      overwrite_reports_after_each_full_regression: true
+      min_checked_transactions: 64
       database_preflight_required: true
       database_preflight_report: 05_Output/reports/loop2/preflight/database_preflight.md
       binding_database: 03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite
@@ -94,6 +206,50 @@ nodes:
       required_template_entries:
         - uvm.rkv_style_framework
         - uvm.rkv_i2c_reference_profile
+      required_real_files:
+        - 05_Output/uvm/cfg/uvm_config.sv
+        - 05_Output/uvm/cov/coverage.sv
+        - 05_Output/uvm/env/env.sv
+        - 05_Output/uvm/env/scoreboard.sv
+        - 05_Output/uvm/env/uvm_pkg.sv
+        - 05_Output/uvm/seq_lib/virtual_sequences.svh
+        - 05_Output/uvm/tests/tests.svh
+        - 05_Output/uvm/tb/tb_dut_if.sv
+        - 05_Output/uvm/tb/tb_uvm.sv
+      required_real_globs:
+        - 05_Output/uvm/agents/*/*_item.sv
+        - 05_Output/uvm/agents/*/*_driver.sv
+        - 05_Output/uvm/agents/*/*_monitor.sv
+        - 05_Output/uvm/agents/*/*_sequencer.sv
+        - 05_Output/uvm/agents/*/*_agent.sv
+      forbidden_markers:
+        - __PROJECT_NAME__
+        - PROJECT_
+        - ".template"
+    evidence:
+      reports:
+        regression: 05_Output/reports/loop2/loop2_uvm_regression_report.md
+        exit: 05_Output/reports/loop2/loop2_exit_report.md
+        coverage: 05_Output/reports/loop2/coverage_index.md
+      artifacts:
+        binding_database: 03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite
+      required_markers:
+        regression_pass_any:
+          - PASS
+        scoreboard_pass_any:
+          - SCOREBOARD_PASS
+          - "Scoreboard | PASS"
+          - "scoreboard | PASS"
+        assertion_pass_any:
+          - "Assertions | PASS"
+      count_labels:
+        uvm_error: UVM_ERROR
+        uvm_fatal: UVM_FATAL
+      coverage_patterns:
+        functional: legal_scenario_cg=([0-9.]+)
+        code_statement: Aggregate \|\s*([0-9.]+)%
+      metric_patterns:
+        checked_transactions: "transactions_total:\s*([0-9]+)"
     gates:
       exit:
         - database_preflight_report_available
@@ -116,6 +272,11 @@ nodes:
       reports: 05_Output/reports/loop3
     runtime: 04_Loop3_FPGA_Prototype/_runtime
     prototype_policy:
+      default_board: navigator_zynq_7020
+      selected_board: navigator_zynq_7020
+      tool_version: "2024.2"
+      board_profiles: 04_Loop3_FPGA_Prototype/board_profiles
+      board_test_config: 04_Loop3_FPGA_Prototype/board_tests/board_test_config.yaml
       database_preflight_required: true
       database_preflight_report: 05_Output/reports/loop3/preflight/database_preflight.md
       prototype_plan: 04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml
@@ -123,9 +284,79 @@ nodes:
       toolchain_config: config/global/toolchains/toolchains.yaml
       vivado_project_root: 05_Output/fpga/vivado
       vitis_project_root: 05_Output/fpga/vitis
+      vivado_constraints_dir: 05_Output/fpga/vivado/constraints
+      vivado_scripts_dir: 05_Output/fpga/vivado/scripts
+      vivado_reports_dir: 05_Output/fpga/vivado/reports
+      vivado_bitstream_dir: 05_Output/fpga/vivado/bitstream
+      vivado_hw_platform_dir: 05_Output/fpga/vivado/hw_platform
+      vitis_workspace_dir: 05_Output/fpga/vitis/workspace
+      vitis_src_dir: 05_Output/fpga/vitis/src
+      vitis_platform_dir: 05_Output/fpga/vitis/platform
+      vitis_apps_dir: 05_Output/fpga/vitis/apps
+      vitis_reports_dir: 05_Output/fpga/vitis/reports
+      loop3_report_dir: 05_Output/reports/loop3
+      loop3_preflight_report_dir: 05_Output/reports/loop3/preflight
+      loop3_serial_report_dir: 05_Output/reports/loop3/serial
+      generated_xdc: 05_Output/fpga/vivado/constraints/generated_board.xdc
+      generated_ps_pl_bd_tcl: 05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl
+      vitis_boot_dir: 05_Output/fpga/vitis/boot
+      vivado_timing_report: 05_Output/fpga/vivado/reports/post_impl_timing_summary.rpt
+      vivado_drc_report: 05_Output/fpga/vivado/reports/post_impl_drc.rpt
+      vivado_implementation_report: 05_Output/reports/loop3/vivado_implementation_report.md
+      vitis_boot_report: 05_Output/reports/loop3/vitis_boot_report.md
+      board_validation_report: 05_Output/reports/loop3/board_validation_report.md
+      loop3_exit_report: 05_Output/reports/loop3/loop3_exit_report.md
+      serial_text_log: 05_Output/reports/loop3/serial/latest_serial_text.log
+      xdc_clock_ports:
+        - sys_clk=20.000
       xdc_generation: database_required
       bd_generation: plan_required
       boot_image_generation: template_required
+      resource_queries:
+        pl:
+          - PL_GCLK_50MHZ
+          - PL_LED0
+        ps_pl:
+          - PS_KEY0
+          - PS_LED1
+          - DDR
+          - PL_GCLK_50MHZ
+          - PL_LED0
+          - UART3_RX
+          - UART3_TX
+    evidence:
+      reports:
+        database_preflight: 05_Output/reports/loop3/preflight/database_preflight.md
+        prototype_plan_check: 05_Output/reports/loop3/preflight/prototype_plan_check.md
+        timing: 05_Output/fpga/vivado/reports/post_impl_timing_summary.rpt
+        drc: 05_Output/fpga/vivado/reports/post_impl_drc.rpt
+        serial: 05_Output/reports/loop3/serial/latest_serial_text.log
+      globs:
+        bitstreams: 05_Output/fpga/vivado/bitstream/*.bit
+      required_markers:
+        database_preflight_pass_any:
+          - "result: PASS"
+        prototype_plan_pass_any:
+          - "result: PASS"
+        timing_setup_all:
+          - "Setup :"
+          - "0  Failing Endpoints"
+        timing_hold_all:
+          - "Hold  :"
+          - "0  Failing Endpoints"
+        serial_echo_all:
+          - "TX "
+          - "RX "
+      release_forbidden_markers:
+        drc:
+          - " Warning"
+          - Warnings
+          - "Checks found: 1"
+        timing:
+          - TIMING-18
+          - "Missing input or output delay"
+          - no_input_delay
+          - no_output_delay
     gates:
       exit:
         - database_preflight_report_available
@@ -144,6 +375,14 @@ nodes:
       uvm: 05_Output/uvm
       fpga: 05_Output/fpga
       reports: 05_Output/reports
+    evidence:
+      reports:
+        manifest: 05_Output/manifest.yaml
+      required_markers:
+        manifest:
+          - "loop1_gate: PASS"
+          - "loop2_gate: PASS"
+          - "loop3_gate: PASS"
     gates:
       final:
         - all_enabled_nodes_passed

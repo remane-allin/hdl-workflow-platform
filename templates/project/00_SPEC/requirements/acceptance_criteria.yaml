@@ -1,0 +1,10 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: pm
+source_refs: []
+criteria: []
+exit_conditions:
+  - all safety-critical ambiguities are closed or explicitly accepted
+  - each requirement maps to architecture, verification, and prototype intent where applicable
+assumptions: []

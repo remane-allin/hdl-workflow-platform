@@ -1,7 +1,7 @@
 # ZYNQ Core Board IO Table Notes
 
 - table_id: `zynq_core_board_pin_map.v1_0`
-- source: `library/files/fpga_io_tables/ZYNQ????????V1.0.pdf`
+- source: `zynq_core_board_pin_map.v1_0`
 - connectors: X3, X4
 - normalized pins: 200
 

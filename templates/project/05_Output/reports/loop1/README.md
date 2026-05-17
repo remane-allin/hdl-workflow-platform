@@ -9,6 +9,6 @@
 - `loop1_rtl_tb_run_report.md`: evidence from the latest directed RTL/TB run.
 - `loop1_exit_report.md`: gate-level conclusion for Loop1.
 
-Use the `.template` files in this directory as the required report shape. Do
-not rename a template to `.md` until the evidence fields are filled from a fresh
-run.
+Use these template files only as report shape references. Final `.md` reports
+must be generated or refreshed from the latest Loop1 RTL/TB run; do not promote
+an unfilled template into final evidence.

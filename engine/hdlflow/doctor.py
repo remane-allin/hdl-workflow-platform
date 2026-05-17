@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .change_control import check_changes
 from .config import load_project, load_workspace, validate_config
+from .memory import check_memory
 from .pipeline import build_pipeline
 from .validate import validate_project
 
@@ -37,12 +39,26 @@ def run_doctor(workspace: Path, project_path: Path) -> DoctorResult:
     else:
         messages.append("pipeline: FAIL empty")
 
+    memory = check_memory(project_path)
+    if memory.ok:
+        messages.append("memory: PASS")
+    else:
+        messages.append("memory: FAIL")
+        messages.extend(f"memory error: {error}" for error in memory.errors)
+    messages.extend(f"memory warning: {warning}" for warning in memory.warnings)
+
+    changes = check_changes(project_path)
+    if changes.ok:
+        messages.append("change_control: PASS")
+    else:
+        messages.append("change_control: FAIL")
+        messages.extend(f"change_control issue: {message}" for message in changes.messages)
+
     lower_test = workspace_cfg.root.parent / "test"
     if lower_test.exists() and lower_test.resolve() != workspace_cfg.root:
         messages.append(f"case check: FAIL found lowercase sibling {lower_test}")
     else:
         messages.append("case check: PASS")
 
-    ok = layout.ok and not config_errors and bool(pipeline)
+    ok = layout.ok and not config_errors and bool(pipeline) and memory.ok and changes.ok
     return DoctorResult(ok=ok, messages=messages)
-

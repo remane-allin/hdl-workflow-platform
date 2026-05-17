@@ -1,0 +1,33 @@
+{
+  "doc_id": "xilinx.ug1556.2024_2",
+  "page_count": 118,
+  "section_count": 332,
+  "example_count": 0,
+  "chunk_count": 332,
+  "sections_without_text": [
+    "xilinx.ug1556.2024_2.topic.thermal_simulation_results",
+    "xilinx.ug1556.2024_2.topic.definitions_of_terminology",
+    "xilinx.ug1556.2024_2.topic.preview",
+    "xilinx.ug1556.2024_2.topic.advance",
+    "xilinx.ug1556.2024_2.topic.preliminary",
+    "xilinx.ug1556.2024_2.topic.amd",
+    "xilinx.ug1556.2024_2.topic.start",
+    "xilinx.ug1556.2024_2.topic.figure_pwr_file",
+    "xilinx.ug1556.2024_2.topic.1_summary",
+    "xilinx.ug1556.2024_2.topic.estimating_power_for_programmable_logic",
+    "xilinx.ug1556.2024_2.topic.elements",
+    "xilinx.ug1556.2024_2.topic.i_o_setting",
+    "xilinx.ug1556.2024_2.topic.clock_mhz_2",
+    "xilinx.ug1556.2024_2.topic.toggle_rate_3",
+    "xilinx.ug1556.2024_2.topic.data_rate",
+    "xilinx.ug1556.2024_2.topic.output_enable",
+    "xilinx.ug1556.2024_2.topic.estimating_power_for_ultrascale_devices",
+    "xilinx.ug1556.2024_2.topic.rf_block_support_for_ultrascale_devices",
+    "xilinx.ug1556.2024_2.topic.estimating_power_for_versal_devices",
+    "xilinx.ug1556.2024_2.topic.import_flow_2",
+    "xilinx.ug1556.2024_2.topic.additional_information_2",
+    "xilinx.ug1556.2024_2.topic.finding_additional_documentation"
+  ],
+  "examples_without_commands": [],
+  "parser": "structured document normalizer"
+}

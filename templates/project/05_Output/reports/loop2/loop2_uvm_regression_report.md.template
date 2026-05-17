@@ -1,58 +1,88 @@
-# Loop2 UVM Regression Report
+# Loop2 UVM Regression Review Report
 
 Navigation: [Report index](../README.md) | [Loop2 reports](README.md) | [Coverage index](coverage_index.md) | [UVM](../../uvm/)
 
-- project:
-- generated_at:
-- status: PASS/FAIL/BLOCKED
-- simulator: ModelSim/Questa
-- do_file: [03_Loop2_UVM_Verify/sim/regression.do](../../../03_Loop2_UVM_Verify/sim/regression.do)
-- baseline_do_file: [03_Loop2_UVM_Verify/sim/uvm_baseline.do](../../../03_Loop2_UVM_Verify/sim/uvm_baseline.do)
-- compile_script: [03_Loop2_UVM_Verify/sim/compile.do](../../../03_Loop2_UVM_Verify/sim/compile.do)
-- latest_log:
-- uvm_test_name:
-- seed_count:
-- coverage_report:
+## Review Verdict
 
-## UVM Regression Evidence
+| Item | Value |
+| --- | --- |
+| Project | TODO |
+| Generated At | TODO |
+| Result | PASS / FAIL / BLOCKED |
+| Simulator | ModelSim / Questa |
+| UVM Test(s) | TODO |
+| Owning Requirement Set | TODO |
+| Reviewer Decision | ACCEPT / REJECT / NEEDS FIX |
 
-- compile_errors:
-- compile_warnings:
-- `UVM_ERROR` count:
-- `UVM_FATAL` count:
-- assertion_failure_count:
-- scoreboard_checks:
-- scoreboard_failures:
-- regression_pass_marker:
+## Entry Conditions
+
+| Condition | Status | Evidence |
+| --- | --- | --- |
+| Loop1 gate completed before Loop2 | TODO | `memory/recovery/rollback_manifests/...` |
+| RTL and directed TB are Verilog-2001 only | TODO | Loop2 gate source policy |
+| UVM has no template artifacts | TODO | Loop2 gate `loop2_no_template_artifacts` |
+| Real UVM file set is present | TODO | cfg / agents / cov / env / seq_lib / tests / tb |
+| Requirement-to-test trace is current | TODO | `01_DocParse/trace_matrix/req_to_test.yaml` |
+
+## Regression Execution
+
+| Run | Test / Sequence | Seed | Transactions | Result | Log / Evidence |
+| --- | --- | ---: | ---: | --- | --- |
+| Precheck | TODO | TODO | TODO | TODO | transient entry check, not final signoff |
+| Full Functional Regression | TODO | TODO | TODO | TODO | TODO |
+
+## Transaction Authority
+
+| Metric | Value | Required | Status |
+| --- | ---: | ---: | --- |
+| Generated transactions | TODO | TODO | TODO |
+| Driver expected transactions | TODO | TODO | TODO |
+| Monitor observed transactions | TODO | TODO | TODO |
+| Scoreboard matched transactions | TODO | TODO | TODO |
+| Scoreboard mismatches | TODO | 0 | TODO |
+| Minimum checked transactions | TODO | `uvm_policy.min_checked_transactions` | TODO |
+
+## Scenario Mix
+
+| Scenario Class | Count / Status | Requirement Link | Notes |
+| --- | --- | --- | --- |
+| Reset and idle behavior | TODO | TODO | TODO |
+| Legal frame format | TODO | TODO | TODO |
+| RX reconstruction | TODO | TODO | TODO |
+| Ordered loopback stream | TODO | TODO | TODO |
+| Backpressure / busy behavior | TODO | TODO | TODO |
+| Boundary values | TODO | TODO | TODO |
+| Data-pattern sweep | TODO | TODO | TODO |
+
+## Checker Evidence
+
+| Checker | Status | Evidence |
+| --- | --- | --- |
+| Scoreboard/reference model | TODO | TODO |
+| Assertions / protocol checks | TODO | TODO |
+| `UVM_ERROR` count | TODO | must be 0 |
+| `UVM_FATAL` count | TODO | must be 0 |
+| Open critical/major bugs | TODO | must be 0 |
 
 ## Coverage Evidence
 
-- code_coverage:
-- functional_coverage:
-- requirement_coverage:
-- coverage_thresholds_source: [config/flow_policy.yaml](../../../config/flow_policy.yaml)
-- waivers: [coverage_waiver.json](../../../loop/coverage_waiver.json)
+| Coverage Type | Threshold | Achieved | Status | Evidence |
+| --- | ---: | ---: | --- | --- |
+| Functional coverage | TODO | TODO | TODO | `coverage_index.md` |
+| Code coverage | TODO | TODO | TODO | `coverage_index.md` |
+| Requirement coverage | 100% | TODO | TODO | trace matrix |
 
-## Scope Covered
+## Review Notes
 
-- reset/default behavior:
-- legal transactions:
-- illegal/error scenarios:
-- corner cases:
-- random or sweep scenarios:
-
-## Source Links
-
-- UVM package:
-- top-level UVM TB:
-- tests:
-- virtual sequences:
-- scoreboard:
-- coverage:
-- assertions:
+| Topic | Reviewer Comment | Required Action |
+| --- | --- | --- |
+| Stimulus authority | TODO | TODO |
+| Checker quality | TODO | TODO |
+| Coverage quality | TODO | TODO |
+| Residual risk | TODO | TODO |
 
 ## Conclusion
 
-Loop2 UVM regression status:
+Loop2 UVM regression status: TODO
 
-Next action:
+Reviewer signoff: TODO

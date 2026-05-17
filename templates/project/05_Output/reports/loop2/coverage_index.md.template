@@ -1,27 +1,42 @@
-# Loop2 Coverage Index
+# Loop2 Coverage Review Index
 
 Navigation: [Report index](../README.md) | [Loop2 reports](README.md)
 
-- project:
-- generated_at:
-- status: PASS/FAIL/BLOCKED
-- coverage_policy: [config/flow_policy.yaml](../../../config/flow_policy.yaml)
-- waiver_file: [loop/coverage_waiver.json](../../../loop/coverage_waiver.json)
+## Coverage Verdict
+
+| Item | Value |
+| --- | --- |
+| Project | TODO |
+| Generated At | TODO |
+| Result | PASS / FAIL / BLOCKED |
+| Coverage Policy | `config/global/gates/gate_levels.yaml` |
+| Waiver File | `loop/coverage_waiver.json` |
 
 ## Coverage Summary
 
 | Coverage Type | Threshold | Achieved | Status | Evidence |
 | --- | ---: | ---: | --- | --- |
-| Code | 80% | TODO | TODO |  |
-| Functional | 80% | TODO | TODO |  |
-| Requirement | 100% | TODO | TODO |  |
-| Assertion | no failure | TODO | TODO |  |
+| Functional | TODO | TODO | TODO | TODO |
+| Code | TODO | TODO | TODO | TODO |
+| Requirement | 100% | TODO | TODO | TODO |
+| Assertion / protocol checks | no failure | TODO | TODO | TODO |
+
+## Transaction Coverage
+
+| Metric | Value | Status |
+| --- | ---: | --- |
+| Total checked transactions | TODO | TODO |
+| Minimum required checked transactions | TODO | TODO |
+| Boundary values covered | TODO | TODO |
+| Pattern sweep covered | TODO | TODO |
+| Legal scenario coverage | TODO | TODO |
 
 ## Open Holes
 
-| Hole | Risk | Owner | Closure Plan/Waiver |
+| Hole | Requirement Impact | Risk | Closure Plan / Waiver |
 | --- | --- | --- | --- |
+| TODO | TODO | TODO | TODO |
 
 ## Conclusion
 
-Coverage closure:
+Coverage closure: TODO

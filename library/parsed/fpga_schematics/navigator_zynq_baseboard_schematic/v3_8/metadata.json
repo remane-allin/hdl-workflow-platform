@@ -1,15 +1,15 @@
 {
   "schematic_id": "navigator_zynq_baseboard_schematic.v3_8",
   "title": "Navigator ZYNQ baseboard schematic V3.8",
-  "source_file": "library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf",
+  "source_file": "navigator_zynq_baseboard_schematic.v3_8",
   "source_type": "pdf_schematic",
-  "parser": "pdf_extract + schematic/core-IO cross index; raw extraction output removed after database build",
+  "parser": "structured schematic/core-IO normalizer",
   "page_count": 7,
   "net_count": 442,
   "matched_core_io_count": 184,
   "interface_count": 22,
   "parsed_dir": "library/parsed/fpga_schematics/navigator_zynq_baseboard_schematic/v3_8",
-  "source_of_truth": "Original PDF remains the hardware signoff source; this database is an AI/debug retrieval index.",
+  "source_of_truth": "Structured rows are the retained local lookup source; resolve low-confidence rows against project-owned hardware evidence before signoff.",
   "structured_artifacts": [
     "library/parsed/fpga_schematics/navigator_zynq_baseboard_schematic/v3_8/nets.json",
     "library/parsed/fpga_schematics/navigator_zynq_baseboard_schematic/v3_8/nets.yaml",

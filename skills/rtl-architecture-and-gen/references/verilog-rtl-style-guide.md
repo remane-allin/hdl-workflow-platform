@@ -8,7 +8,8 @@ Source:
 Authority:
 - Project config and user requirements override this guide.
 - Spec, register map, timing rules, and interface contract override existing RTL behavior.
-- This project does not require `_i` / `_o` direction suffixes unless a local module already uses them consistently.
+- Official bus/protocol/IP naming from vendor UG, protocol specifications, or generated IP is authoritative. Preserve those names exactly at the official boundary; do not append `_i` / `_o` or other local direction suffixes to official protocol signal names.
+- Local project aliases may use direction suffixes only for non-official, module-private, or adapter-side signals when they do not obscure official naming.
 
 Purpose:
 - This guide is structured for loop use.
@@ -37,6 +38,8 @@ Purpose:
 - Do not leave unused or undriven signals in checked-in RTL.
 - Use named port connections for every instance. Do not use positional instance connections.
 - Use `_n` only for active-low signals.
+- For official bus/protocol/IP interfaces, preserve the documented signal names exactly at the boundary. Do not add `_i` / `_o`, change case, abbreviate, or translate them.
+- If a local module needs internal direction-qualified names, place the rename in a wrapper or adapter and document the one-to-one mapping to the official UG/IP name.
 
 ### Sequential Logic
 
@@ -126,6 +129,7 @@ Purpose:
 
 - Declare one port per line for non-trivial modules.
 - Keep instance connection expressions simple; create named wires for non-trivial glue logic.
+- For standard bus/IP ports, prefer official interface names over local style suffixes; wrapper aliases must be one-to-one documented.
 - Keep function and task definitions local unless they are reviewed shared utilities.
 
 ### Structure And Ownership
@@ -201,6 +205,7 @@ Use this checklist before claiming RTL completion in loop work:
 - The project top module is hierarchy-only and contains no behavioral logic.
 - Module ports use Verilog-2001 ANSI-style declaration.
 - Ports and internal signals are explicit.
+- Official bus/protocol/IP port names match the referenced UG/IP naming and do not have added `_i` / `_o` suffixes.
 - No implicit wires remain.
 - Named port connections are used consistently.
 - Each register has exactly one sequential owner.

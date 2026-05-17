@@ -1,0 +1,18 @@
+schema_version: 1
+board: navigator_zynq_7020
+tool_version: "2024.2"
+prototype_modes:
+  - pl
+  - ps_pl
+default_resources:
+  pl:
+    - PL_GCLK_50MHZ
+    - PL_LED0
+  ps_pl:
+    - PS_KEY0
+    - PS_LED1
+    - DDR
+    - PL_GCLK_50MHZ
+    - PL_LED0
+    - UART3_RX
+    - UART3_TX

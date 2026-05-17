@@ -21,7 +21,7 @@ Navigation: [Report index](../README.md) | [Loop3 reports](README.md)
 | Vitis boot/app artifacts generated, if applicable | TODO | `vitis_boot_report.md` |
 | Vivado synthesis and implementation pass | TODO | `vivado_implementation_report.md` |
 | Timing and DRC pass or have approved waivers | TODO | `timing_drc_report.md` |
-| Board smoke/prototype checks pass | TODO | `board_smoke_report.md` |
+| Board validation/prototype checks pass | TODO | `board_validation_report.md` |
 | RTL changes during Loop3 reran Loop1 and Loop2 | TODO |  |
 
 ## Blocking Issues

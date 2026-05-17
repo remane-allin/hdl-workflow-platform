@@ -32,7 +32,7 @@ Use this skill for evidence-driven simulation work under `02_Loop1_RTL_TB/sim/`,
 5. Route the smallest justified next action:
    - RTL-side -> `$rtl-architecture-and-gen`
    - TB/UVM-side -> `$uvm-env-and-test-build`
-   - document contradiction -> `$mineru-spec-normalizer`
+   - document contradiction -> `$requirements-frontdoor` or `$hdl-requirements-decompose`
 6. If logs are insufficient, reduce the suspect area and use waveform-guided debugging.
 7. Update project memory with the latest status and next step.
 

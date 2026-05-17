@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .library import get_entry
+from .project import require_project_instance
 from .simple_yaml import load_yaml
 
 
@@ -111,7 +112,7 @@ def write_loop2_database_preflight(workspace: Path, project_path: Path) -> Loop2
     """Query the local template database and write Loop2 preflight evidence."""
 
     workspace = workspace.resolve()
-    project = project_path.resolve()
+    project = require_project_instance(project_path)
     report_path = project / DEFAULT_PREFLIGHT_REL
     report_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -183,9 +184,7 @@ def build_loop2_binding_database(
     db_path: Path | None = None,
     workspace: Path | None = None,
 ) -> Loop2BindingResult:
-    project = project.resolve()
-    if not project.is_dir():
-        raise FileNotFoundError(f"project directory not found: {project}")
+    project = require_project_instance(project)
 
     db_path = _resolve_project_path(project, db_path or DEFAULT_DB_REL)
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -226,7 +225,7 @@ def build_loop2_binding_database(
 
 
 def format_loop2_binding_rows(project: Path, *, req_id: str | None = None) -> list[str]:
-    project = project.resolve()
+    project = require_project_instance(project)
     db_path = project / DEFAULT_DB_REL
     if not db_path.is_file():
         raise FileNotFoundError(f"Loop2 binding database not found: {db_path}")
@@ -396,11 +395,23 @@ def _collect_requirement_bindings(project: Path) -> dict[str, set[str]]:
         return {}
     data = load_yaml(trace_path)
     links = data.get("links", {})
-    if not isinstance(links, dict):
-        return {}
 
     result: dict[str, set[str]] = {}
-    for req_id, raw_paths in links.items():
+    if isinstance(links, dict):
+        items = links.items()
+    elif isinstance(links, list):
+        items = []
+        for item in links:
+            if not isinstance(item, dict):
+                continue
+            req_id = item.get("req_id") or item.get("requirement_id") or item.get("source")
+            raw_paths = item.get("paths") or item.get("artifacts") or item.get("targets")
+            if req_id:
+                items.append((req_id, raw_paths))
+    else:
+        return {}
+
+    for req_id, raw_paths in items:
         paths = {_normalize_rel_path(path) for path in _as_list(raw_paths)}
         loop2_paths = {
             path
@@ -466,7 +477,6 @@ def _collect_evidence(project: Path) -> list[dict[str, str]]:
         )
 
     for report_name in [
-        "loop2_uvm_baseline_report.md",
         "loop2_uvm_regression_report.md",
         "coverage_index.md",
         "loop2_exit_report.md",

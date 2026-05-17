@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug835.2024_2",
+  "title": "Vivado Design Suite Tcl Command Reference Guide (UG835)",
+  "vendor": "xilinx",
+  "tool": "vivado",
+  "tool_version": "2024.2",
+  "source_file": "xilinx.ug835.2024_2",
+  "source_type": "pdf",
+  "parser": "structured command normalizer",
+  "page_count": 1607,
+  "command_count": 765,
+  "toc_command_count": 765,
+  "parsed_dir": "parsed/software_guides/xilinx_ug835/2024_2",
+  "structured_artifacts": [
+    "parsed/software_guides/xilinx_ug835/2024_2/commands.json",
+    "parsed/software_guides/xilinx_ug835/2024_2/chunks.jsonl",
+    "parsed/software_guides/xilinx_ug835/2024_2/quality_report.json"
+  ],
+  "notes": [
+    "Built for AI-assisted Vivado Tcl script generation, testing, and debug.",
+    "Command entries are split by UG835 command headers instead of raw pages.",
+    "Raw source is not retained locally; use the structured database for agent lookup."
+  ]
+}

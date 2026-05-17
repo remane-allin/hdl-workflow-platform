@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .project import require_project_instance
+
 
 @dataclass(frozen=True)
 class OutputEnsureResult:
@@ -12,7 +14,7 @@ class OutputEnsureResult:
 
 
 def ensure_output_dirs(project_path: Path) -> OutputEnsureResult:
-    project = project_path.resolve()
+    project = require_project_instance(project_path)
     output = project / "05_Output"
     messages: list[str] = []
 

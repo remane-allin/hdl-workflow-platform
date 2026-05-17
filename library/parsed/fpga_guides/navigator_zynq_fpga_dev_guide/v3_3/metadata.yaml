@@ -1,0 +1,22 @@
+guide_id: navigator_zynq_fpga_dev_guide.v3_3.chapter5
+title: Navigator ZYNQ FPGA Development Guide V3.3 - Chapter 5 Hardware Resources
+source_file: external_source_not_retained
+source_type: pdf_guide
+parser: structured hardware-resource normalizer
+page_count: 58
+chapter: 5
+chapter_title: Hardware Resources
+resource_count: 185
+section_count: 46
+linked_io_count: 97
+linked_schematic_count: 93
+related_indexes:
+  - zynq_core_board_pin_map.v1_0
+  - navigator_zynq_baseboard_schematic.v3_8
+source_of_truth: Structured rows are the retained local lookup source; resolve low-confidence rows against project-owned hardware evidence before signoff.
+structured_artifacts:
+  - library/parsed/fpga_guides/navigator_zynq_fpga_dev_guide/v3_3/resources.json
+  - library/parsed/fpga_guides/navigator_zynq_fpga_dev_guide/v3_3/resources.yaml
+  - library/parsed/fpga_guides/navigator_zynq_fpga_dev_guide/v3_3/sections.json
+  - library/parsed/fpga_guides/navigator_zynq_fpga_dev_guide/v3_3/notes.json
+retention: structured_db_only

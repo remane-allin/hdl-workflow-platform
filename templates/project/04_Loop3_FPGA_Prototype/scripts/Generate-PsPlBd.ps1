@@ -1,5 +1,5 @@
 param(
-    [string]$Output = '05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl'
+    [string]$Output = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,11 +9,16 @@ $engineRoot = Join-Path $workspaceRoot 'engine'
 
 Push-Location $engineRoot
 try {
-    & python -m hdlflow.cli generate-ps-pl-bd --project $projectRoot --output $Output
+    $bdArgs = @('-m', 'hdlflow.cli', 'generate-ps-pl-bd', '--project', $projectRoot)
+    if ($Output) {
+        $bdArgs += @('--output', $Output)
+    }
+    & python @bdArgs
     if ($LASTEXITCODE -ne 0) { throw "generate-ps-pl-bd failed with code $LASTEXITCODE" }
 }
 finally {
     Pop-Location
 }
 
-Write-Host "PS_PL_BD_GENERATE_PASS output=$Output"
+$outputSource = if ($Output) { $Output } else { 'project_config' }
+Write-Host "PS_PL_BD_GENERATE_PASS output=$outputSource"

@@ -17,18 +17,18 @@ class PROJECT_base_vseq extends uvm_sequence;
   endtask
 endclass
 
-class PROJECT_smoke_vseq extends PROJECT_base_vseq;
-  `uvm_object_utils(PROJECT_smoke_vseq)
+class PROJECT_full_functional_vseq extends PROJECT_base_vseq;
+  `uvm_object_utils(PROJECT_full_functional_vseq)
 
-  function new(string name = "PROJECT_smoke_vseq");
+  function new(string name = "PROJECT_full_functional_vseq");
     super.new(name);
   endfunction
 
   task body();
     super.body();
-    // Add one deterministic legal end-to-end scenario.
-    // PROJECT_protocol_smoke_sequence protocol_seq;
-    // protocol_seq = PROJECT_protocol_smoke_sequence::type_id::create("protocol_seq");
+    // Add deterministic legal end-to-end scenarios that close the Loop2 plan.
+    // PROJECT_protocol_full_functional_sequence protocol_seq;
+    // protocol_seq = PROJECT_protocol_full_functional_sequence::type_id::create("protocol_seq");
     // protocol_seq.start(p_sequencer.protocol_sqr);
   endtask
 endclass

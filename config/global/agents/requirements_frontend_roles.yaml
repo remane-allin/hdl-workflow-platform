@@ -1,0 +1,51 @@
+schema_version: 1
+workflow_id: requirements_frontdoor
+purpose: five_role_structured_requirements_analysis_before_three_loop
+state_owner: memory/index.yaml
+gate_owner: engine/hdlflow/gates.py
+roles:
+  coordinator:
+    title: Workflow Coordinator
+    owns: workflow state, role handoff, review collection, memory checkpoint
+    outputs:
+      - 01_DocParse/review/multi_agent_review.md
+      - 01_DocParse/review/role_findings.yaml
+      - 01_DocParse/review/decision_log.yaml
+  pm:
+    title: Product Manager
+    owns: requirements, ambiguity removal, acceptance criteria, boundary conditions
+    outputs:
+      - 00_SPEC/requirements/srs.yaml
+      - 00_SPEC/requirements/srs.md
+      - 00_SPEC/requirements/acceptance_criteria.yaml
+      - 00_SPEC/requirements/open_questions.md
+  architect:
+    title: Architect
+    owns: dataflow, state machines, timing model, module partition, interface contracts
+    outputs:
+      - 01_DocParse/architecture/add.md
+      - 01_DocParse/architecture/module_plan.yaml
+      - 01_DocParse/architecture/interface_contracts.yaml
+      - 01_DocParse/architecture/dataflow.yaml
+      - 01_DocParse/architecture/state_machines.yaml
+      - 01_DocParse/architecture/timing_model.yaml
+  verification_planner:
+    title: Verification Planner
+    owns: module and system verification intent, assertions, coverage, UVM handoff
+    outputs:
+      - 01_DocParse/verification/verification_plan.yaml
+      - 01_DocParse/verification/verification_plan.md
+      - 01_DocParse/verification/assertion_plan.yaml
+      - 01_DocParse/verification/coverage_plan.yaml
+  prototype_planner:
+    title: Prototype Planner
+    owns: FPGA feasibility, resources, pins, clocks, resets, PS/PL prototype constraints
+    outputs:
+      - 01_DocParse/prototype/prototype_plan.yaml
+      - 01_DocParse/prototype/prototype_plan.md
+      - 01_DocParse/prototype/clock_plan.yaml
+      - 01_DocParse/prototype/pin_resource_intent.yaml
+handoff:
+  loop1: architecture module plan plus module-level verification plan
+  loop2: architecture artifacts plus system verification, assertion, and coverage plans
+  loop3: architecture artifacts plus prototype, clock, and pin/resource plans

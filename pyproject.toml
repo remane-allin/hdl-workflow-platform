@@ -1,0 +1,19 @@
+[project]
+name = "hdl-workflow-platform"
+version = "0.1.0"
+description = "Local HDL workflow platform for RTL, UVM, and FPGA prototype projects."
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "engine"}
+packages = ["hdlflow"]
+
+[tool.hdlflow]
+supported_os = ["Windows", "Linux"]
+primary_cli = "python -m hdlflow.cli"
+project_create = "python scripts/new_hdl_project.py <name>"

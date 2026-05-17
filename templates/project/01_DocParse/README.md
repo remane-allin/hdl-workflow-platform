@@ -1,12 +1,28 @@
 # 01_DocParse
 
-Owns document parsing and requirement processing.
+Owns the structured requirements front door and the normalized design intent
+that feeds all three implementation loops.
 
-- `structured_spec/` - normalized structured specs.
+- `architecture/` - ADD, RTL planning rules, module partition, interfaces, dataflow, state machines, timing model.
+- `verification/` - module/system verification plan, assertion intent, coverage intent.
+- `prototype/` - FPGA feasibility, clocks, pins, resources, PS/PL boundary intent.
+- `structured_spec/` - compact machine-readable specs consumed by generators.
 - `req_decompose/` - decomposed features, tasks, and acceptance checks.
-- `parsed/mineru/` - retained MinerU parser output when source documents are ingested.
-- `review/` - assumption logs and spec diffs before they become RTL/TB/UVM behavior.
-- `trace_matrix/` - requirement-to-RTL/test/result trace matrices.
+- `review/` - multi-role findings, decision log, assumptions, and spec diffs.
+- `trace_matrix/` - requirement-to-architecture/RTL/test/prototype trace matrices.
 
-Do not edit `structured_spec/` to match a broken implementation. Loop1 and
-Loop2 must treat these files as the source of intent.
+Run the front-door scaffold before broad RTL, UVM, or prototype work:
+
+```powershell
+python -m hdlflow.cli requirements-frontdoor-init --project <project> --status DRAFT
+python -m hdlflow.cli requirements-frontdoor-check --project <project>
+```
+
+Loop1, Loop2, and Loop3 must share this same analysis output. Do not edit these
+files merely to match a broken implementation; change the requirement or
+architecture intent through change control first.
+
+Architecture planning must reference `architecture/rtl_planning_rules.yaml`,
+which is derived from `skills/rtl-architecture-and-gen/SKILL.md` and its
+Verilog RTL style guide. Loop1 RTL generation is blocked unless that planning
+policy is present and READY.

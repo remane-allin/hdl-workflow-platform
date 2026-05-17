@@ -1,0 +1,17 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: architect
+source_refs: []
+rtl_planning_policy_ref: 01_DocParse/architecture/rtl_planning_rules.yaml
+modules: []
+top_level:
+  name: ""
+  wrapper_policy: hierarchy-only top required by rtl-architecture-and-gen
+clock_reset: []
+dependencies: []
+loop_consumers:
+  - Loop1 RTL/TB
+  - Loop2 UVM
+  - Loop3 FPGA Prototype
+assumptions: []

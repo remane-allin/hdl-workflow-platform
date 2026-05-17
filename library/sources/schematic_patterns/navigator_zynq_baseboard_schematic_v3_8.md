@@ -2,14 +2,16 @@
 
 ## Purpose
 
-AI-facing retrieval entry for the Navigator ZYNQ baseboard schematic. Use it during Loop3 FPGA prototype work to locate board nets, connector pins, core-board IO pins, and likely interface ownership without opening the full PDF first.
+AI-facing retrieval entry for the Navigator ZYNQ baseboard schematic database.
+Use it during Loop3 FPGA prototype work to locate board nets, connector pins,
+core-board IO pins, and likely interface ownership from normalized rows.
 
 ## Source
 
-- Source PDF: `library/files/fpga_schematics/领航者ZYNQ底板原理图_V3.8.pdf`
 - Parsed data: `library/parsed/fpga_schematics/navigator_zynq_baseboard_schematic/v3_8/`
 - Schematic ID: `navigator_zynq_baseboard_schematic.v3_8`
-- Parser flow: MinerU flash extraction plus `pdftotext` layout text plus cross-indexing against `zynq_core_board_pin_map.v1_0`
+- Retention: structured database artifacts only
+- Related IO table: `zynq_core_board_pin_map.v1_0`
 
 ## Query Pattern
 
@@ -25,10 +27,15 @@ python -m hdlflow.cli get-fpga-schematic-nets --workspace . --schematic-id navig
 
 ## Retrieval Notes
 
-- High-confidence rows are matched to the core-board IO table and include core connector, connector pin, ZYNQ package pin, bank, and voltage when available.
-- Medium-confidence rows are extracted from schematic text/OCR tokens and are useful for discovery, but the original PDF remains the hardware signoff source.
-- Schematic connector mapping follows the parsed baseboard/core-board relationship: `J2` corresponds to core connector `X3`, and `J1` corresponds to core connector `X4`.
-- For names with spaces in the PDF, query either form. For example, `SD D2` and `SD_D2` resolve through normalized signal matching.
+- High-confidence rows are matched to the core-board IO table and include core
+  connector, connector pin, ZYNQ package pin, bank, and voltage when available.
+- Medium-confidence rows are useful for discovery, but they should be reviewed
+  before final hardware signoff.
+- Schematic connector mapping follows the parsed baseboard/core-board
+  relationship: `J2` corresponds to core connector `X3`, and `J1` corresponds
+  to core connector `X4`.
+- For names with spaces in the source labels, query either form. For example,
+  `SD D2` and `SD_D2` resolve through normalized signal matching.
 
 ## Main Interfaces
 
@@ -42,4 +49,6 @@ python -m hdlflow.cli get-fpga-schematic-nets --workspace . --schematic-id navig
 
 ## Signoff Boundary
 
-This entry is a local retrieval database for AI/debug assistance. Before changing constraints, board wiring, or FPGA pin assignments, verify the result against the original schematic PDF and the core-board IO table.
+This entry is a local retrieval database for AI/debug assistance. Before
+changing constraints, board wiring, or FPGA pin assignments, resolve any
+low-confidence rows against project-owned hardware evidence.

@@ -1,0 +1,2 @@
+# hdlflow currently uses only the Python standard library.
+# Keep this file present so environment bootstrap can pin future runtime dependencies.

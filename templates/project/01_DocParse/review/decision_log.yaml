@@ -1,0 +1,12 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: coordinator
+source_refs: []
+decisions: []
+rejected_alternatives: []
+handoff:
+  loop1: architecture/module_plan.yaml plus verification/verification_plan.yaml
+  loop2: architecture artifacts plus verification artifacts
+  loop3: architecture artifacts plus prototype artifacts
+assumptions: []

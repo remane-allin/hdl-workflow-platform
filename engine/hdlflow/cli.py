@@ -7,12 +7,12 @@ import sys
 from pathlib import Path
 
 from .artifacts import ensure_output_dirs
+from .change_control import approve_change, check_changes, close_change, open_change, record_impact
 from .config import load_project, load_workspace, validate_config
 from .doctor import run_doctor
+from .gates import run_final_audit, run_gate
 from .library import (
     build_library,
-    cleanup_library_temp_outputs,
-    finalize_library_database,
     format_detail,
     format_hardware_resources,
     format_io_pins,
@@ -39,7 +39,9 @@ from .loop2_bindings import (
     format_loop2_binding_rows,
     write_loop2_database_preflight,
 )
-from .memory import auto_record_workflow_event, check_memory, record_memory_iteration
+from .loop1_reports import refresh_loop1_reports
+from .loop2_reports import refresh_loop2_reports
+from .memory import auto_record_workflow_event, check_memory, record_failure_event, record_memory_iteration
 from .pipeline import build_pipeline, format_pipeline
 from .prototype import write_prototype_preflight
 from .prototype import (
@@ -49,12 +51,9 @@ from .prototype import (
     validate_prototype_plan,
 )
 from .reports import write_config_run_report
+from .requirements_frontend import check_requirements_frontend, initialize_requirements_frontend
 from .scaffold import create_project
-from .ug1118 import extract_ug1118
-from .ug835 import extract_ug835
-from .ug894 import extract_ug894
 from .validate import validate_project
-from .vitis_guides import extract_vitis_guide
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -94,6 +93,68 @@ def build_parser() -> argparse.ArgumentParser:
     ensure_parser = subparsers.add_parser("ensure-output", help="Ensure canonical 05_Output directories exist.")
     ensure_parser.add_argument("--project", required=True, help="Project path.")
 
+    gate_parser = subparsers.add_parser("run-gate", help="Run executable gate checks for a workflow node.")
+    gate_parser.add_argument("--project", required=True, help="Project path.")
+    gate_parser.add_argument("--node", required=True, help="Node or alias: spec, docparse, loop1, loop2, loop3, final.")
+    gate_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
+    gate_parser.add_argument("--change-id", help="Approved change request ID to bind to this gate run.")
+
+    final_audit_parser = subparsers.add_parser("final-audit", help="Run the strict final release gate and write final audit evidence.")
+    final_audit_parser.add_argument("--project", required=True, help="Project path.")
+    final_audit_parser.add_argument("--level", choices=["debug", "develop", "release"], default="release")
+
+    change_open_parser = subparsers.add_parser("change-open", help="Open a controlled design change request.")
+    change_open_parser.add_argument("--project", required=True, help="Project path.")
+    change_open_parser.add_argument("--title", required=True)
+    change_open_parser.add_argument("--reason", required=True)
+    change_open_parser.add_argument("--scope", required=True)
+    change_open_parser.add_argument("--risk", required=True)
+    change_open_parser.add_argument("--owner", default="project_local")
+
+    change_impact_parser = subparsers.add_parser("change-impact", help="Record impact analysis for a change request.")
+    change_impact_parser.add_argument("--project", required=True, help="Project path.")
+    change_impact_parser.add_argument("--change-id", required=True)
+    change_impact_parser.add_argument("--requirement", action="append", default=[])
+    change_impact_parser.add_argument("--artifact", action="append", default=[])
+    change_impact_parser.add_argument("--verification", action="append", default=[])
+    change_impact_parser.add_argument("--rollback", required=True)
+    change_impact_parser.add_argument("--risk", required=True)
+
+    change_approve_parser = subparsers.add_parser("change-approve", help="Approve or reject a change request.")
+    change_approve_parser.add_argument("--project", required=True, help="Project path.")
+    change_approve_parser.add_argument("--change-id", required=True)
+    change_approve_parser.add_argument("--approver", required=True)
+    change_approve_parser.add_argument("--decision", choices=["approved", "rejected"], required=True)
+    change_approve_parser.add_argument("--notes", required=True)
+
+    change_close_parser = subparsers.add_parser("change-close", help="Close a change request after gate evidence is available.")
+    change_close_parser.add_argument("--project", required=True, help="Project path.")
+    change_close_parser.add_argument("--change-id", required=True)
+    change_close_parser.add_argument("--gate-report", required=True)
+    change_close_parser.add_argument("--notes", required=True)
+
+    change_check_parser = subparsers.add_parser("change-check", help="Validate change-control records.")
+    change_check_parser.add_argument("--project", required=True, help="Project path.")
+
+    frontdoor_init_parser = subparsers.add_parser(
+        "requirements-frontdoor-init",
+        help="Create the five-role 00_SPEC to 01_DocParse front-end artifact contract.",
+    )
+    frontdoor_init_parser.add_argument("--project", required=True, help="Project path.")
+    frontdoor_init_parser.add_argument("--status", choices=["DRAFT", "READY"], default="DRAFT")
+    frontdoor_init_parser.add_argument("--force", action="store_true", help="Overwrite existing front-end artifacts.")
+
+    frontdoor_check_parser = subparsers.add_parser(
+        "requirements-frontdoor-check",
+        help="Validate five-role requirements, architecture, verification, prototype, review, and trace artifacts.",
+    )
+    frontdoor_check_parser.add_argument("--project", required=True, help="Project path.")
+    frontdoor_check_parser.add_argument(
+        "--allow-draft",
+        action="store_true",
+        help="Check structure only and do not require status: READY.",
+    )
+
     preflight_parser = subparsers.add_parser(
         "prototype-preflight",
         help="Run required Loop3 database lookups and write a preflight report.",
@@ -101,15 +162,15 @@ def build_parser() -> argparse.ArgumentParser:
     preflight_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
     preflight_parser.add_argument("--project", required=True, help="Project path.")
     preflight_parser.add_argument("--mode", choices=["pl", "ps_pl"], required=True, help="Prototype mode.")
-    preflight_parser.add_argument("--board", default="navigator_zynq_7020", help="Board ID.")
+    preflight_parser.add_argument("--board", help="Board ID. Overrides project prototype_policy.selected_board.")
     preflight_parser.add_argument("--signal", action="append", help="Hardware signal/resource to query. Repeatable.")
     preflight_parser.add_argument("--tcl-command", action="append", help="Vivado Tcl command to query. Repeatable.")
-    preflight_parser.add_argument("--tool-version", default="2024.2", help="Tool database version.")
+    preflight_parser.add_argument("--tool-version", help="Tool database version. Defaults to project prototype_policy.tool_version or 2024.2.")
 
     xdc_parser = subparsers.add_parser("generate-xdc", help="Generate XDC constraints from the local FPGA database.")
     xdc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
     xdc_parser.add_argument("--project", required=True, help="Project path.")
-    xdc_parser.add_argument("--port", action="append", required=True, help="Port mapping PORT=DATABASE_SIGNAL. Repeatable.")
+    xdc_parser.add_argument("--port", action="append", help="Port mapping PORT=DATABASE_SIGNAL. Repeatable. Defaults to prototype_plan.pl_port_assignments.")
     xdc_parser.add_argument("--clock", action="append", help="Clock mapping PORT=PERIOD_NS. Repeatable.")
     xdc_parser.add_argument("--output", help="Project-relative output XDC path.")
 
@@ -154,6 +215,18 @@ def build_parser() -> argparse.ArgumentParser:
     loop2_bind_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
     loop2_bind_parser.add_argument("--db", help="Optional project-relative or absolute SQLite output path.")
 
+    loop1_report_parser = subparsers.add_parser(
+        "loop1-refresh-reports",
+        help="Overwrite Loop1 reports from the latest directed RTL/TB simulation log.",
+    )
+    loop1_report_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop2_report_parser = subparsers.add_parser(
+        "loop2-refresh-reports",
+        help="Overwrite Loop2 final reports from the latest full functional regression log and coverage.",
+    )
+    loop2_report_parser.add_argument("--project", required=True, help="Project path.")
+
     loop2_preflight_parser = subparsers.add_parser(
         "loop2-database-preflight",
         help="Run required Loop2 template database lookups and write a preflight report.",
@@ -167,35 +240,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
     library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-
-    library_clean_parser = subparsers.add_parser("library-clean-temp", help="Remove library parser temporary outputs.")
-    library_clean_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-
-    library_finalize_parser = subparsers.add_parser(
-        "library-finalize",
-        help="Build the SQLite library index, then remove parser temporary outputs.",
-    )
-    library_finalize_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-
-    ug835_parser = subparsers.add_parser("ingest-ug835", help="Extract UG835 into software Tcl database artifacts.")
-    ug835_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-    ug835_parser.add_argument("--pdf", help="Path to UG835 PDF. Defaults to library/files/fpga_ug_pdfs/UG835.pdf.")
-
-    ug894_parser = subparsers.add_parser("ingest-ug894", help="Extract UG894 into software Tcl scripting guide artifacts.")
-    ug894_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-    ug894_parser.add_argument("--pdf", help="Path to UG894 PDF. Defaults to library/files/fpga_ug_pdfs/ug894.pdf.")
-    ug894_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory containing ug894.md/json.")
-
-    ug1118_parser = subparsers.add_parser("ingest-ug1118", help="Extract UG1118 into software Tcl custom IP guide artifacts.")
-    ug1118_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-    ug1118_parser.add_argument("--pdf", help="Path to UG1118 PDF. Defaults to library/files/fpga_ug_pdfs/ug1118.pdf.")
-    ug1118_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory containing ug1118.md/json.")
-
-    vitis_guide_parser = subparsers.add_parser("ingest-vitis-guide", help="Extract a Vitis/PDM guide into software guide artifacts.")
-    vitis_guide_parser.add_argument("guide", choices=["ug908", "ug1553", "ug1556", "ug1701", "ug1702"], help="Guide key.")
-    vitis_guide_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
-    vitis_guide_parser.add_argument("--pdf", help="Optional PDF path.")
-    vitis_guide_parser.add_argument("--mineru-dir", help="Existing MinerU extract directory.")
 
     toc_parser = subparsers.add_parser("get-workflow-toc", help="List library entries for a workflow or context.")
     toc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
@@ -334,6 +378,168 @@ def main(argv: list[str] | None = None) -> int:
             for line in result.messages:
                 print(line)
             return 0
+        if args.command == "run-gate":
+            result = run_gate(Path(args.project), args.node, level=args.level, change_id=args.change_id)
+            print(f"report: {result.report_path}")
+            for check in result.checks:
+                print(f"{check.status}: {check.name} - {check.detail}")
+            if result.ok:
+                if result.manifest_path:
+                    print(f"manifest: {result.manifest_path}")
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event=f"gate-{result.node}-{args.level}".replace("_", "-"),
+                        node=result.node,
+                        gate_level=args.level,
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes=f"{result.node} {args.level} gate passed",
+                        artifacts=[result.report_path, *( [result.manifest_path] if result.manifest_path else [] )],
+                        latest_summary=f"{result.node} {args.level} gate passed",
+                    )
+                )
+                return 0
+            failure = record_failure_event(
+                Path(args.project),
+                command=f"run-gate --node {args.node} --level {args.level}",
+                message=f"{result.node} gate failed",
+                detail=str(result.report_path),
+            )
+            print(f"failure_record: {failure.path}")
+            return 1
+        if args.command == "final-audit":
+            result = run_final_audit(Path(args.project), level=args.level)
+            print(f"report: {result.report_path}")
+            for check in result.checks:
+                print(f"{check.status}: {check.name} - {check.detail}")
+            if result.ok:
+                if result.manifest_path:
+                    print(f"manifest: {result.manifest_path}")
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event=f"final-audit-{args.level}",
+                        node=result.node,
+                        gate_level=args.level,
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes=f"Final {args.level} audit passed",
+                        artifacts=[result.report_path, *( [result.manifest_path] if result.manifest_path else [] )],
+                        latest_summary=f"Final {args.level} audit passed",
+                        next_action="Archive or tag the release evidence",
+                    )
+                )
+                return 0
+            failure = record_failure_event(
+                Path(args.project),
+                command=f"final-audit --level {args.level}",
+                message="final audit failed",
+                detail=str(result.report_path),
+            )
+            print(f"failure_record: {failure.path}")
+            return 1
+        if args.command == "change-open":
+            result = open_change(
+                Path(args.project),
+                title=args.title,
+                reason=args.reason,
+                scope=args.scope,
+                risk=args.risk,
+                owner=args.owner,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-impact":
+            result = record_impact(
+                Path(args.project),
+                change_id=args.change_id,
+                requirements=args.requirement,
+                artifacts=args.artifact,
+                verification=args.verification,
+                rollback=args.rollback,
+                risk=args.risk,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-approve":
+            result = approve_change(
+                Path(args.project),
+                change_id=args.change_id,
+                approver=args.approver,
+                decision=args.decision,
+                notes=args.notes,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-close":
+            result = close_change(Path(args.project), change_id=args.change_id, gate_report=args.gate_report, notes=args.notes)
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-check":
+            result = check_changes(Path(args.project))
+            print(f"report: {result.report_path}")
+            for message in result.messages:
+                print(message)
+            return 0 if result.ok else 1
+        if args.command == "requirements-frontdoor-init":
+            result = initialize_requirements_frontend(Path(args.project), status=args.status, force=args.force)
+            print(f"report: {result.report_path}")
+            for item in result.created:
+                print(f"created: {item}")
+            for item in result.updated:
+                print(f"updated: {item}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok and args.status == "READY":
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="requirements-frontdoor-ready",
+                        node="01_DocParse",
+                        gate_level="frontdoor",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Five-role requirements front door initialized and ready",
+                        artifacts=[result.report_path],
+                        latest_summary="Requirements front door ready for DocParse gate",
+                    )
+                )
+            print("requirements frontdoor init: PASS" if result.ok else "requirements frontdoor init: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "requirements-frontdoor-check":
+            result = check_requirements_frontend(Path(args.project), require_ready=not args.allow_draft)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok and not args.allow_draft:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="requirements-frontdoor-check",
+                        node="01_DocParse",
+                        gate_level="frontdoor",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Five-role requirements front door check passed",
+                        artifacts=[result.report_path],
+                        latest_summary="Requirements front door check passed",
+                    )
+                )
+            print("requirements frontdoor check: PASS" if result.ok else "requirements frontdoor check: FAIL")
+            return 0 if result.ok else 1
         if args.command == "prototype-preflight":
             result = write_prototype_preflight(
                 Path(args.workspace),
@@ -359,7 +565,7 @@ def main(argv: list[str] | None = None) -> int:
                     gate_result="PASS",
                     memory_record=result.report_path,
                     report=result.report_path,
-                    notes=f"Database preflight passed for {args.mode} on {args.board}",
+                    notes=f"Database preflight passed for {result.mode} on {result.board}",
                     artifacts=[result.report_path],
                 )
             )
@@ -499,6 +705,25 @@ def main(argv: list[str] | None = None) -> int:
             ok = result.missing_artifacts == 0 and result.missing_database_items == 0
             print("loop2 binding database: PASS" if ok else "loop2 binding database: FAIL")
             return 0 if ok else 1
+        if args.command == "loop1-refresh-reports":
+            result = refresh_loop1_reports(Path(args.project))
+            for report_path in result.report_paths:
+                print(f"report: {report_path}")
+            print(f"result: {result.result}")
+            print(f"directed_test_count: {result.test_count}")
+            print(f"errors: {result.error_count}")
+            return 0 if result.result == "PASS" else 1
+        if args.command == "loop2-refresh-reports":
+            result = refresh_loop2_reports(Path(args.project))
+            for report_path in result.report_paths:
+                print(f"report: {report_path}")
+            print(f"result: {result.result}")
+            print(f"transactions_total: {result.transactions_total}")
+            print(f"UVM_ERROR: {result.uvm_error_count}")
+            print(f"UVM_FATAL: {result.uvm_fatal_count}")
+            print(f"functional_coverage: {result.functional_coverage}")
+            print(f"code_coverage: {result.code_coverage}")
+            return 0 if result.result == "PASS" else 1
         if args.command == "loop2-database-preflight":
             result = write_loop2_database_preflight(Path(args.workspace), Path(args.project))
             print(f"report: {result.report_path}")
@@ -514,54 +739,6 @@ def main(argv: list[str] | None = None) -> int:
             db_path = build_library(Path(args.workspace))
             print(f"library: {db_path}")
             print("library build: PASS")
-            return 0
-        if args.command == "library-clean-temp":
-            removed = cleanup_library_temp_outputs(Path(args.workspace))
-            for path in removed:
-                print(f"removed: {path}")
-            print(f"library clean temp: PASS ({len(removed)} removed)")
-            return 0
-        if args.command == "library-finalize":
-            db_path, removed = finalize_library_database(Path(args.workspace))
-            print(f"library: {db_path}")
-            for path in removed:
-                print(f"removed: {path}")
-            print(f"library finalize: PASS ({len(removed)} temp paths removed)")
-            return 0
-        if args.command == "ingest-ug835":
-            pdf_path = Path(args.pdf) if args.pdf else None
-            out_dir = extract_ug835(Path(args.workspace), pdf_path)
-            db_path = build_library(Path(args.workspace))
-            print(f"ug835 parsed: {out_dir}")
-            print(f"library: {db_path}")
-            print("ingest ug835: PASS")
-            return 0
-        if args.command == "ingest-ug894":
-            pdf_path = Path(args.pdf) if args.pdf else None
-            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
-            out_dir = extract_ug894(Path(args.workspace), pdf_path=pdf_path, mineru_dir=mineru_dir)
-            db_path = build_library(Path(args.workspace))
-            print(f"ug894 parsed: {out_dir}")
-            print(f"library: {db_path}")
-            print("ingest ug894: PASS")
-            return 0
-        if args.command == "ingest-ug1118":
-            pdf_path = Path(args.pdf) if args.pdf else None
-            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
-            out_dir = extract_ug1118(Path(args.workspace), pdf_path=pdf_path, mineru_dir=mineru_dir)
-            db_path = build_library(Path(args.workspace))
-            print(f"ug1118 parsed: {out_dir}")
-            print(f"library: {db_path}")
-            print("ingest ug1118: PASS")
-            return 0
-        if args.command == "ingest-vitis-guide":
-            pdf_path = Path(args.pdf) if args.pdf else None
-            mineru_dir = Path(args.mineru_dir) if args.mineru_dir else None
-            out_dir = extract_vitis_guide(Path(args.workspace), args.guide, pdf_path=pdf_path, mineru_dir=mineru_dir)
-            db_path = build_library(Path(args.workspace))
-            print(f"{args.guide} parsed: {out_dir}")
-            print(f"library: {db_path}")
-            print(f"ingest {args.guide}: PASS")
             return 0
         if args.command == "get-workflow-toc":
             entries = query_toc(
@@ -693,6 +870,18 @@ def main(argv: list[str] | None = None) -> int:
                 print(line)
             return 0
     except Exception as exc:  # pragma: no cover - CLI boundary
+        project_value = getattr(args, "project", None) if "args" in locals() else None
+        if project_value:
+            try:
+                failure = record_failure_event(
+                    Path(project_value),
+                    command=str(getattr(args, "command", "unknown")),
+                    message=str(exc),
+                    detail=repr(args),
+                )
+                print(f"failure_record: {failure.path}", file=sys.stderr)
+            except Exception:
+                pass
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

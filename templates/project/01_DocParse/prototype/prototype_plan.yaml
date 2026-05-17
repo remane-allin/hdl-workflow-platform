@@ -1,0 +1,13 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: prototype_planner
+source_refs: []
+prototype_mode: ""
+board: ""
+resource_estimate: []
+ps_pl_boundary: []
+risk_items: []
+loop_consumers:
+  - Loop3 FPGA Prototype
+assumptions: []

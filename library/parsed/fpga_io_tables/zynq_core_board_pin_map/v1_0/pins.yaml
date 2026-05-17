@@ -11,7 +11,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -22,7 +22,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -33,7 +33,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -44,7 +44,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -55,7 +55,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -66,7 +66,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -77,7 +77,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -88,7 +88,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -99,7 +99,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -110,7 +110,7 @@ pins:
     bank: "ETH_PHY"
     voltage: null
     category: "ethernet_phy"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -121,7 +121,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -132,7 +132,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -143,7 +143,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -154,7 +154,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -165,7 +165,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -176,7 +176,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -187,7 +187,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -198,7 +198,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -209,7 +209,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -220,7 +220,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -231,7 +231,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -242,7 +242,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -253,7 +253,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -264,7 +264,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -275,7 +275,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -286,7 +286,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -297,7 +297,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -308,7 +308,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -319,7 +319,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -330,7 +330,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -341,7 +341,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -352,7 +352,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -363,7 +363,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -374,7 +374,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -385,7 +385,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -396,7 +396,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -407,7 +407,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -418,7 +418,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -429,7 +429,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -440,7 +440,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -451,7 +451,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -462,7 +462,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -473,7 +473,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -484,7 +484,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -495,7 +495,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -506,7 +506,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -517,7 +517,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -528,7 +528,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -539,7 +539,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -550,7 +550,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -561,7 +561,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -572,7 +572,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -583,7 +583,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -594,7 +594,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -605,7 +605,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -616,7 +616,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -627,7 +627,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -638,7 +638,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -649,7 +649,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -660,7 +660,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -671,7 +671,7 @@ pins:
     bank: "Bank35"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -682,7 +682,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -693,7 +693,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -704,7 +704,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -715,7 +715,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -726,7 +726,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -737,7 +737,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -748,7 +748,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -759,7 +759,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -770,7 +770,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -781,7 +781,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -792,7 +792,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -803,7 +803,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -814,7 +814,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -825,7 +825,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -836,7 +836,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -847,7 +847,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -858,7 +858,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -869,7 +869,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -880,7 +880,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -891,7 +891,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -902,7 +902,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -913,7 +913,7 @@ pins:
     bank: "XADC"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -924,7 +924,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -935,7 +935,7 @@ pins:
     bank: "XADC"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -946,7 +946,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -957,7 +957,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -968,7 +968,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -979,7 +979,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -990,7 +990,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1001,7 +1001,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1012,7 +1012,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1023,7 +1023,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1034,7 +1034,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1045,7 +1045,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1056,7 +1056,7 @@ pins:
     bank: "PS"
     voltage: null
     category: "ps_or_dedicated"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1067,7 +1067,7 @@ pins:
     bank: "JTAG"
     voltage: null
     category: "jtag"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1078,7 +1078,7 @@ pins:
     bank: "JTAG"
     voltage: null
     category: "jtag"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1089,7 +1089,7 @@ pins:
     bank: "JTAG"
     voltage: null
     category: "jtag"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X3"
@@ -1100,7 +1100,7 @@ pins:
     bank: "JTAG"
     voltage: null
     category: "jtag"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1111,7 +1111,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1122,7 +1122,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1133,7 +1133,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1144,7 +1144,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1155,7 +1155,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1166,7 +1166,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1177,7 +1177,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1188,7 +1188,7 @@ pins:
     bank: null
     voltage: null
     category: "power"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1199,7 +1199,7 @@ pins:
     bank: null
     voltage: null
     category: "special"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1210,7 +1210,7 @@ pins:
     bank: null
     voltage: null
     category: "unused"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1221,7 +1221,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1232,7 +1232,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1243,7 +1243,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1254,7 +1254,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1265,7 +1265,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1276,7 +1276,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1287,7 +1287,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1298,7 +1298,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1309,7 +1309,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1320,7 +1320,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1331,7 +1331,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1342,7 +1342,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1353,7 +1353,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1364,7 +1364,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1375,7 +1375,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1386,7 +1386,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1397,7 +1397,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1408,7 +1408,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1419,7 +1419,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1430,7 +1430,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1441,7 +1441,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1452,7 +1452,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1463,7 +1463,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1474,7 +1474,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1485,7 +1485,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1496,7 +1496,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1507,7 +1507,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1518,7 +1518,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1529,7 +1529,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1540,7 +1540,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1551,7 +1551,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1562,7 +1562,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1573,7 +1573,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1584,7 +1584,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1595,7 +1595,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1606,7 +1606,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1617,7 +1617,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1628,7 +1628,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1639,7 +1639,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1650,7 +1650,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1661,7 +1661,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1672,7 +1672,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1683,7 +1683,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1694,7 +1694,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1705,7 +1705,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1716,7 +1716,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1727,7 +1727,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1738,7 +1738,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1749,7 +1749,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1760,7 +1760,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1771,7 +1771,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1782,7 +1782,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1793,7 +1793,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1804,7 +1804,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1815,7 +1815,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1826,7 +1826,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1837,7 +1837,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1848,7 +1848,7 @@ pins:
     bank: "Bank34"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1859,7 +1859,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1870,7 +1870,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1881,7 +1881,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1892,7 +1892,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1903,7 +1903,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1914,7 +1914,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1925,7 +1925,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1936,7 +1936,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1947,7 +1947,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1958,7 +1958,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1969,7 +1969,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1980,7 +1980,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -1991,7 +1991,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2002,7 +2002,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2013,7 +2013,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2024,7 +2024,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2035,7 +2035,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2046,7 +2046,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2057,7 +2057,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2068,7 +2068,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2079,7 +2079,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2090,7 +2090,7 @@ pins:
     bank: "Bank13"
     voltage: "3.3V"
     category: "pl_io"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2101,7 +2101,7 @@ pins:
     bank: null
     voltage: null
     category: "unused"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2112,7 +2112,7 @@ pins:
     bank: null
     voltage: null
     category: "unused"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2123,7 +2123,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2134,7 +2134,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2145,7 +2145,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2156,7 +2156,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2167,7 +2167,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2178,7 +2178,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2189,7 +2189,7 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"
   -
     table_id: "zynq_core_board_pin_map.v1_0"
     connector: "X4"
@@ -2200,4 +2200,4 @@ pins:
     bank: null
     voltage: null
     category: "ground"
-    source_file: "library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf"
+    source_file: "zynq_core_board_pin_map.v1_0"

@@ -1,0 +1,11 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: architect
+source_refs: []
+clock_domains: []
+resets: []
+latency_requirements: []
+cdc_requirements: []
+timing_constraints: []
+assumptions: []

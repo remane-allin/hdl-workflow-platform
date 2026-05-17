@@ -1,50 +1,48 @@
-# Loop2 Exit Report
+# Loop2 Exit Review Report
 
 Navigation: [Report index](../README.md) | [Loop2 reports](README.md)
 
-- project:
-- generated_at:
-- status: PASS/FAIL/BLOCKED
-- baseline_report: [loop2_uvm_baseline_report.md](loop2_uvm_baseline_report.md)
-- regression_report: [loop2_uvm_regression_report.md](loop2_uvm_regression_report.md)
-- coverage_index: [coverage_index.md](coverage_index.md)
-- latest_uvm_log:
-- supporting_loop1_report: [../loop1/loop1_exit_report.md](../loop1/loop1_exit_report.md)
+## Exit Verdict
 
-## Gate Criteria
+| Item | Value |
+| --- | --- |
+| Project | TODO |
+| Generated At | TODO |
+| Result | PASS / FAIL / BLOCKED |
+| Loop1 Prerequisite | PASS / FAIL |
+| Precheck Phase | PASS / FAIL / N/A |
+| Regression Report | [loop2_uvm_regression_report.md](loop2_uvm_regression_report.md) |
+| Coverage Index | [coverage_index.md](coverage_index.md) |
+| Reviewer Decision | ACCEPT / REJECT / NEEDS FIX |
+
+## Exit Checklist
 
 | Criterion | Status | Evidence |
 | --- | --- | --- |
-| Loop1 exit is PASS before Loop2 closure | TODO |  |
-| UVM environment exists under `05_Output/uvm` | TODO |  |
-| Template database preflight is PASS | TODO | `05_Output/reports/loop2/preflight/database_preflight.md` |
-| Loop2 binding database is PASS | TODO | `03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite` |
-| UVM package and top-level TB compile | TODO |  |
-| `uvm_baseline.do` deterministic baseline passes | TODO |  |
-| `regression.do` full UVM regression passes | TODO |  |
-| `UVM_ERROR` count is zero | TODO |  |
-| `UVM_FATAL` count is zero | TODO |  |
-| Assertion compile/bind has no failure | TODO |  |
-| Scoreboard/reference model is spec-derived | TODO |  |
-| Code coverage meets policy or has approved waiver | TODO |  |
-| Functional coverage meets policy or has approved waiver | TODO |  |
-| Requirement coverage is 100% or gate is blocked | TODO |  |
-| No open critical or major verification bug remains | TODO |  |
-| Bug closure evidence is complete | TODO |  |
-| Requirement-to-test trace is complete | TODO |  |
+| Loop1 gate closed before Loop2 | TODO | TODO |
+| Real UVM sources exist under `05_Output/uvm` | TODO | TODO |
+| No template artifacts remain under `05_Output/uvm` | TODO | TODO |
+| Binding database exists and is current | TODO | `03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite` |
+| UVM regression passes | TODO | regression report |
+| Entry-check report removed from final evidence | TODO | `loop2_no_entry_check_final_report` gate check |
+| Checked transaction count meets policy | TODO | regression report / gate |
+| Scoreboard/reference model is spec-derived | TODO | UVM source + regression report |
+| `UVM_ERROR` count is zero | TODO | regression report |
+| `UVM_FATAL` count is zero | TODO | regression report |
+| Assertion/protocol checks have no failure | TODO | regression report |
+| Functional coverage meets policy or waiver exists | TODO | coverage index |
+| Code coverage meets policy or waiver exists | TODO | coverage index |
+| Requirement-to-test trace is complete | TODO | trace matrix |
+| No open critical or major verification bug remains | TODO | bug tracking |
 
-## Directed Regression Clarification
+## Residual Risk
 
-Directed RTL/TB regression evidence is supporting evidence only. It does not
-satisfy Loop2 exit unless the UVM baseline and UVM regression criteria above
-are also PASS.
-
-## Blocking Issues
-
-- none/TODO
+| Risk | Severity | Disposition |
+| --- | --- | --- |
+| TODO | TODO | TODO |
 
 ## Conclusion
 
-Loop2 exit gate:
+Loop2 exit gate: TODO
 
-Loop3 entry readiness:
+Loop3 entry readiness: TODO

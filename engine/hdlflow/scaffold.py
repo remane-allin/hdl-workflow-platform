@@ -3,16 +3,23 @@
 from __future__ import annotations
 
 import shutil
+import re
 from datetime import datetime
 from pathlib import Path
 
 
+PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_-]*$")
+
+
 def create_project(workspace: Path, name: str, force: bool = False) -> Path:
+    if not PROJECT_NAME_RE.match(name):
+        raise ValueError("project name must match ^[A-Za-z0-9_][A-Za-z0-9_-]*$")
     workspace = workspace.resolve()
     template = workspace / "templates" / "project"
     config_template = workspace / "config" / "templates" / "project" / "project_config.yaml"
     projects = workspace / "projects"
     target = projects / name
+    temp_target = projects / f".{name}.tmp"
 
     if not template.is_dir():
         raise FileNotFoundError(f"missing template directory: {template}")
@@ -27,13 +34,39 @@ def create_project(workspace: Path, name: str, force: bool = False) -> Path:
         if any(target.iterdir()):
             raise FileExistsError(f"refusing to overwrite non-empty project: {target}")
     else:
-        target.mkdir(parents=True)
+        target.parent.mkdir(parents=True, exist_ok=True)
 
-    shutil.copytree(template, target, dirs_exist_ok=True)
     config_target = workspace / "config" / "projects" / name / "project_config.yaml"
-    config_target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(config_template, config_target)
-    _personalize_project(target, config_target, name)
+    config_temp_parent = workspace / "config" / "projects" / f".{name}.tmp"
+    if temp_target.exists():
+        shutil.rmtree(temp_target)
+    if config_temp_parent.exists():
+        shutil.rmtree(config_temp_parent)
+
+    try:
+        shutil.copytree(template, temp_target, ignore=shutil.ignore_patterns("*.template"))
+        config_temp_parent.mkdir(parents=True, exist_ok=True)
+        config_temp = config_temp_parent / "project_config.yaml"
+        shutil.copy2(config_template, config_temp)
+        _personalize_project(temp_target, config_temp, name)
+
+        if target.exists() and force:
+            target.rmdir()
+        temp_target.replace(target)
+        config_target.parent.mkdir(parents=True, exist_ok=True)
+        if config_target.exists():
+            config_target.unlink()
+        config_temp.replace(config_target)
+        try:
+            config_temp_parent.rmdir()
+        except OSError:
+            pass
+    except Exception:
+        if temp_target.exists():
+            shutil.rmtree(temp_target, ignore_errors=True)
+        if config_temp_parent.exists():
+            shutil.rmtree(config_temp_parent, ignore_errors=True)
+        raise
     return target
 
 

@@ -10,6 +10,7 @@
 **/*.pb
 **/*.rpt.tmp
 *.statebak
+**/.memory.lock
 .Xil/
 
 # Local project instances are not published from this platform repository.

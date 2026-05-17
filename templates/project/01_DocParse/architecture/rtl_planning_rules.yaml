@@ -1,0 +1,31 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: architect
+source_refs: []
+source_skill: skills/rtl-architecture-and-gen/SKILL.md
+style_guide: skills/rtl-architecture-and-gen/references/verilog-rtl-style-guide.md
+rtl_language: Verilog-2001
+rtl_root: 05_Output/rtl
+directed_tb_language: Verilog-2001
+directed_tb_root: 05_Output/tb
+uvm_language: SystemVerilog
+uvm_root: 05_Output/uvm
+hard_rules:
+  - hierarchy_only_top
+  - one_primary_module_per_file
+  - verilog_2001_rtl_only
+  - no_systemverilog_in_rtl_or_directed_tb
+  - official_bus_protocol_naming
+  - three_process_fsm_when_applicable
+  - standalone_else
+  - explicit_final_else
+  - explicit_cdc_plan
+  - req_to_rtl_trace_required
+module_plan_requirements:
+  - module hierarchy
+  - clock/reset ownership
+  - interface ownership
+  - register block ownership
+  - implementation order
+assumptions: []

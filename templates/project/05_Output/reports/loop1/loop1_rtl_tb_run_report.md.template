@@ -12,12 +12,25 @@ Navigation: [Report index](../README.md) | [Loop1 reports](README.md) | [RTL](..
 - rtl_source_dir: [05_Output/rtl](../../rtl/)
 - tb_source_dir: [05_Output/tb](../../tb/)
 
+## Skill Constraint Evidence
+
+- orchestrator_skill: `skills/hdl-workflow-orchestrator/SKILL.md`
+- rtl_skill: `skills/rtl-architecture-and-gen/SKILL.md`
+- sim_triage_skill: `skills/modelsim-run-triage-debug/SKILL.md`
+- enforced_by_gate: `skill_policy`, `source_policy`, `skill_policy_freshness`, `skill_policy_hash_drift`
+
 ## Compile Evidence
 
 - compile_errors:
 - compile_warnings:
 - blocking_warnings:
 - elaboration_status:
+
+## Loop1 Test Case Comparison
+
+| Test Item | Input | Expected Result | Actual Output | Compare |
+| --- | --- | --- | --- | --- |
+| TODO | TODO | TODO | TODO | TODO |
 
 ## Simulation Evidence
 

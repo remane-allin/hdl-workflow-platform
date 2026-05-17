@@ -7,7 +7,9 @@ paths:
   raw_docs: 00_SPEC/raw_docs
   requirements: 00_SPEC/requirements
   parsed_docs: 01_DocParse
-  parsed_mineru: 01_DocParse/parsed/mineru
+  architecture: 01_DocParse/architecture
+  verification: 01_DocParse/verification
+  prototype: 01_DocParse/prototype
   structured_spec: 01_DocParse/structured_spec
   req_decompose: 01_DocParse/req_decompose
   doc_review: 01_DocParse/review
@@ -33,5 +35,5 @@ tools:
 simulation:
   loop1_do: 02_Loop1_RTL_TB/sim/rtl_functional.do
   loop2_compile_do: 03_Loop2_UVM_Verify/sim/compile.do
-  loop2_baseline_do: 03_Loop2_UVM_Verify/sim/uvm_baseline.do
+  loop2_entry_check_do: 03_Loop2_UVM_Verify/sim/uvm_full_functional.do
   loop2_regression_do: 03_Loop2_UVM_Verify/sim/regression.do

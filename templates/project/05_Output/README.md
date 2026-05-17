@@ -4,9 +4,9 @@ This is the only final deliverable area.
 
 Only gate-approved, clean, reproducible deliverables belong here.
 
-- `rtl/` - signed RTL code.
-- `tb/` - signed directed testbench code.
-- `uvm/` - signed UVM verification code.
+- `rtl/` - signed Verilog-2001 RTL code (`.v` only).
+- `tb/` - signed Verilog-2001 directed testbench code (`.v` only).
+- `uvm/` - signed SystemVerilog UVM verification code (`.sv`/`.svh`).
 - `fpga/vivado/` - signed Vivado project files, scripts, constraints, bitstream, XSA, and implementation outputs.
 - `fpga/vitis/` - signed Vitis platform/application workspace outputs and software sources.
 - `fpga/` - signed FPGA package root.

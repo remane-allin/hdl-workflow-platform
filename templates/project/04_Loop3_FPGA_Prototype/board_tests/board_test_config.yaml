@@ -12,7 +12,7 @@ visual:
 clock:
   source: PL_GCLK_50MHZ
   frequency_mhz: 50
-required_reports:
-  - 05_Output/reports/loop3/preflight/database_preflight.md
-  - 05_Output/reports/loop3/preflight/prototype_plan_check.md
-  - 05_Output/reports/loop3/serial/latest_serial_text.log
+required_report_policy_keys:
+  - prototype_policy.database_preflight_report
+  - prototype_policy.prototype_plan_check_report
+  - prototype_policy.serial_text_log

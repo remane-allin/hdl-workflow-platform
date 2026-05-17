@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "doc_id": "xilinx.ug1556.2024_2",
+  "title": "Power Design Manager User Guide (UG1556)",
+  "vendor": "xilinx",
+  "tool": "pdm",
+  "tool_version": "2024.2",
+  "source_file": "xilinx.ug1556.2024_2",
+  "source_type": "pdf",
+  "parser": "structured document normalizer",
+  "page_count": 118,
+  "section_count": 332,
+  "example_count": 0,
+  "command_count": 0,
+  "parsed_dir": "parsed/software_guides/xilinx_ug1556/2024_2",
+  "parser_workspace": "not_retained",
+  "structured_artifacts": [
+    "parsed/software_guides/xilinx_ug1556/2024_2/sections.json",
+    "parsed/software_guides/xilinx_ug1556/2024_2/examples.json",
+    "parsed/software_guides/xilinx_ug1556/2024_2/chunks.jsonl",
+    "parsed/software_guides/xilinx_ug1556/2024_2/quality_report.json"
+  ],
+  "notes": [
+    "Built for AI-assisted Vitis/PDM command-line, embedded, reference, and debug workflows.",
+    "This guide is normalized as topics, examples, and full-text chunks.",
+    "Vitis CLI/reference content is kept out of the Vivado Tcl command table to avoid command ambiguity."
+  ]
+}

@@ -1,0 +1,18 @@
+class PROJECT_protocol_full_functional_sequence extends PROJECT_protocol_base_sequence;
+  `uvm_object_utils(PROJECT_protocol_full_functional_sequence)
+
+  function new(string name = "PROJECT_protocol_full_functional_sequence");
+    super.new(name);
+  endfunction
+
+  virtual task body();
+    PROJECT_protocol_item item;
+    super.body();
+    item = PROJECT_protocol_item::type_id::create("item");
+    start_item(item);
+    if (!item.randomize()) begin
+      `uvm_error("RANDFAIL", "PROJECT_protocol_item randomize failed")
+    end
+    finish_item(item);
+  endtask
+endclass

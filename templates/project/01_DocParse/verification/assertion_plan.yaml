@@ -1,0 +1,10 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: verification_planner
+source_refs: []
+assertions: []
+bind_targets: []
+disabled_conditions: []
+severity_policy: []
+assumptions: []

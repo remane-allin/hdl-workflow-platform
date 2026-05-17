@@ -1,0 +1,11 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: verification_planner
+source_refs: []
+functional_coverage: []
+code_coverage_targets: []
+cross_coverage: []
+illegal_bins: []
+closure_thresholds: []
+assumptions: []

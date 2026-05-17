@@ -3,7 +3,8 @@
   "rtl_to_tests": {},
   "uvm_to_tests": {},
   "always_run": [
-    "loop1_smoke",
-    "uvm_baseline"
+    "loop1_baseline",
+    "uvm_precheck",
+    "uvm_full_functional"
   ]
 }

@@ -35,11 +35,11 @@ checking plus coverage.
     elem_seqs/
       PROJECT_PROTOCOL_base_sequence.sv
     PROJECT_base_virtual_sequence.sv
-    PROJECT_smoke_virtual_sequence.sv
+    PROJECT_baseline_virtual_sequence.sv
     PROJECT_virtual_sequences.svh
   tests/
     PROJECT_base_test.sv
-    PROJECT_smoke_test.sv
+    PROJECT_baseline_test.sv
     PROJECT_full_regression_test.sv
     PROJECT_tests.svh
   tb/

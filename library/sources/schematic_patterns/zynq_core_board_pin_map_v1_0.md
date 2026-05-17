@@ -2,9 +2,9 @@
 
 ## Source
 
-- Raw PDF: `library/files/fpga_io_tables/ZYNQ核心板引脚分配图V1.0.pdf`
-- Parsed output: `library/parsed/fpga_io_tables/zynq_core_board_pin_map/v1_0/`
+- Parsed data: `library/parsed/fpga_io_tables/zynq_core_board_pin_map/v1_0/`
 - Table ID: `zynq_core_board_pin_map.v1_0`
+- Retention: structured database artifacts only
 
 ## Extracted Content
 
@@ -17,7 +17,8 @@
 
 ## Agent Usage
 
-Use `get-fpga-io-pins` to query connector pins, banks, package pins, or signal names.
+Use `get-fpga-io-pins` to query connector pins, banks, package pins, or signal
+names.
 
 Examples:
 
@@ -28,6 +29,9 @@ python -m hdlflow.cli get-fpga-io-pins --workspace .. --table-id zynq_core_board
 
 ## Review Warnings
 
-- The source was parsed from PDF through MinerU flash extraction, then normalized locally.
-- Cells with uncertain package pins keep the original OCR text in `raw_zynq_pin`.
-- Use this as an AI lookup database and constraint-generation aid; verify against board schematics before final signoff.
+- The local repository retains normalized rows only, not the original PDF or
+  parser workspace.
+- Cells with uncertain package pins keep the original recognized text in
+  `raw_zynq_pin`.
+- Use this as an AI lookup database and constraint-generation aid; unresolved
+  rows still need board-level review before final signoff.

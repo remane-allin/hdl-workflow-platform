@@ -30,7 +30,7 @@ connections:
     domain: fpga
     category: io_table
     workflow_node: 04_Loop3_FPGA_Prototype
-    short_description: Normalized X3/X4 connector pin map extracted from the ZYNQ core board IO PDF.
+    short_description: Normalized X3/X4 connector pin lookup database for the ZYNQ core board.
     detail_path: sources/schematic_patterns/zynq_core_board_pin_map_v1_0.md
     tags:
       - fpga
@@ -39,17 +39,17 @@ connections:
       - pins
       - x3
       - x4
-  fpga.schematic_pdf_review:
-    title: FPGA schematic PDF review
+  fpga.schematic_database_review:
+    title: FPGA schematic database review
     domain: fpga
-    category: schematic_review
+    category: schematic_database
     workflow_node: 04_Loop3_FPGA_Prototype
-    short_description: Parse and review FPGA schematic PDFs for nets, interfaces, clocks, resets, power, and connector mapping.
-    detail_path: sources/schematic_patterns/fpga_schematic_pdf_review.md
+    short_description: Review normalized schematic database artifacts for nets, interfaces, clocks, resets, power, and connector mapping.
+    detail_path: sources/schematic_patterns/fpga_schematic_database_review.md
     tags:
       - fpga
       - schematic
-      - pdf
+      - database
       - nets
       - board
   fpga.navigator_zynq_baseboard_schematic_v3_8:
@@ -57,7 +57,7 @@ connections:
     domain: fpga
     category: schematic_database
     workflow_node: 04_Loop3_FPGA_Prototype
-    short_description: Normalized net/interface lookup database extracted from the Navigator ZYNQ baseboard schematic PDF.
+    short_description: Normalized net/interface lookup database for the Navigator ZYNQ baseboard schematic.
     detail_path: sources/schematic_patterns/navigator_zynq_baseboard_schematic_v3_8.md
     tags:
       - fpga

@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .simple_yaml import load_yaml
+
 
 REQUIRED_PATHS = [
     "project_scaffold.yaml",
@@ -38,9 +40,17 @@ REQUIRED_PATHS = [
     "change_control/trace_updates",
     "00_SPEC/raw_docs",
     "00_SPEC/requirements",
+    "00_SPEC/requirements/srs.yaml",
+    "00_SPEC/requirements/acceptance_criteria.yaml",
     "01_DocParse/structured_spec",
     "01_DocParse/req_decompose",
+    "01_DocParse/architecture",
+    "01_DocParse/verification",
+    "01_DocParse/prototype",
+    "01_DocParse/review",
     "01_DocParse/trace_matrix",
+    "01_DocParse/trace_matrix/req_to_arch.yaml",
+    "01_DocParse/trace_matrix/req_to_proto.yaml",
     "02_Loop1_RTL_TB/sim",
     "02_Loop1_RTL_TB/_runtime",
     "03_Loop2_UVM_Verify/sim",
@@ -95,6 +105,32 @@ def validate_project(project_path: Path) -> ValidationResult:
         messages.extend(f"missing: {rel}" for rel in missing)
         return ValidationResult(False, messages)
 
+    scaffold_errors = _validate_scaffold_marker(project_path)
+    if scaffold_errors:
+        messages.append(f"FAIL: {project_path}")
+        messages.extend(f"project_scaffold: {error}" for error in scaffold_errors)
+        return ValidationResult(False, messages)
+
     messages.append(f"PASS: {project_path}")
     messages.append(f"checked_paths: {len(REQUIRED_PATHS)}")
     return ValidationResult(True, messages)
+
+
+def _validate_scaffold_marker(project_path: Path) -> list[str]:
+    path = project_path / "project_scaffold.yaml"
+    try:
+        data = load_yaml(path)
+    except Exception as exc:
+        return [f"not parseable: {exc}"]
+    expected = {
+        "schema_version": 1,
+        "project": project_path.name,
+        "creation_mode": "script_only",
+        "template_source": "templates/project",
+        "manual_project_directory_creation": "forbidden",
+    }
+    errors = [f"{key} must be {value!r}, got {data.get(key)!r}" for key, value in expected.items() if data.get(key) != value]
+    for key in ["created_by", "created_at"]:
+        if not data.get(key):
+            errors.append(f"{key} is required")
+    return errors

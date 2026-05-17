@@ -11,8 +11,10 @@ Use this skill when the project needs a requirement baseline before broad RTL or
 
 This skill owns the transformation from:
 
-- `01_DocParse/mineru_raw/`
 - `01_DocParse/structured_spec/*.yaml`
+- `01_DocParse/architecture/*.yaml`
+- `01_DocParse/verification/*.yaml`
+- `01_DocParse/prototype/*.yaml`
 - user requirement notes
 
 into:
@@ -41,7 +43,7 @@ Do not use this skill for detailed RTL coding, UVM coding, or direct ModelSim lo
 
 1. Read `config/projects/<project_name>/project_config.yaml`.
 2. Read the latest normalized spec files under `01_DocParse/structured_spec/`.
-3. If needed, inspect the newest parsed MinerU outputs under `01_DocParse/mineru_raw/`.
+3. If needed, inspect the five-role front-door outputs under `01_DocParse/architecture/`, `verification/`, and `prototype/`.
 4. Identify top-level epics from protocol areas, functional blocks, register groups, or document chapters.
 5. Split each epic into features that can map to real engineering ownership.
 6. Split each feature into executable tasks with:

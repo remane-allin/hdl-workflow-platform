@@ -1,0 +1,40 @@
+{
+  "doc_id": "xilinx.ug1118.2024_2",
+  "page_count": 111,
+  "section_count": 362,
+  "example_count": 25,
+  "chunk_count": 387,
+  "sections_without_text": [
+    "xilinx.ug1118.2024_2.topic.creating_and_packaging_custom_ip",
+    "xilinx.ug1118.2024_2.topic.ip_packaging_basics",
+    "xilinx.ug1118.2024_2.topic.ip_packager_output_rules_and_limitations",
+    "xilinx.ug1118.2024_2.topic.the_create_and_package_new_ip_wizard",
+    "xilinx.ug1118.2024_2.topic.create_and_package_new_ip",
+    "xilinx.ug1118.2024_2.topic.create_and_package_new_ip_2",
+    "xilinx.ug1118.2024_2.topic.create_and_package_new_ip_3",
+    "xilinx.ug1118.2024_2.topic.packaging_ip",
+    "xilinx.ug1118.2024_2.topic.addressing_and_memory_wizard",
+    "xilinx.ug1118.2024_2.topic.creating_new_interface_definitions",
+    "xilinx.ug1118.2024_2.topic.encrypting_ip_in_vivado",
+    "xilinx.ug1118.2024_2.topic.rtl_encryption_examples",
+    "xilinx.ug1118.2024_2.topic.standard_and_advanced_file_groups_2",
+    "xilinx.ug1118.2024_2.topic.finding_additional_documentation"
+  ],
+  "examples_without_commands": [
+    "xilinx.ug1118.2024_2.example.002",
+    "xilinx.ug1118.2024_2.example.003",
+    "xilinx.ug1118.2024_2.example.004",
+    "xilinx.ug1118.2024_2.example.005",
+    "xilinx.ug1118.2024_2.example.006",
+    "xilinx.ug1118.2024_2.example.007",
+    "xilinx.ug1118.2024_2.example.008",
+    "xilinx.ug1118.2024_2.example.009",
+    "xilinx.ug1118.2024_2.example.010",
+    "xilinx.ug1118.2024_2.example.011",
+    "xilinx.ug1118.2024_2.example.012",
+    "xilinx.ug1118.2024_2.example.013",
+    "xilinx.ug1118.2024_2.example.014",
+    "xilinx.ug1118.2024_2.example.016"
+  ],
+  "parser": "structured document normalizer"
+}

@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .project import require_project_instance
 from .simple_yaml import load_yaml
 
 
@@ -54,6 +60,11 @@ class MemoryCheckResult:
         return not self.errors
 
 
+@dataclass(frozen=True)
+class FailureRecordResult:
+    path: Path
+
+
 def auto_record_workflow_event(
     project_path: Path,
     *,
@@ -70,11 +81,11 @@ def auto_record_workflow_event(
 ) -> MemoryRecordResult:
     """Record successful automated workflow steps for real project instances."""
 
-    project = project_path.resolve()
+    project = require_project_instance(project_path)
     if project.parent.name != "projects":
         return MemoryRecordResult(messages=[f"memory auto-record skipped for non-project path: {project}"])
 
-    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
     iteration_id = f"{event}-{stamp}"
     normalized_artifacts = [_project_relative(project, item) for item in (artifacts or [])]
     result = record_memory_iteration(
@@ -115,71 +126,120 @@ def record_memory_iteration(
 ) -> MemoryRecordResult:
     """Write a single iteration to all project memory front-door files."""
 
-    project = project_path.resolve()
+    project = require_project_instance(project_path)
     memory_root = project / "memory"
     if not memory_root.is_dir():
         raise FileNotFoundError(f"missing memory directory: {memory_root}")
 
-    completed_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    entry = {
-        "node": node,
-        "started_at": completed_at,
-        "completed_at": completed_at,
-        "owner": "project_local",
-        "memory_record": memory_record,
-        "snapshot": "null",
-        "report": report,
-        "artifacts": ",".join(artifacts or []),
-        "gate_level": gate_level,
-        "gate_result": gate_result,
-        "change_request": "null",
-    }
+    with _memory_lock(memory_root):
+        completed_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        rollback_manifest = "null"
+        if _is_active_gate(gate_result):
+            rollback_manifest = _write_rollback_manifest(
+                project,
+                iteration_id=iteration_id,
+                node=node,
+                gate_level=gate_level,
+                gate_result=gate_result,
+                memory_record=memory_record,
+                report=report,
+                artifacts=artifacts or [],
+            )
+        entry = {
+            "node": node,
+            "started_at": completed_at,
+            "completed_at": completed_at,
+            "owner": "project_local",
+            "memory_record": memory_record,
+            "snapshot": rollback_manifest,
+            "report": report,
+            "artifacts": ",".join(artifacts or []),
+            "gate_level": gate_level,
+            "gate_result": gate_result,
+            "change_request": "null",
+        }
 
-    messages: list[str] = []
-    _upsert_index(memory_root / "index.yaml", project.name, iteration_id, entry)
-    messages.append("updated: memory/index.yaml")
+        messages: list[str] = []
+        _upsert_index(memory_root / "index.yaml", project.name, iteration_id, entry)
+        messages.append("updated: memory/index.yaml")
 
-    node_dir_name = NODE_MEMORY_DIRS.get(node)
-    if not node_dir_name:
-        raise ValueError(f"unsupported node for memory write: {node}")
-    node_iterations = memory_root / node_dir_name / "iterations.md"
-    _upsert_iteration_row(
-        node_iterations,
-        title=NODE_TITLES.get(node_dir_name, "Iteration Index"),
-        iteration_id=iteration_id,
-        time_value=completed_at[:10],
-        memory_record=memory_record,
-        report=report,
-        gate_level=gate_level,
-        gate_result=gate_result,
-        notes=notes,
-    )
-    messages.append(f"updated: {node_iterations.relative_to(project)}")
-
-    if _is_active_gate(gate_result):
-        _upsert_active_version(
-            memory_root / "active_versions.md",
-            version=version or iteration_id,
+        node_dir_name = NODE_MEMORY_DIRS.get(node)
+        if not node_dir_name:
+            raise ValueError(f"unsupported node for memory write: {node}")
+        node_iterations = memory_root / node_dir_name / "iterations.md"
+        _upsert_iteration_row(
+            node_iterations,
+            title=NODE_TITLES.get(node_dir_name, "Iteration Index"),
             iteration_id=iteration_id,
-            gate_level=gate_level,
-            gate_result=gate_result,
+            time_value=completed_at[:10],
             memory_record=memory_record,
             report=report,
+            gate_level=gate_level,
+            gate_result=gate_result,
             notes=notes,
         )
-        messages.append("updated: memory/active_versions.md")
+        messages.append(f"updated: {node_iterations.relative_to(project)}")
 
-    if latest_summary or next_action:
-        _update_current_state(
-            memory_root / "00_global" / "CURRENT_STATE.md",
-            active_node=node,
-            latest_passed_gate=gate_level if _is_active_gate(gate_result) else None,
-            latest_summary=latest_summary,
-            next_action=next_action,
-        )
-        messages.append("updated: memory/00_global/CURRENT_STATE.md")
+        if _is_active_gate(gate_result):
+            _upsert_active_version(
+                memory_root / "active_versions.md",
+                version=version or iteration_id,
+                iteration_id=iteration_id,
+                gate_level=gate_level,
+                gate_result=gate_result,
+                memory_record=memory_record,
+                report=report,
+                notes=notes,
+            )
+            messages.append("updated: memory/active_versions.md")
+            if rollback_manifest != "null":
+                messages.append(f"updated: {rollback_manifest}")
 
-    return MemoryRecordResult(messages=messages)
+        if latest_summary or next_action:
+            _update_current_state(
+                memory_root / "00_global" / "CURRENT_STATE.md",
+                active_node=node,
+                latest_passed_gate=gate_level if _is_active_gate(gate_result) else None,
+                latest_summary=latest_summary,
+                next_action=next_action,
+            )
+            messages.append("updated: memory/00_global/CURRENT_STATE.md")
+
+        return MemoryRecordResult(messages=messages)
+
+
+def record_failure_event(
+    project_path: Path,
+    *,
+    command: str,
+    message: str,
+    detail: str | None = None,
+) -> FailureRecordResult:
+    project = require_project_instance(project_path)
+    failure_dir = project / "memory" / "recovery" / "failure_records"
+    failure_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    path = failure_dir / f"failure-{stamp}.md"
+    lines = [
+        "# Failure Record",
+        "",
+        f"- project: {project.name}",
+        f"- generated_at: {datetime.now().isoformat(timespec='seconds')}",
+        f"- command: {command}",
+        f"- message: {message}",
+        "",
+        "## Detail",
+        "",
+        detail or "none",
+        "",
+        "## Recovery Guidance",
+        "",
+        "- Re-run the command after fixing the reported issue.",
+        "- Run `python -m hdlflow.cli doctor --workspace <workspace> --project <project>`.",
+        "- Run `python -m hdlflow.cli memory-check --project <project>` after state-changing commands.",
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return FailureRecordResult(path)
 
 
 def check_memory(project_path: Path) -> MemoryCheckResult:
@@ -277,6 +337,75 @@ def _upsert_index(path: Path, project_name: str, iteration_id: str, entry: dict[
         ]:
             lines.append(f"    {key}: {_yaml_scalar(item.get(key))}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _write_rollback_manifest(
+    project: Path,
+    *,
+    iteration_id: str,
+    node: str,
+    gate_level: str,
+    gate_result: str,
+    memory_record: str,
+    report: str,
+    artifacts: list[str],
+) -> str:
+    rollback_dir = project / "memory" / "recovery" / "rollback_manifests"
+    rollback_dir.mkdir(parents=True, exist_ok=True)
+    path = rollback_dir / f"{iteration_id}.json"
+    rel_paths = [memory_record, report, *artifacts]
+    unique_paths = []
+    for rel in rel_paths:
+        if rel and rel != "null" and rel not in unique_paths:
+            unique_paths.append(rel)
+    data = {
+        "schema_version": 1,
+        "project": project.name,
+        "iteration_id": iteration_id,
+        "node": node,
+        "gate_level": gate_level,
+        "gate_result": gate_result,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "files": [_hash_project_file(project, rel) for rel in unique_paths],
+    }
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return str(path.relative_to(project)).replace("\\", "/")
+
+
+def _hash_project_file(project: Path, rel: str) -> dict[str, str | int | None]:
+    path = project / rel
+    item: dict[str, str | int | None] = {"path": rel.replace("\\", "/"), "sha256": None, "size": None}
+    if not path.exists() or not path.is_file():
+        return item
+    data = path.read_bytes()
+    item["sha256"] = hashlib.sha256(data).hexdigest()
+    item["size"] = len(data)
+    return item
+
+
+@contextmanager
+def _memory_lock(memory_root: Path):
+    lock_path = memory_root / ".memory.lock"
+    fd: int | None = None
+    deadline = time.time() + 30.0
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.write(fd, str(os.getpid()).encode("ascii", errors="ignore"))
+            break
+        except FileExistsError:
+            if time.time() > deadline:
+                raise TimeoutError(f"timed out waiting for memory lock: {lock_path}")
+            time.sleep(0.1)
+    try:
+        yield
+    finally:
+        if fd is not None:
+            os.close(fd)
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _upsert_iteration_row(

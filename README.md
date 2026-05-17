@@ -7,8 +7,9 @@ and final deliverables are organized.
 
 The current library also contains a structured Vivado/Vitis 2024.2 software
 reference layer for Tcl script generation, command lookup, and debug workflows.
-The generated SQLite database is local-only, while the schema, ingest code,
-indexes, and normalized artifacts are versioned so the database can be rebuilt.
+The generated SQLite database is local-only, while the schema, indexes, and
+normalized artifacts are versioned so the database can be rebuilt without raw
+PDF inputs or parser workspaces.
 
 ## Why This Exists
 
@@ -19,6 +20,8 @@ keeps those concerns separated:
 - Global rules live in one configuration tree.
 - Each project instance lives under its own project directory.
 - Pipeline stages are numbered and ordered.
+- The 00_SPEC -> 01_DocParse handoff has a five-role structured requirements
+  front door before RTL, UVM, or FPGA prototype work begins.
 - Memory records are indexed and separated into permanent archive, local
   transient notes, and recovery evidence.
 - Design changes use a controlled request, impact, approval, and trace-update
@@ -74,12 +77,26 @@ The intended flow is:
 UVM, FPGA files, final reports, and manifests converge after review. Loop
 directories keep scripts, runtime state, tracking records, and process context.
 
+The 01_DocParse front door uses five engineering roles:
+
+- Coordinator: workflow state, review collection, memory handoff.
+- PM: structured requirements, ambiguity removal, acceptance criteria.
+- Architect: dataflow, state machines, timing, module and interface contracts.
+- Verification Planner: module/system verification, assertion, coverage intent.
+- Prototype Planner: FPGA feasibility, clocks, pins, resources, PS/PL boundary.
+
 ## Quick Start
 
 From the repository root:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\New-HdlProject.ps1 -Name <project_name>
+```
+
+Cross-platform:
+
+```bash
+python scripts/new_hdl_project.py <project_name>
 ```
 
 Then validate the created project:
@@ -89,6 +106,10 @@ cd engine
 python -m hdlflow.cli doctor --workspace .. --project ..\projects\<project_name>
 python -m hdlflow.cli plan --project ..\projects\<project_name>
 python -m hdlflow.cli run-config --workspace .. --project ..\projects\<project_name>
+python -m hdlflow.cli requirements-frontdoor-init --project ..\projects\<project_name> --status DRAFT
+python -m hdlflow.cli requirements-frontdoor-check --project ..\projects\<project_name> --allow-draft
+python -m hdlflow.cli run-gate --project ..\projects\<project_name> --node loop1 --level develop
+python -m hdlflow.cli final-audit --project ..\projects\<project_name>
 ```
 
 ## Agent Library
@@ -125,9 +146,9 @@ python -m hdlflow.cli search-tcl-examples --workspace .. --keyword create_projec
 ```
 
 The current software guide set is Vivado UG835, UG894, UG908, UG1118 and Vitis
-UG1553, UG1556, UG1701, UG1702 for the 2024.2 database target. UG PDFs belong
-under `library/files/fpga_ug_pdfs/`, not under project requirement folders.
-Large PDF files and generated SQLite databases are local-only by default.
+UG1553, UG1556, UG1701, UG1702 for the 2024.2 database target. The agent
+library consumes the parsed artifacts and the local SQLite database only; raw
+PDF files and parser workspaces are not retained in the repository.
 
 Before any Loop3 FPGA prototype script generation, run the database preflight:
 
@@ -168,6 +189,10 @@ python -m hdlflow.cli memory-record --project ..\projects\<project_name> --itera
 python -m hdlflow.cli memory-check --project ..\projects\<project_name>
 ```
 
+Failed CLI commands that know the project path write recovery records under
+`memory/recovery/failure_records/`. Passing memory records and executable gates
+write rollback/hash manifests under `memory/recovery/rollback_manifests/`.
+
 ## Configuration Model
 
 - `config/global/` holds shared workspace rules.
@@ -198,8 +223,9 @@ parser workspaces.
 ## Current Scope
 
 The current engine validates layout and configuration, builds the configured
-pipeline order, writes configuration reports, ensures canonical output
-directories exist, and builds the local agent retrieval database.
+pipeline order, creates and checks the five-role requirements front door,
+writes configuration reports, ensures canonical output directories exist, and
+builds the local agent retrieval database.
 
 It does not yet run document parsing, HDL simulation, UVM regressions, or FPGA
 implementation tools directly.

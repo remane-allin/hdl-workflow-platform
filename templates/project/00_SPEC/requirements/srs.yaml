@@ -1,0 +1,17 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: pm
+purpose: single shared requirement baseline for Loop1, Loop2, and Loop3
+source_refs: []
+stakeholders: []
+scope:
+  in_scope: []
+  out_of_scope: []
+functional_requirements: []
+non_functional_requirements: []
+interfaces: []
+boundary_conditions: []
+ambiguities: []
+assumptions: []
+acceptance_summary: []

@@ -12,15 +12,17 @@ Recommended ownership:
 - `cov/`: functional coverage and coverage collectors.
 - `env/`: package include hub, virtual sequencer, scoreboard, reference model, env.
 - `reg/`: optional RAL model and register bus adapter.
-- `seq_lib/`: deterministic smoke and scenario virtual sequences.
+- `seq_lib/`: deterministic functional and scenario virtual sequences.
 - `seq_lib/elem_seqs/`: protocol or bus element sequences used by virtual sequences.
-- `tests/`: base test, smoke test, baseline test, regression test.
+- `tests/`: base test, full functional test, scenario test, regression test.
 - `tb/`: DUT interface and top-level UVM harness.
 - `assertions/`: non-invasive SVA bind files.
 
-Files with `.template` suffix are not compiled directly. Instantiate them with
-project-specific names, module names, interfaces, transactions, and tests before
-running `03_Loop2_UVM_Verify/sim/uvm_baseline.do`.
+Template files are source patterns only; they are not compiled and must not
+remain under `05_Output/uvm/` in a Loop2-ready project. Generate real
+project-specific sources before running
+`03_Loop2_UVM_Verify/sim/uvm_full_functional.do` as an entry check, then
+`03_Loop2_UVM_Verify/sim/regression.do` for final evidence.
 
 The reusable framework is registered in the local template database:
 

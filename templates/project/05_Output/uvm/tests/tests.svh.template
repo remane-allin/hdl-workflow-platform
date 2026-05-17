@@ -34,16 +34,16 @@ class PROJECT_base_test extends uvm_test;
   endtask
 endclass
 
-class baseline_test extends PROJECT_base_test;
-  `uvm_component_utils(baseline_test)
+class full_functional_test extends PROJECT_base_test;
+  `uvm_component_utils(full_functional_test)
 
-  function new(string name = "baseline_test", uvm_component parent = null);
+  function new(string name = "full_functional_test", uvm_component parent = null);
     super.new(name, parent);
   endfunction
 
   virtual task run_top_virtual_sequence();
-    PROJECT_smoke_vseq seq;
-    seq = PROJECT_smoke_vseq::type_id::create("seq");
+    PROJECT_full_functional_vseq seq;
+    seq = PROJECT_full_functional_vseq::type_id::create("seq");
     if (env.vseqr == null) begin
       `uvm_fatal("NO_VSEQR", "PROJECT_virtual_sequencer was not created")
     end
@@ -51,7 +51,7 @@ class baseline_test extends PROJECT_base_test;
   endtask
 endclass
 
-class full_regression_test extends baseline_test;
+class full_regression_test extends full_functional_test;
   `uvm_component_utils(full_regression_test)
 
   function new(string name = "full_regression_test", uvm_component parent = null);

@@ -1,0 +1,15 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: architect
+source_refs: []
+rtl_planning_policy_ref: 01_DocParse/architecture/rtl_planning_rules.yaml
+fsm_style_policy:
+  - three_process_fsm_when_applicable
+  - separate_state_next_and_datapath_control
+  - illegal_state_default_recovery
+state_machines: []
+reset_states: []
+illegal_states: []
+transition_requirements: []
+assumptions: []

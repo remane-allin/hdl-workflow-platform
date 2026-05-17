@@ -1,11 +1,13 @@
 # Parsed Library Sources
 
-Normalized outputs from library source files belong here.
+Normalized library artifacts belong here. This is the durable source consumed by
+`library-build`.
 
-This area is separate from project document parsing. Do not place project requirement parses here.
-
-- `fpga_ug_mineru/` - normalized FPGA UG database artifacts.
+- `software_guides/` - normalized Vivado/Vitis/PDM guide artifacts.
+- `fpga_guides/` - normalized FPGA guide artifacts.
 - `fpga_io_tables/` - normalized FPGA IO tables and pin/bank summaries.
-- `fpga_schematics/` - parsed FPGA schematic PDFs and extracted nets/interfaces.
+- `fpga_schematics/` - normalized schematic nets, sheets, clocks, resets, and interfaces.
 
-Raw parser output is temporary. Keep it under `library/work/` while ingesting, then run `library-finalize` to rebuild SQLite and remove temporary parser files.
+Raw parser output, source PDFs, OCR text, extracted images, and temporary chunks
+are not retained in this workspace.
+

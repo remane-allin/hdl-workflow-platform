@@ -12,13 +12,13 @@
 - `vivado_implementation_report.md`: synthesis/implementation, bitstream, and XSA evidence.
 - `timing_drc_report.md`: timing, DRC, unconstrained-path, and waiver evidence.
 - `vitis_boot_report.md`: platform, application, ELF, and BOOT.bin packaging evidence when PS software is in scope.
-- `board_smoke_report.md`: download, serial, LED/GPIO, DDR, and board-observed behavior evidence.
+- `board_validation_report.md`: download, serial, LED/GPIO, DDR, and board-observed behavior evidence.
 - `loop3_exit_report.md`: gate-level conclusion for Loop3.
 
 Loop3 must start from the database preflight and prototype plan check. Do not
 close Loop3 from hand-copied pin notes, stale Vivado artifacts, or board logs
 that cannot be traced back to the signed Loop2 RTL.
 
-Use the `.template` files in this directory as the required report shape. Do
-not rename a template to `.md` until the evidence fields are filled from a fresh
-prototype run.
+Use these template files only as report shape references. Final `.md` reports
+must be generated or refreshed from the latest prototype run; do not promote an
+unfilled template into final evidence.

@@ -1,3 +1,9 @@
 schema_version: 1
 project: change_me
-links: []
+status: DRAFT
+owner_role: coordinator
+target: rtl
+source_refs: []
+links: {}
+unmapped_requirements: []
+assumptions: []

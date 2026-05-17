@@ -6,11 +6,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .config import load_project
 from .library import (
     query_fpga_hardware_resources,
     query_software_tcl_commands,
     query_software_tcl_topics,
 )
+from .project import require_project_instance
 from .simple_yaml import load_yaml
 
 
@@ -38,6 +40,8 @@ DEFAULT_VITIS_TOPICS = ["platform", "application", "domain", "xsct"]
 class PrototypePreflightResult:
     report_path: Path
     missing_items: list[str]
+    board: str
+    mode: str
 
     @property
     def ok(self) -> bool:
@@ -66,32 +70,35 @@ def write_prototype_preflight(
     project_path: Path,
     *,
     mode: str,
-    board: str = "navigator_zynq_7020",
+    board: str | None = None,
     signals: list[str] | None = None,
     tcl_commands: list[str] | None = None,
-    tool_version: str = "2024.2",
+    tool_version: str | None = None,
 ) -> PrototypePreflightResult:
     """Query the local database and write a Loop3 preflight evidence report."""
 
     workspace = workspace.resolve()
-    project = project_path.resolve()
+    project = require_project_instance(project_path)
+    policy = _prototype_policy(project)
+    plan_data = _load_prototype_plan(project, policy)
     mode_key = mode.lower()
     if mode_key not in DEFAULT_SIGNALS:
         raise ValueError(f"unsupported prototype mode: {mode}")
 
-    selected_signals = signals or DEFAULT_SIGNALS[mode_key]
+    selected_board = _resolve_board(board, policy, plan_data)
+    selected_tool_version = _resolve_tool_version(tool_version, policy)
+    selected_signals = signals or _signals_from_plan(plan_data, mode_key) or _policy_signal_defaults(policy, mode_key) or DEFAULT_SIGNALS[mode_key]
     selected_commands = tcl_commands or DEFAULT_TCL_COMMANDS
-    report_dir = project / "05_Output" / "reports" / "loop3" / "preflight"
-    report_dir.mkdir(parents=True, exist_ok=True)
-    report_path = report_dir / "database_preflight.md"
+    report_path = _policy_path(project, policy, "database_preflight_report", "05_Output/reports/loop3/preflight/database_preflight.md")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
 
     lines: list[str] = [
         "# Loop3 Database Preflight",
         "",
         f"- project: {project.name}",
-        f"- board: {board}",
+        f"- board: {selected_board}",
         f"- mode: {mode_key}",
-        f"- tool_version: {tool_version}",
+        f"- tool_version: {selected_tool_version}",
         "",
         "## Hardware Resources",
         "",
@@ -129,7 +136,7 @@ def write_prototype_preflight(
             workspace,
             command=command,
             tool="vivado",
-            tool_version=tool_version,
+            tool_version=selected_tool_version,
             limit=5,
         )
         if rows:
@@ -145,7 +152,7 @@ def write_prototype_preflight(
             rows = query_software_tcl_topics(
                 workspace,
                 keyword=keyword,
-                tool_version=tool_version,
+                tool_version=selected_tool_version,
                 limit=3,
             )
             if rows:
@@ -170,24 +177,29 @@ def write_prototype_preflight(
         ]
     )
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return PrototypePreflightResult(report_path=report_path, missing_items=missing)
+    return PrototypePreflightResult(report_path=report_path, missing_items=missing, board=selected_board, mode=mode_key)
 
 
 def generate_xdc_from_database(
     workspace: Path,
     project_path: Path,
     *,
-    ports: list[str],
+    ports: list[str] | None = None,
     output: str | None = None,
     clock_ports: list[str] | None = None,
 ) -> PrototypeFileResult:
     """Generate an XDC file from port=database_signal mappings."""
 
     workspace = workspace.resolve()
-    project = project_path.resolve()
-    xdc_path = project / (output or "05_Output/fpga/vivado/constraints/generated_board.xdc")
+    project = require_project_instance(project_path)
+    policy = _prototype_policy(project)
+    plan_data = _load_prototype_plan(project, policy)
+    selected_ports = ports or _port_mappings_from_plan(plan_data)
+    if not selected_ports:
+        raise ValueError("XDC generation requires --port entries or prototype_plan.pl_port_assignments")
+    xdc_path = _project_path(project, output) if output else _policy_path(project, policy, "generated_xdc", "05_Output/fpga/vivado/constraints/generated_board.xdc")
     xdc_path.parent.mkdir(parents=True, exist_ok=True)
-    clocks = _parse_clock_ports(clock_ports or [])
+    clocks = _parse_clock_ports(clock_ports or _policy_list(policy, "xdc_clock_ports"))
 
     lines = [
         "## Generated from local FPGA database. Do not hand-edit board facts here.",
@@ -197,7 +209,7 @@ def generate_xdc_from_database(
     messages: list[str] = []
     used_pins: dict[str, str] = {}
 
-    for mapping in ports:
+    for mapping in selected_ports:
         port, signal = _split_mapping(mapping, "port")
         row = _find_hardware_resource(workspace, signal)
         if not row:
@@ -237,17 +249,23 @@ def validate_prototype_plan(
     """Validate PS/PL planning facts before board script generation."""
 
     workspace = workspace.resolve()
-    project = project_path.resolve()
-    plan_path = project / (plan or "04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml")
+    project = require_project_instance(project_path)
+    policy = _prototype_policy(project)
+    plan_path = _project_path(project, plan) if plan else _policy_path(project, policy, "prototype_plan", "04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml")
     if not plan_path.exists():
         raise FileNotFoundError(f"missing prototype plan: {plan_path}")
     data = load_yaml(plan_path)
-    report_dir = project / "05_Output" / "reports" / "loop3" / "preflight"
-    report_dir.mkdir(parents=True, exist_ok=True)
-    report_path = report_dir / "prototype_plan_check.md"
+    report_path = _policy_path(project, policy, "prototype_plan_check_report", "05_Output/reports/loop3/preflight/prototype_plan_check.md")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
 
     errors: list[str] = []
     warnings: list[str] = []
+
+    try:
+        selected_board = _resolve_board(str(data.get("board") or ""), policy, data)
+    except ValueError as exc:
+        selected_board = ""
+        errors.append(str(exc))
 
     mode = str(data.get("mode") or "").lower()
     if mode == "ps_pl":
@@ -268,6 +286,7 @@ def validate_prototype_plan(
         "",
         f"- project: {project.name}",
         f"- plan: {plan_path.relative_to(project)}",
+        f"- board: {selected_board or 'UNSET'}",
         f"- result: {'PASS' if not errors else 'FAIL'}",
         "",
         "## Errors",
@@ -288,10 +307,11 @@ def generate_ps_pl_bd_tcl(
 ) -> PrototypeFileResult:
     """Generate a reusable PS7 + AXI-Lite BD Tcl skeleton from a prototype plan."""
 
-    project = project_path.resolve()
-    plan_path = project / (plan or "04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml")
+    project = require_project_instance(project_path)
+    policy = _prototype_policy(project)
+    plan_path = _project_path(project, plan) if plan else _policy_path(project, policy, "prototype_plan", "04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml")
     data = load_yaml(plan_path)
-    bd_path = project / (output or "05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl")
+    bd_path = _project_path(project, output) if output else _policy_path(project, policy, "generated_ps_pl_bd_tcl", "05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl")
     bd_path.parent.mkdir(parents=True, exist_ok=True)
 
     top_module = str(data.get("rtl_top_module") or "change_me_top")
@@ -374,8 +394,9 @@ def generate_vitis_boot_files(
 ) -> PrototypeFileResult:
     """Generate Vitis boot image template files for FSBL + bitstream + app."""
 
-    project = project_path.resolve()
-    root = project / (output_dir or "05_Output/fpga/vitis/boot")
+    project = require_project_instance(project_path)
+    policy = _prototype_policy(project)
+    root = _project_path(project, output_dir) if output_dir else _policy_path(project, policy, "vitis_boot_dir", "05_Output/fpga/vitis/boot")
     root.mkdir(parents=True, exist_ok=True)
     bif = root / "boot_image.bif"
     ps1 = root / "Build-BootImage.ps1"
@@ -424,6 +445,128 @@ def generate_vitis_boot_files(
         encoding="utf-8",
     )
     return PrototypeFileResult(path=root, messages=[f"bif={bif}", f"script={ps1}"])
+
+
+def _prototype_policy(project: Path) -> dict[str, Any]:
+    try:
+        data = load_project(project).data
+    except Exception:
+        return {}
+    nodes = data.get("nodes", {}) if isinstance(data, dict) else {}
+    node = nodes.get("04_Loop3_FPGA_Prototype", {}) if isinstance(nodes, dict) else {}
+    policy = node.get("prototype_policy", {}) if isinstance(node, dict) else {}
+    return policy if isinstance(policy, dict) else {}
+
+
+def _load_prototype_plan(project: Path, policy: dict[str, Any]) -> dict[str, Any]:
+    path = _policy_path(project, policy, "prototype_plan", "04_Loop3_FPGA_Prototype/board_tests/prototype_plan.yaml")
+    if not path.exists():
+        return {}
+    try:
+        data = load_yaml(path)
+    except Exception:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _resolve_board(board: str | None, policy: dict[str, Any], plan_data: dict[str, Any]) -> str:
+    candidates = [
+        board,
+        policy.get("selected_board"),
+        plan_data.get("board"),
+        policy.get("default_board"),
+        "navigator_zynq_7020",
+    ]
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if text and not _is_placeholder(text):
+            return text
+    raise ValueError("prototype board is not configured; set --board or nodes.04_Loop3_FPGA_Prototype.prototype_policy.selected_board")
+
+
+def _resolve_tool_version(tool_version: str | None, policy: dict[str, Any]) -> str:
+    candidates = [tool_version, policy.get("tool_version"), "2024.2"]
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if text and not _is_placeholder(text):
+            return text
+    return "2024.2"
+
+
+def _is_placeholder(value: str) -> bool:
+    normalized = value.strip().lower()
+    return (
+        not normalized
+        or normalized in {"change_me", "change_me_board", "prototype_board_unset", "todo", "tbd", "none", "null"}
+        or "change_me" in normalized
+    )
+
+
+def _signals_from_plan(plan_data: dict[str, Any], mode: str) -> list[str]:
+    signals: list[str] = []
+    if mode == "ps_pl":
+        signals.extend(_mapping_values(plan_data.get("ps_mio_assignments")))
+    signals.extend(_mapping_values(plan_data.get("pl_port_assignments")))
+    return _dedupe(signals)
+
+
+def _policy_signal_defaults(policy: dict[str, Any], mode: str) -> list[str]:
+    resource_queries = policy.get("resource_queries", {})
+    if not isinstance(resource_queries, dict):
+        return []
+    values = resource_queries.get(mode, [])
+    if not isinstance(values, list):
+        return []
+    return _dedupe(str(item) for item in values if str(item).strip())
+
+
+def _mapping_values(mapping: Any) -> list[str]:
+    if not isinstance(mapping, dict):
+        return []
+    return [str(value).strip() for value in mapping.values() if str(value).strip()]
+
+
+def _port_mappings_from_plan(plan_data: dict[str, Any]) -> list[str]:
+    assignments = plan_data.get("pl_port_assignments", {})
+    if not isinstance(assignments, dict):
+        return []
+    return [f"{port}={signal}" for port, signal in assignments.items() if str(port).strip() and str(signal).strip()]
+
+
+def _policy_list(policy: dict[str, Any], key: str) -> list[str]:
+    value = policy.get(key, [])
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
+def _dedupe(values: Any) -> list[str]:
+    result: list[str] = []
+    for value in values:
+        text = str(value).strip()
+        if text and text not in result:
+            result.append(text)
+    return result
+
+
+def _policy_path(project: Path, policy: dict[str, Any], key: str, default: str) -> Path:
+    value = policy.get(key)
+    rel = str(value).strip() if isinstance(value, str) and value.strip() else default
+    return _project_path(project, rel)
+
+
+def _project_path(project: Path, rel: str | None) -> Path:
+    if not rel:
+        raise ValueError("project-relative path is required")
+    raw = Path(rel)
+    if raw.is_absolute() or ".." in raw.parts:
+        raise ValueError(f"path must stay inside project: {rel}")
+    path = (project / raw).resolve()
+    try:
+        path.relative_to(project.resolve())
+    except ValueError as exc:
+        raise ValueError(f"path must stay inside project: {rel}") from exc
+    return path
 
 
 def _one_line(value: object, *, limit: int = 140) -> str:

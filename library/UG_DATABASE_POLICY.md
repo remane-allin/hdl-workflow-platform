@@ -1,78 +1,34 @@
 # UG Database Policy
 
-This library is designed for many large FPGA user guides. Raw PDFs and parser output must not become the long-term lookup surface. The durable lookup surface is the structured database layer.
+This repository now consumes only already-normalized library artifacts and the
+SQLite database built from them. Raw PDF ingest is out of scope for this
+workspace.
 
-## Storage Zones
+## Durable Inputs
 
-```text
-library/
-  files/fpga_ug_pdfs/        Source UG PDFs, local only and ignored by Git
-  work/ug_ingest/            Temporary parse workspace, ignored and disposable
-  parsed/fpga_ug_mineru/     Structured normalized artifacts only
-  indexes/document_index.yaml
-  sources/hardware_guides/   Concise human-readable detail pages
-  .local/library.sqlite      Generated query database, local only
-```
+Keep these as the source for library lookup:
 
-## UG Identity
+- `library/parsed/`
+- `library/indexes/`
+- `library/sources/`
+- `library/schema/library_schema.sql`
 
-Every guide must use a stable identity:
+The generated database is local-only:
 
-```text
-<vendor>_<doc_id>/<version>/
-```
+- `library/.local/library.sqlite`
 
-Examples:
-
-```text
-xilinx_ug835/2024_1/
-xilinx_ug903/2024_1/
-alientek_navigator_zynq_fpga_dev_guide/v3_3/
-```
-
-The SQLite `guide_id` should be stable and explicit:
-
-```text
-<vendor>.<doc_id>.<version>[.<chapter_or_topic>]
-```
-
-## Ingest Lifecycle
-
-1. Put the raw PDF under `library/files/fpga_ug_pdfs/`.
-2. Parse into `library/work/ug_ingest/<doc_id>/<version>/<run_id>/`.
-3. Normalize only useful content into `library/parsed/fpga_ug_mineru/<doc_id>/<version>/`.
-4. Add or update `library/indexes/document_index.yaml`.
-5. Add concise detail pages under `library/sources/hardware_guides/` when a topic needs narrative guidance.
-6. Run:
+Rebuild it from parsed artifacts with:
 
 ```powershell
-$env:PYTHONPATH='engine'; python -m hdlflow.cli library-finalize --workspace .
+python -m hdlflow.cli library-build --workspace .
 ```
 
-`library-finalize` rebuilds `library/.local/library.sqlite` and removes parser temporary outputs.
+## Retention Rules
 
-## Final Artifacts
+- Do not keep raw UG PDFs, schematic PDFs, parser workspaces, parser raw output,
+  OCR text dumps, extracted images, or temporary chunks in this workspace.
+- Do not add new PDF ingest commands to `hdlflow.cli`.
+- If new reference material is needed, add normalized artifacts directly under
+  `library/parsed/` plus concise details under `library/sources/`, then update
+  `library/indexes/` and rebuild the database.
 
-Keep only normalized, queryable artifacts in `parsed/`:
-
-- `metadata.json` / `metadata.yaml`
-- `resources.json` / `resources.yaml`
-- `sections.json` / `sections.yaml`
-- `notes.json` / `notes.yaml`
-- optional topic-specific structured files, for example `commands.json`, `constraints.json`, `interfaces.yaml`
-
-Do not retain raw MinerU output, raw OCR text, extracted images, or temporary chunks after the database is built.
-
-## Cleanup Contract
-
-The following paths are temporary and can be deleted after successful database build:
-
-- `library/work/`
-- `library/parsed/**/mineru_raw/`
-- `library/parsed/**/mineru_extract/`
-- `library/parsed/**/text_raw/`
-- `library/parsed/**/images/`
-- `library/parsed/**/chunks/`
-- `library/parsed/**/extracted_tables/`
-
-The original PDF remains under `library/files/fpga_ug_pdfs/` as a local source-of-truth file, but normal AI lookup should use SQLite and structured artifacts first.

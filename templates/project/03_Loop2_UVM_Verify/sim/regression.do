@@ -9,4 +9,8 @@ if {![info exists uvm_seed_count]} {
 }
 set enable_code_coverage 1
 
-do [file join [file dirname [info script]] uvm_baseline.do]
+set script_dir [file normalize [file dirname [info script]]]
+if {![file exists [file join $script_dir uvm_full_functional.do]] && [file exists [file join [pwd] project_scaffold.yaml]]} {
+    set script_dir [file join [file normalize [pwd]] 03_Loop2_UVM_Verify sim]
+}
+do [file join $script_dir uvm_full_functional.do]

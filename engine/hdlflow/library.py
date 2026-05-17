@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sqlite3
 import json
-import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -19,18 +18,6 @@ INDEX_SPECS = [
     ("document_index.yaml", "documents", "document"),
     ("connection_index.yaml", "connections", "connection"),
     ("diagnostic_index.yaml", "diagnostics", "diagnostic"),
-]
-
-
-LIBRARY_TEMP_DIR_NAMES = {
-    "mineru_raw",
-    "mineru_extract",
-    "text_raw",
-    "images",
-}
-
-LIBRARY_TEMP_ROOTS = [
-    "library/work",
 ]
 
 
@@ -110,41 +97,6 @@ def build_library(workspace: Path) -> Path:
         _import_fpga_hardware_guides(conn, library_root)
         _import_software_tcl_library(conn, library_root)
     return db_path
-
-
-def cleanup_library_temp_outputs(workspace: Path) -> list[Path]:
-    workspace = workspace.resolve()
-    removed: list[Path] = []
-    library_root = workspace / "library"
-    if not library_root.exists():
-        return removed
-
-    candidates: list[Path] = []
-    for rel_root in LIBRARY_TEMP_ROOTS:
-        candidates.append(workspace / rel_root)
-    parsed_root = library_root / "parsed"
-    if parsed_root.is_dir():
-        for path in parsed_root.rglob("*"):
-            if path.is_dir() and path.name in LIBRARY_TEMP_DIR_NAMES:
-                candidates.append(path)
-
-    for candidate in sorted(set(candidates), key=lambda item: len(item.parts), reverse=True):
-        if not candidate.exists():
-            continue
-        resolved = candidate.resolve()
-        if not _is_relative_to(resolved, workspace):
-            raise ValueError(f"refusing to remove path outside workspace: {resolved}")
-        if resolved == workspace or resolved == library_root:
-            raise ValueError(f"refusing to remove protected path: {resolved}")
-        shutil.rmtree(resolved)
-        removed.append(resolved)
-    return removed
-
-
-def finalize_library_database(workspace: Path) -> tuple[Path, list[Path]]:
-    db_path = build_library(workspace)
-    removed = cleanup_library_temp_outputs(workspace)
-    return db_path, removed
 
 
 def query_toc(
@@ -1025,7 +977,7 @@ def _import_fpga_schematics(conn: sqlite3.Connection, library_root: Path) -> Non
 
 
 def _import_fpga_hardware_guides(conn: sqlite3.Connection, library_root: Path) -> None:
-    parsed_root = library_root / "parsed" / "fpga_ug_mineru"
+    parsed_root = library_root / "parsed" / "fpga_guides"
     if not parsed_root.is_dir():
         return
     for metadata_path in parsed_root.glob("*/*/metadata.json"):
@@ -1094,7 +1046,7 @@ def _import_fpga_hardware_guides(conn: sqlite3.Connection, library_root: Path) -
 
 
 def _import_software_tcl_library(conn: sqlite3.Connection, library_root: Path) -> None:
-    parsed_root = library_root / "parsed" / "software_ug_mineru"
+    parsed_root = library_root / "parsed" / "software_guides"
     if not parsed_root.is_dir():
         return
     for metadata_path in parsed_root.glob("*/*/metadata.json"):

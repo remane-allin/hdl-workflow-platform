@@ -8,6 +8,14 @@ Navigation: [Report index](../README.md) | [Loop1 reports](README.md)
 - run_report: [loop1_rtl_tb_run_report.md](loop1_rtl_tb_run_report.md)
 - latest_log:
 
+## Skill Constraint Evidence
+
+| Skill | Status | Evidence |
+| --- | --- | --- |
+| `hdl-workflow-orchestrator` | TODO | `skills/hdl-workflow-orchestrator/SKILL.md` |
+| `rtl-architecture-and-gen` | TODO | `skills/rtl-architecture-and-gen/SKILL.md` |
+| `modelsim-run-triage-debug` | TODO | `skills/modelsim-run-triage-debug/SKILL.md` |
+
 ## Gate Criteria
 
 | Criterion | Status | Evidence |
@@ -18,6 +26,7 @@ Navigation: [Report index](../README.md) | [Loop1 reports](README.md)
 | Required pass markers observed | TODO |  |
 | No assertion/self-check failure | TODO |  |
 | No open critical or major Loop1 bug | TODO |  |
+| Test case input/expected/actual comparison table complete | TODO | `loop1_rtl_tb_run_report.md` |
 | Requirement-to-RTL trace updated | TODO |  |
 | Requirement-to-test trace updated | TODO |  |
 

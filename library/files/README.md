@@ -1,10 +1,8 @@
 # Library Files
 
-Place uploaded source files here before parsing or indexing.
+This workspace is parsed-database-only. Raw source PDFs and uploaded parser
+inputs are not retained here.
 
-- `fpga_ug_pdfs/` - official FPGA user guides and command references.
-- `fpga_io_tables/` - FPGA IO tables, pin lists, bank assignments, and board interface spreadsheets.
-- `fpga_schematics/` - FPGA board schematic PDFs and schematic exports.
-- `rtl_template_uploads/` - uploaded RTL template packs before review.
+Keep only placeholder README files in this tree unless a future workflow
+explicitly reintroduces a reviewed source-file retention policy.
 
-Do not mix these files with project requirement documents. Project requirement documents belong under a project `00_SPEC/` or `01_DocParse/`; reusable reference material belongs here.

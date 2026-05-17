@@ -1,2 +1,2 @@
 `include "PROJECT_protocol_base_sequence.sv"
-`include "PROJECT_protocol_smoke_sequence.sv"
+`include "PROJECT_protocol_full_functional_sequence.sv"

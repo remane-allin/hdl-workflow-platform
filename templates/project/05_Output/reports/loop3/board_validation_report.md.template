@@ -1,0 +1,31 @@
+# Loop3 Board Validation Report
+
+Navigation: [Report index](../README.md) | [Loop3 reports](README.md)
+
+- project:
+- generated_at:
+- board:
+- image:
+- serial_log:
+- board_status: PASS/FAIL/BLOCKED
+
+## Board Checks
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| FPGA download/programming | TODO |  |
+| Clock/reset bring-up | TODO |  |
+| UART or console output | TODO |  |
+| LED/GPIO observable behavior | TODO |  |
+| DDR or memory window check, if applicable | TODO |  |
+| PS/PL data path check, if applicable | TODO |  |
+
+## Captured Logs
+
+- serial:
+- Vivado hardware manager:
+- Vitis/debug console:
+
+## Notes
+
+- none/TODO

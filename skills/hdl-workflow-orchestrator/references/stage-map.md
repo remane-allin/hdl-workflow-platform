@@ -9,7 +9,7 @@ Use this quick map when deciding what to do next.
 
 ## Handoffs
 
-- Documents changed -> `mineru-spec-normalizer`
+- Requirements changed -> `hdl-requirements-decompose` and requirements front-door review
 - Register-heavy CSR space -> `register-spec-and-ral`
 - Spec stable but RTL missing or wrong -> `rtl-architecture-and-gen`
 - RTL exists but verification scaffold is weak -> `uvm-env-and-test-build`

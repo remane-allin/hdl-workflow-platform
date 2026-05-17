@@ -103,8 +103,8 @@
       }
     },
     {
-      "id": "run_uvm_baseline",
-      "title": "Run the Loop2 UVM baseline",
+      "id": "run_uvm_precheck",
+      "title": "Run the Loop2 UVM precheck",
       "kind": "sim_run",
       "status": "pending",
       "priority": 90,
@@ -113,17 +113,17 @@
       "last_update": "",
       "last_note": "",
       "action": {
-        "do_file": "03_Loop2_UVM_Verify/sim/uvm_baseline.do",
+        "do_file": "03_Loop2_UVM_Verify/sim/uvm_full_functional.do",
         "gui": false
       }
     },
     {
       "id": "run_regression",
-      "title": "Run Loop2 UVM regression",
+      "title": "Run Loop2 full functional UVM regression",
       "kind": "sim_run",
       "status": "pending",
       "priority": 110,
-      "depends_on": ["run_uvm_baseline"],
+      "depends_on": ["run_uvm_precheck"],
       "attempts": 0,
       "last_update": "",
       "last_note": "",
@@ -134,7 +134,7 @@
     },
     {
       "id": "run_loop3",
-      "title": "Run FPGA prototype preflight/build/board smoke",
+      "title": "Run FPGA prototype preflight/build/board validation",
       "kind": "fpga_run",
       "status": "pending",
       "priority": 130,

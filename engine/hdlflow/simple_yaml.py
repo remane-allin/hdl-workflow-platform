@@ -25,7 +25,7 @@ def parse_yaml(text: str) -> dict[str, Any]:
         if not line.strip():
             continue
         indent = len(line) - len(line.lstrip(" "))
-        content = line.strip()
+        content = line.strip().lstrip("\ufeff")
 
         while stack and indent <= stack[-1][0]:
             stack.pop()
@@ -34,10 +34,28 @@ def parse_yaml(text: str) -> dict[str, Any]:
 
         parent = stack[-1][1]
 
-        if content.startswith("- "):
+        if content == "-" or content.startswith("- "):
             if not isinstance(parent, list):
                 raise ValueError(f"list item without list parent at line {lineno}: {raw_line}")
-            parent.append(_parse_scalar(content[2:].strip()))
+            item_text = "" if content == "-" else content[2:].strip()
+            if not item_text:
+                child = _infer_child_container(text.splitlines(), lineno, indent)
+                parent.append(child)
+                stack.append((indent, child))
+                continue
+            if ":" in item_text and not _is_quoted(item_text):
+                key, value = item_text.split(":", 1)
+                item: dict[str, Any] = {}
+                value = value.strip()
+                if value:
+                    item[key.strip()] = _parse_scalar(value)
+                else:
+                    child = _infer_child_container(text.splitlines(), lineno, indent)
+                    item[key.strip()] = child
+                parent.append(item)
+                stack.append((indent, item))
+                continue
+            parent.append(_parse_scalar(item_text))
             continue
 
         if ":" not in content:
@@ -96,6 +114,10 @@ def _parse_scalar(value: str) -> Any:
         return value
 
 
+def _is_quoted(value: str) -> bool:
+    return (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))
+
+
 def _strip_comment(line: str) -> str:
     in_single = False
     in_double = False
@@ -107,4 +129,3 @@ def _strip_comment(line: str) -> str:
         elif char == "#" and not in_single and not in_double:
             return line[:index]
     return line
-

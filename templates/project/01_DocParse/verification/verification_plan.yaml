@@ -1,0 +1,14 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: verification_planner
+source_refs: []
+module_level: []
+system_level: []
+scoreboards: []
+reference_models: []
+negative_tests: []
+loop_consumers:
+  - Loop1 RTL/TB
+  - Loop2 UVM
+assumptions: []

@@ -1,0 +1,33 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: coordinator
+source_refs: []
+roles:
+  coordinator:
+    status: DRAFT
+    findings: []
+    blockers: []
+    confidence: medium
+  pm:
+    status: DRAFT
+    findings: []
+    blockers: []
+    confidence: medium
+  architect:
+    status: DRAFT
+    findings: []
+    blockers: []
+    confidence: medium
+  verification_planner:
+    status: DRAFT
+    findings: []
+    blockers: []
+    confidence: medium
+  prototype_planner:
+    status: DRAFT
+    findings: []
+    blockers: []
+    confidence: medium
+cross_role_conflicts: []
+assumptions: []
