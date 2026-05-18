@@ -3,6 +3,26 @@ toolchains:
   modelsim:
     required: false
     purpose: RTL, TB, and UVM simulation
+    env_override:
+      vsim_exe: HDLFLOW_MODELSIM_VSIM_EXE
+      vlog_exe: HDLFLOW_MODELSIM_VLOG_EXE
+      vlib_exe: HDLFLOW_MODELSIM_VLIB_EXE
+      vdel_exe: HDLFLOW_MODELSIM_VDEL_EXE
+      uvm_src: HDLFLOW_MODELSIM_UVM_SRC
+    install_root: "D:/Modelsim/Modelsim"
+    launchers:
+      vsim_exe: "D:/Modelsim/Modelsim/win64/vsim.exe"
+      vlog_exe: "D:/Modelsim/Modelsim/win64/vlog.exe"
+      vlib_exe: "D:/Modelsim/Modelsim/win64/vlib.exe"
+      vdel_exe: "D:/Modelsim/Modelsim/win64/vdel.exe"
+    uvm_src: "D:/Modelsim/Modelsim/verilog_src/uvm-1.1d/src"
+    default_vsim_args:
+      - "-onfinish"
+      - "stop"
+      - "-voptargs=+acc"
+    default_uvm_defines:
+      - "UVM_NO_DPI"
+    default_uvm_verbosity: UVM_MEDIUM
     version_policy: record_actual_version_in_project_memory
   questa:
     required: false
@@ -12,6 +32,9 @@ toolchains:
     required: false
     purpose: Loop3 FPGA implementation
     version: "2024.2"
+    env_override:
+      vivado_bat: HDLFLOW_VIVADO_VIVADO_BAT
+      vivado_exe: HDLFLOW_VIVADO_VIVADO_EXE
     install_root: "E:/Vivado/Vivado/2024.2"
     launchers:
       vivado_bat: "E:/Vivado/Vivado/2024.2/bin/vivado.bat"
@@ -22,6 +45,11 @@ toolchains:
     required: false
     purpose: Loop3 embedded software build
     version: "2024.2"
+    env_override:
+      xsct_bat: HDLFLOW_VITIS_XSCT_BAT
+      vitis_bat: HDLFLOW_VITIS_VITIS_BAT
+      vitis_exe: HDLFLOW_VITIS_VITIS_EXE
+      bootgen_bat: HDLFLOW_VITIS_BOOTGEN_BAT
     install_root: "E:/Vivado/Vitis/2024.2"
     launchers:
       xsct_bat: "E:/Vivado/Vitis/2024.2/bin/xsct.bat"

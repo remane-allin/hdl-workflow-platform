@@ -9,6 +9,7 @@
 **/*.jou
 **/*.pb
 **/*.rpt.tmp
+clockInfo.txt
 *.statebak
 **/.memory.lock
 .Xil/

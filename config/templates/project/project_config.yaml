@@ -199,6 +199,16 @@ nodes:
       final_functional_evidence_only: true
       overwrite_reports_after_each_full_regression: true
       min_checked_transactions: 64
+      coverage_triage_required: true
+      bound_assertions_required: true
+      monitor_sampled_functional_coverage_required: true
+      stimulus_breadth_required: true
+      required_stimulus_scenarios:
+        - reset_mid_frame
+        - bad_stop_bit
+        - glitch
+        - overflow
+        - baud_div_434
       database_preflight_required: true
       database_preflight_report: 05_Output/reports/loop2/preflight/database_preflight.md
       binding_database: 03_Loop2_UVM_Verify/_runtime/loop2_bindings.sqlite
@@ -259,6 +269,10 @@ nodes:
         - zero_uvm_error
         - zero_uvm_fatal
         - assertion_no_failure
+        - bound_assertions_present
+        - functional_coverage_observed
+        - coverage_triage_closed
+        - stimulus_breadth_complete
         - bug_closure_pass
         - requirement_trace_complete
   04_Loop3_FPGA_Prototype:
@@ -345,8 +359,8 @@ nodes:
           - "Hold  :"
           - "0  Failing Endpoints"
         serial_echo_all:
-          - "TX "
-          - "RX "
+          - "TX["
+          - "RX["
       release_forbidden_markers:
         drc:
           - " Warning"

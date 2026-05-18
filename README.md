@@ -51,6 +51,18 @@ add project-specific RTL, TB, FPGA, software, reports, and scripts under the
 created project. Each generated project carries `project_scaffold.yaml`; project
 validation treats that marker as required evidence that the script path was used.
 
+## Multi-Project Runtime Rule
+
+One platform workspace may hold several unrelated child projects under
+`projects/`. Each child project owns its authoritative memory in
+`projects/<project_name>/memory/`; workspace `.omx/` files are only a
+multi-project runtime index and may have `active_project: null` when no project
+can be inferred safely.
+
+Use `HDL_PROJECT_PATH` or pass `--project` / `-ProjectPath` for commands that
+must target a specific child project. Hooks must not treat a stale `.omx`
+project field as authority.
+
 ## Project Layout
 
 Every project created from the template follows this structure:
@@ -97,6 +109,13 @@ Cross-platform:
 
 ```bash
 python scripts/new_hdl_project.py <project_name>
+```
+
+Because concrete projects are local by policy, export a project package when a
+milestone should survive outside this workspace:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\Export-HdlProject.ps1 -ProjectPath projects\<project_name>
 ```
 
 Then validate the created project:
@@ -175,6 +194,23 @@ For PS_PL designs, `prototype_plan.yaml` is the checked planning source for AXI
 address maps, DDR test windows, cache maintenance rules, PS MIO assignments, and
 PL external ports.
 
+Tool launchers in `config/global/toolchains/toolchains.yaml` may be overridden
+per machine with environment variables such as
+`HDLFLOW_VIVADO_VIVADO_BAT`, `HDLFLOW_VITIS_XSCT_BAT`, and
+`HDLFLOW_VITIS_BOOTGEN_BAT`.
+
+Prototype plans must replace template placeholders before script generation:
+`rtl_top_module` and PS_PL AXI instance names are rejected when they still look
+like `change_me`. If the DocParse/source prototype intent says pure PL, a
+`ps_pl` board-test plan is rejected unless it explicitly records
+`allow_ps_pl_wrapper: true` and a `mode_rationale`.
+
+Loop2 closure is intentionally stricter than aggregate coverage thresholds.
+The develop/release gate blocks unclassified coverage-triage rows, marker-only
+assertion evidence without real SVA/bind files, manually forced functional
+coverage sampling from tests, and missing stress scenarios such as mid-frame
+reset, bad stop bit, glitch/noise, overflow, and BAUD_DIV=434 coverage.
+
 ## Memory Synchronization
 
 Project memory has one canonical machine-readable iteration source:
@@ -192,6 +228,14 @@ python -m hdlflow.cli memory-check --project ..\projects\<project_name>
 Failed CLI commands that know the project path write recovery records under
 `memory/recovery/failure_records/`. Passing memory records and executable gates
 write rollback/hash manifests under `memory/recovery/rollback_manifests/`.
+Run `sync-project-state` whenever external scripts or manual recovery may have
+left `loop/*.json` stale; successful and failed gates call the same synchronizer
+so the latest gate result wins over older manifests:
+
+```powershell
+cd engine
+python -m hdlflow.cli sync-project-state --project ..\projects\<project_name>
+```
 
 ## Configuration Model
 
@@ -203,6 +247,16 @@ write rollback/hash manifests under `memory/recovery/rollback_manifests/`.
 - Local project configs should be created under `config/projects/<project_name>/`.
 - A pipeline node is active when its configuration section exists and passes
   validation.
+
+## Platform Self-Tests
+
+Run the dependency-free Python unit tests before changing engine parsing,
+toolchain resolution, or prototype-plan checks:
+
+```powershell
+$env:PYTHONPATH = "engine"
+python -m unittest discover -s tests
+```
 
 ## Publication Rules
 

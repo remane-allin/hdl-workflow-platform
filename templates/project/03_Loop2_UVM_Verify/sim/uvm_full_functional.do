@@ -7,6 +7,8 @@ if {![file exists [file join $project_root project_scaffold.yaml]] && [file exis
     set project_root [file normalize [pwd]]
     set script_dir [file join $project_root 03_Loop2_UVM_Verify sim]
 }
+set workspace_root [file normalize [file join $project_root .. ..]]
+set env(PYTHONPATH) [file join $workspace_root engine]
 set output_dir [file join $project_root 05_Output]
 set uvm_dir [file join $output_dir uvm]
 set runtime_dir [file join $project_root 03_Loop2_UVM_Verify _runtime]
@@ -41,16 +43,24 @@ if {![info exists uvm_sva_file]} {
     set uvm_sva_file ""
 }
 
+set external_uvm_src ""
 if {[info exists env(UVM_HOME)] && [file exists [file join $env(UVM_HOME) src uvm_pkg.sv]]} {
     set external_uvm_src [file normalize [file join $env(UVM_HOME) src]]
 } else {
-    set modelsim_home [file normalize [file join [file dirname [file dirname [info nameofexecutable]]] verilog_src]]
-    set external_uvm_src ""
-    foreach candidate [list uvm-1.2 uvm-1.1d uvm-1.1c uvm] {
-        set candidate_dir [file join $modelsim_home $candidate src]
-        if {[file exists [file join $candidate_dir uvm_pkg.sv]]} {
-            set external_uvm_src $candidate_dir
-            break
+    if {![catch {exec python -m hdlflow.cli get-tool-setting --workspace $workspace_root --tool modelsim --key uvm_src} configured_uvm_src]} {
+        set configured_uvm_src [string trim $configured_uvm_src]
+        if {[file exists [file join $configured_uvm_src uvm_pkg.sv]]} {
+            set external_uvm_src [file normalize $configured_uvm_src]
+        }
+    }
+    if {$external_uvm_src eq ""} {
+        set modelsim_home [file normalize [file join [file dirname [file dirname [info nameofexecutable]]] verilog_src]]
+        foreach candidate [list uvm-1.2 uvm-1.1d uvm-1.1c uvm] {
+            set candidate_dir [file join $modelsim_home $candidate src]
+            if {[file exists [file join $candidate_dir uvm_pkg.sv]]} {
+                set external_uvm_src $candidate_dir
+                break
+            }
         }
     }
 }
@@ -120,8 +130,6 @@ if {$enable_code_coverage} {
 
 quit -sim
 if {$enable_code_coverage || $uvm_test_name eq "full_regression_test"} {
-    set workspace_root [file normalize [file join $project_root .. ..]]
-    set env(PYTHONPATH) [file join $workspace_root engine]
     set refresh_cmd [list python -m hdlflow.cli loop2-refresh-reports --project $project_root]
     if {[catch {eval exec $refresh_cmd} refresh_out]} {
         puts $refresh_out

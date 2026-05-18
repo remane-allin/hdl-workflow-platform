@@ -39,6 +39,9 @@ def run_doctor(workspace: Path, project_path: Path) -> DoctorResult:
     else:
         messages.append("pipeline: FAIL empty")
 
+    for orphan in _orphan_project_configs(workspace_cfg.root):
+        messages.append(f"workspace warning: orphan project config without project directory: {orphan}")
+
     memory = check_memory(project_path)
     if memory.ok:
         messages.append("memory: PASS")
@@ -62,3 +65,19 @@ def run_doctor(workspace: Path, project_path: Path) -> DoctorResult:
 
     ok = layout.ok and not config_errors and bool(pipeline) and memory.ok and changes.ok
     return DoctorResult(ok=ok, messages=messages)
+
+
+def _orphan_project_configs(workspace_root: Path) -> list[str]:
+    config_root = workspace_root / "config" / "projects"
+    projects_root = workspace_root / "projects"
+    if not config_root.is_dir() or not projects_root.is_dir():
+        return []
+    orphans: list[str] = []
+    for path in sorted(config_root.iterdir()):
+        if not path.is_dir():
+            continue
+        if not (path / "project_config.yaml").is_file():
+            continue
+        if not (projects_root / path.name).is_dir():
+            orphans.append(f"config/projects/{path.name}/project_config.yaml")
+    return orphans

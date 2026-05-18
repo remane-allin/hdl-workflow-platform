@@ -199,7 +199,7 @@ def generate_xdc_from_database(
         raise ValueError("XDC generation requires --port entries or prototype_plan.pl_port_assignments")
     xdc_path = _project_path(project, output) if output else _policy_path(project, policy, "generated_xdc", "05_Output/fpga/vivado/constraints/generated_board.xdc")
     xdc_path.parent.mkdir(parents=True, exist_ok=True)
-    clocks = _parse_clock_ports(clock_ports or _policy_list(policy, "xdc_clock_ports"))
+    clocks = _parse_clock_ports(clock_ports or _list_value(plan_data.get("clock_ports")) or _policy_list(policy, "xdc_clock_ports"))
 
     lines = [
         "## Generated from local FPGA database. Do not hand-edit board facts here.",
@@ -268,8 +268,13 @@ def validate_prototype_plan(
         errors.append(str(exc))
 
     mode = str(data.get("mode") or "").lower()
+    top_module = str(data.get("rtl_top_module") or "").strip()
+    _check_prototype_mode_intent(project, mode, data, errors, warnings)
+    if _is_placeholder(top_module):
+        errors.append("rtl_top_module must be set to the real signed RTL top module; placeholder values such as change_me_top are not allowed")
     if mode == "ps_pl":
         _check_axi_regions(data.get("axi_regions", {}), errors)
+        _check_axi_instances(data.get("axi_regions", {}), errors)
         _check_ddr_regions(data.get("ddr_regions", {}), errors, warnings)
         _check_cache_policy(data.get("cache_policy", {}), errors, warnings)
     elif mode == "pl":
@@ -314,7 +319,9 @@ def generate_ps_pl_bd_tcl(
     bd_path = _project_path(project, output) if output else _policy_path(project, policy, "generated_ps_pl_bd_tcl", "05_Output/fpga/vivado/scripts/generated_ps_pl_bd.tcl")
     bd_path.parent.mkdir(parents=True, exist_ok=True)
 
-    top_module = str(data.get("rtl_top_module") or "change_me_top")
+    top_module = str(data.get("rtl_top_module") or "")
+    if _is_placeholder(top_module):
+        raise ValueError("prototype plan rtl_top_module must be set before PS_PL BD generation")
     bd_name = str(data.get("bd_name") or "ps_pl_system")
     fclk_mhz = str(data.get("fclk_mhz") or "100")
     axi_regions = data.get("axi_regions", {})
@@ -324,6 +331,8 @@ def generate_ps_pl_bd_tcl(
     base = str(first_region.get("base"))
     range_text = str(first_region.get("range") or "64K")
     inst_name = str(first_region.get("instance") or f"{top_module}_0")
+    if _is_placeholder(inst_name):
+        raise ValueError("prototype plan axi_regions.*.instance must be set before PS_PL BD generation")
     slave_intf = str(first_region.get("slave_interface") or "s00_axi")
 
     lines = [
@@ -535,6 +544,10 @@ def _port_mappings_from_plan(plan_data: dict[str, Any]) -> list[str]:
 
 def _policy_list(policy: dict[str, Any], key: str) -> list[str]:
     value = policy.get(key, [])
+    return _list_value(value)
+
+
+def _list_value(value: Any) -> list[str]:
     if not isinstance(value, list):
         return []
     return [str(item).strip() for item in value if str(item).strip()]
@@ -693,6 +706,20 @@ def _check_axi_regions(regions: Any, errors: list[str]) -> None:
                 errors.append(f"axi address overlap: {left[0]} and {right[0]}")
 
 
+def _check_axi_instances(regions: Any, errors: list[str]) -> None:
+    if not isinstance(regions, dict):
+        return
+    for name, raw in regions.items():
+        if not isinstance(raw, dict):
+            continue
+        instance = str(raw.get("instance") or "").strip()
+        if _is_placeholder(instance):
+            errors.append(f"axi region {name} instance must name the real RTL/BD instance; placeholder values are not allowed")
+        slave_interface = str(raw.get("slave_interface") or "").strip()
+        if not slave_interface or _is_placeholder(slave_interface):
+            errors.append(f"axi region {name} slave_interface must be set")
+
+
 def _parse_range(value: Any) -> int:
     text = str(value).strip().upper()
     if text.endswith("K"):
@@ -776,6 +803,41 @@ def _check_resource_assignments(
         if pin in used_pins:
             errors.append(f"PL pin conflict: {pin} used by {used_pins[pin]} and {port}")
         used_pins[pin] = str(port)
+
+
+def _check_prototype_mode_intent(
+    project: Path,
+    mode: str,
+    data: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    intent_text = _prototype_intent_text(project).lower()
+    source_declares_pure_pl = "pure pl" in intent_text or "pure-pl" in intent_text
+    has_ps_assignments = bool(data.get("ps_mio_assignments") or data.get("ddr_regions") or data.get("axi_regions"))
+    if source_declares_pure_pl and mode == "ps_pl":
+        allow_wrapper = bool(data.get("allow_ps_pl_wrapper"))
+        rationale = str(data.get("mode_rationale") or "").strip()
+        if not allow_wrapper or not rationale:
+            errors.append(
+                "prototype mode conflict: DocParse/source prototype intent says pure PL, but board_tests/prototype_plan.yaml uses ps_pl; "
+                "set mode: pl or add allow_ps_pl_wrapper: true with mode_rationale"
+            )
+    if mode == "pl" and has_ps_assignments:
+        warnings.append("pure PL mode has PS/AXI/DDR assignments; remove them or switch to ps_pl with rationale")
+
+
+def _prototype_intent_text(project: Path) -> str:
+    paths = [
+        project / "01_DocParse" / "prototype" / "prototype_plan.yaml",
+        project / "01_DocParse" / "prototype" / "prototype_plan.md",
+        project / "00_SPEC" / "requirements" / "requirements.md",
+    ]
+    parts = []
+    for path in paths:
+        if path.exists():
+            parts.append(path.read_text(encoding="utf-8", errors="ignore"))
+    return "\n".join(parts)
 
 
 def _find_mio_resource(workspace: Path, signal: str) -> dict[str, Any] | None:

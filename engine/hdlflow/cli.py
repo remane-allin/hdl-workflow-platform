@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 from .artifacts import ensure_output_dirs
 from .change_control import approve_change, check_changes, close_change, open_change, record_impact
 from .config import load_project, load_workspace, validate_config
+from .design_doc import generate_design_document
 from .doctor import run_doctor
 from .gates import run_final_audit, run_gate
 from .library import (
@@ -53,6 +55,7 @@ from .prototype import (
 from .reports import write_config_run_report
 from .requirements_frontend import check_requirements_frontend, initialize_requirements_frontend
 from .scaffold import create_project
+from .state_sync import sync_project_state
 from .validate import validate_project
 
 
@@ -102,6 +105,9 @@ def build_parser() -> argparse.ArgumentParser:
     final_audit_parser = subparsers.add_parser("final-audit", help="Run the strict final release gate and write final audit evidence.")
     final_audit_parser.add_argument("--project", required=True, help="Project path.")
     final_audit_parser.add_argument("--level", choices=["debug", "develop", "release"], default="release")
+
+    sync_parser = subparsers.add_parser("sync-project-state", help="Synchronize loop runtime JSON state from passed gate evidence.")
+    sync_parser.add_argument("--project", required=True, help="Project path.")
 
     change_open_parser = subparsers.add_parser("change-open", help="Open a controlled design change request.")
     change_open_parser.add_argument("--project", required=True, help="Project path.")
@@ -155,6 +161,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Check structure only and do not require status: READY.",
     )
 
+    design_doc_parser = subparsers.add_parser(
+        "generate-design-doc",
+        help="Generate the user-readable requirements, RTL, UVM, and FPGA design document.",
+    )
+    design_doc_parser.add_argument("--project", required=True, help="Project path.")
+
     preflight_parser = subparsers.add_parser(
         "prototype-preflight",
         help="Run required Loop3 database lookups and write a preflight report.",
@@ -192,6 +204,11 @@ def build_parser() -> argparse.ArgumentParser:
     launcher_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
     launcher_parser.add_argument("--tool", required=True, help="Tool name under config/global/toolchains/toolchains.yaml.")
     launcher_parser.add_argument("--launcher", required=True, help="Launcher key, for example vivado_bat or xsct_bat.")
+
+    tool_setting_parser = subparsers.add_parser("get-tool-setting", help="Print a configured tool setting value.")
+    tool_setting_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tool_setting_parser.add_argument("--tool", required=True, help="Tool name under config/global/toolchains/toolchains.yaml.")
+    tool_setting_parser.add_argument("--key", required=True, help="Setting key, for example uvm_src.")
 
     memory_record_parser = subparsers.add_parser("memory-record", help="Write a synchronized project memory iteration.")
     memory_record_parser.add_argument("--project", required=True, help="Project path.")
@@ -400,6 +417,10 @@ def main(argv: list[str] | None = None) -> int:
                         latest_summary=f"{result.node} {args.level} gate passed",
                     )
                 )
+                sync = sync_project_state(Path(args.project))
+                print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+                for path in sync.updated_files:
+                    print(f"state_sync_file: {path}")
                 return 0
             failure = record_failure_event(
                 Path(args.project),
@@ -408,6 +429,10 @@ def main(argv: list[str] | None = None) -> int:
                 detail=str(result.report_path),
             )
             print(f"failure_record: {failure.path}")
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            if sync.failed_nodes:
+                print("failed_nodes: " + ", ".join(sync.failed_nodes))
             return 1
         if args.command == "final-audit":
             result = run_final_audit(Path(args.project), level=args.level)
@@ -432,6 +457,10 @@ def main(argv: list[str] | None = None) -> int:
                         next_action="Archive or tag the release evidence",
                     )
                 )
+                sync = sync_project_state(Path(args.project))
+                print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+                for path in sync.updated_files:
+                    print(f"state_sync_file: {path}")
                 return 0
             failure = record_failure_event(
                 Path(args.project),
@@ -440,7 +469,19 @@ def main(argv: list[str] | None = None) -> int:
                 detail=str(result.report_path),
             )
             print(f"failure_record: {failure.path}")
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            if sync.failed_nodes:
+                print("failed_nodes: " + ", ".join(sync.failed_nodes))
             return 1
+        if args.command == "sync-project-state":
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            print("passed_nodes: " + (", ".join(sync.passed_nodes) if sync.passed_nodes else "none"))
+            print("failed_nodes: " + (", ".join(sync.failed_nodes) if sync.failed_nodes else "none"))
+            for path in sync.updated_files:
+                print(f"updated: {path}")
+            return 0
         if args.command == "change-open":
             result = open_change(
                 Path(args.project),
@@ -539,6 +580,29 @@ def main(argv: list[str] | None = None) -> int:
                     )
                 )
             print("requirements frontdoor check: PASS" if result.ok else "requirements frontdoor check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "generate-design-doc":
+            result = generate_design_document(Path(args.project))
+            print(f"report: {result.report_path}")
+            print(f"manifest: {result.manifest_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            if result.ok:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="design-doc-generated",
+                        node="01_DocParse",
+                        gate_level="design_doc",
+                        gate_result="PASS",
+                        memory_record=result.manifest_path,
+                        report=result.report_path,
+                        notes="Generated user-readable requirements, RTL, UVM, and FPGA design document",
+                        artifacts=[result.report_path, result.manifest_path],
+                        latest_summary="Design document synchronized with project artifacts",
+                    )
+                )
+            print("design doc: PASS" if result.ok else "design doc: FAIL")
             return 0 if result.ok else 1
         if args.command == "prototype-preflight":
             result = write_prototype_preflight(
@@ -658,10 +722,18 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "get-tool-launcher":
             workspace = load_workspace(Path(args.workspace))
             tool = workspace.data.get("toolchains", {}).get("toolchains", {}).get(args.tool, {})
-            launchers = tool.get("launchers", {}) if isinstance(tool, dict) else {}
-            value = launchers.get(args.launcher) if isinstance(launchers, dict) else None
+            value = _tool_launcher_value(args.tool, args.launcher, tool)
             if not value:
                 print(f"error: launcher not configured: {args.tool}.{args.launcher}", file=sys.stderr)
+                return 1
+            print(value)
+            return 0
+        if args.command == "get-tool-setting":
+            workspace = load_workspace(Path(args.workspace))
+            tool = workspace.data.get("toolchains", {}).get("toolchains", {}).get(args.tool, {})
+            value = _tool_setting_value(args.tool, args.key, tool)
+            if not value:
+                print(f"error: setting not configured: {args.tool}.{args.key}", file=sys.stderr)
                 return 1
             print(value)
             return 0
@@ -892,6 +964,59 @@ def main(argv: list[str] | None = None) -> int:
 def _print_memory_messages(result) -> None:
     for message in result.messages:
         print(f"memory: {message}")
+
+
+def _tool_launcher_value(tool: str, launcher: str, tool_config: object) -> str | None:
+    """Resolve a tool launcher, allowing machine-local env overrides."""
+
+    if isinstance(tool_config, dict):
+        env_override = tool_config.get("env_override", {})
+        if isinstance(env_override, dict):
+            configured_name = env_override.get(launcher)
+            if configured_name:
+                value = os.environ.get(str(configured_name))
+                if value:
+                    return value
+    env_names = [
+        f"HDLFLOW_{tool}_{launcher}",
+        f"HDL_{tool}_{launcher}",
+        f"{tool}_{launcher}",
+    ]
+    for name in env_names:
+        value = os.environ.get(name.upper())
+        if value:
+            return value
+    launchers = tool_config.get("launchers", {}) if isinstance(tool_config, dict) else {}
+    if isinstance(launchers, dict):
+        value = launchers.get(launcher)
+        return str(value) if value else None
+    return None
+
+
+def _tool_setting_value(tool: str, key: str, tool_config: object) -> str | None:
+    """Resolve a non-launcher tool setting, allowing machine-local env overrides."""
+
+    if isinstance(tool_config, dict):
+        env_override = tool_config.get("env_override", {})
+        if isinstance(env_override, dict):
+            configured_name = env_override.get(key)
+            if configured_name:
+                value = os.environ.get(str(configured_name))
+                if value:
+                    return value
+        value = tool_config.get(key)
+        if value is not None:
+            return str(value)
+    env_names = [
+        f"HDLFLOW_{tool}_{key}",
+        f"HDL_{tool}_{key}",
+        f"{tool}_{key}",
+    ]
+    for name in env_names:
+        value = os.environ.get(name.upper())
+        if value:
+            return value
+    return None
 
 
 if __name__ == "__main__":  # pragma: no cover

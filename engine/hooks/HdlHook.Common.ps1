@@ -48,6 +48,31 @@ function Resolve-HdlProjectRoot {
     }
 
     $workspace = if ($WorkspaceRoot) { (Resolve-Path $WorkspaceRoot).Path } else { Find-HdlWorkspaceRoot }
+
+    $current = (Get-Location).Path
+    while ($current) {
+        $projectMarker = Join-Path $current "project_scaffold.yaml"
+        if ((Test-Path $projectMarker) -and (Test-Path (Join-Path $current "05_Output"))) {
+            $candidateRoot = Join-Path $workspace "projects"
+            $resolvedCurrent = (Resolve-Path $current).Path
+            try {
+                $null = Resolve-Path $candidateRoot
+                $relative = Get-HdlRelativePath -BasePath (Resolve-Path $candidateRoot).Path -ChildPath $resolvedCurrent
+                if (-not $relative.StartsWith("..")) {
+                    return $resolvedCurrent
+                }
+            }
+            catch {
+                return $resolvedCurrent
+            }
+        }
+        $parent = Split-Path $current -Parent
+        if ($parent -eq $current -or [string]::IsNullOrWhiteSpace($parent)) {
+            break
+        }
+        $current = $parent
+    }
+
     $projectsRoot = Join-Path $workspace "projects"
     $projects = @(Get-ChildItem -Path $projectsRoot -Directory | Where-Object {
         $config = Join-Path $workspace "config\projects\$($_.Name)\project_config.yaml"
@@ -59,6 +84,111 @@ function Resolve-HdlProjectRoot {
     }
 
     throw "Unable to infer HDL project. Set HDL_PROJECT_PATH or pass -ProjectPath."
+}
+
+function Get-HdlRelativePath {
+    param(
+        [Parameter(Mandatory = $true)][string]$BasePath,
+        [Parameter(Mandatory = $true)][string]$ChildPath
+    )
+
+    $baseFull = [System.IO.Path]::GetFullPath($BasePath)
+    $childFull = [System.IO.Path]::GetFullPath($ChildPath)
+    if (-not $baseFull.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $baseFull += [System.IO.Path]::DirectorySeparatorChar
+    }
+    $baseUri = New-Object System.Uri($baseFull)
+    $childUri = New-Object System.Uri($childFull)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($childUri).ToString()).Replace("/", "\")
+}
+
+function Get-HdlProjectRecords {
+    param([Parameter(Mandatory = $true)][string]$WorkspaceRoot)
+
+    $workspace = (Resolve-Path $WorkspaceRoot).Path
+    $projectsRoot = Join-Path $workspace "projects"
+    if (-not (Test-Path $projectsRoot)) {
+        return @()
+    }
+
+    return @(Get-ChildItem -Path $projectsRoot -Directory | Where-Object {
+        (Test-Path (Join-Path $_.FullName "project_scaffold.yaml")) -and
+        (Test-Path (Join-Path $_.FullName "05_Output"))
+    } | Sort-Object Name | ForEach-Object {
+        $projectName = $_.Name
+        $statePath = Join-Path $_.FullName "memory\00_global\CURRENT_STATE.md"
+        $loopStatePath = Join-Path $_.FullName "loop\loop_state.json"
+        $activeNode = ""
+        $latestSummary = ""
+        if (Test-Path $loopStatePath) {
+            try {
+                $loopState = Get-Content -Path $loopStatePath -Raw | ConvertFrom-Json
+                $loopName = [string]$loopState.current_loop
+                $activeNode = Convert-HdlLoopNameToNode -LoopName $loopName
+                $latestSummary = ("{0}; current_loop={1}" -f $loopState.overall_status, $loopName)
+            }
+            catch {
+                $activeNode = ""
+                $latestSummary = ""
+            }
+        }
+        if ((-not $activeNode) -and (Test-Path $statePath)) {
+            foreach ($line in Get-Content -Path $statePath) {
+                if ($line -match '^\s*-\s*active_node:\s*(.+)\s*$') {
+                    $activeNode = $Matches[1].Trim()
+                }
+                elseif ($line -match '^\s*-\s*latest_summary:\s*(.+)\s*$') {
+                    $latestSummary = $Matches[1].Trim()
+                }
+            }
+        }
+        [ordered]@{
+            name = $projectName
+            path = $_.FullName
+            config = "config/projects/$projectName/project_config.yaml"
+            output = "projects/$projectName/05_Output"
+            memory = "projects/$projectName/memory"
+            active_node = $activeNode
+            latest_summary = $latestSummary
+        }
+    })
+}
+
+function Convert-HdlLoopNameToNode {
+    param([string]$LoopName)
+
+    switch ($LoopName) {
+        "spec" { return "00_SPEC" }
+        "docparse" { return "01_DocParse" }
+        "loop1" { return "02_Loop1_RTL_TB" }
+        "loop2" { return "03_Loop2_UVM_Verify" }
+        "loop3" { return "04_Loop3_FPGA_Prototype" }
+        "final" { return "05_Output" }
+        "complete" { return "05_Output" }
+        default { return "" }
+    }
+}
+
+function Write-HdlWorkspaceStateIndex {
+    param(
+        [Parameter(Mandatory = $true)][string]$WorkspaceRoot,
+        [string]$ActiveProject = ""
+    )
+
+    $workspace = (Resolve-Path $WorkspaceRoot).Path
+    $stateDir = Join-Path $workspace ".omx\state"
+    Ensure-HdlDirectory -Path $stateDir
+    $projects = @(Get-HdlProjectRecords -WorkspaceRoot $workspace)
+    $state = [ordered]@{
+        schema_version = 2
+        workspace = $workspace
+        updated_at = Get-HdlHookTimestamp
+        authority = "Project-local memory under projects/<name>/memory is authoritative; .omx is a multi-project runtime index only."
+        active_project = if ($ActiveProject) { $ActiveProject } else { $null }
+        projects = @($projects)
+    }
+    Write-HdlJsonAtomic -Data $state -Path (Join-Path $stateDir "hdl-workflow-state.json")
+    return $state
 }
 
 function Ensure-HdlDirectory {
@@ -130,10 +260,10 @@ function Write-HdlJsonAtomic {
 
     $dir = Split-Path $Path -Parent
     Ensure-HdlDirectory -Path $dir
-    $tmp = "$Path.tmp"
+    $tmp = "$Path.$([System.Guid]::NewGuid().ToString('N')).tmp"
     $json = $Data | ConvertTo-Json -Depth 16
     Set-Content -Path $tmp -Value $json -Encoding UTF8
-    Get-Content -Path $tmp -Raw | ConvertFrom-Json | Out-Null
+    $json | ConvertFrom-Json | Out-Null
     Move-Item -Path $tmp -Destination $Path -Force
 }
 
@@ -162,4 +292,3 @@ function Test-HdlCommandLooksDestructive {
 
     return $false
 }
-

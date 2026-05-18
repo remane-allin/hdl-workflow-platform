@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import load_project
+from .design_doc import check_design_document, design_doc_manifest_rel, design_doc_report_rel
 from .loop1_reports import refresh_loop1_reports
 from .loop2_reports import refresh_loop2_reports
 from .project import require_project_instance
@@ -176,6 +177,7 @@ def _check_doc_sources(project: Path) -> list[GateCheck]:
 
 
 def _check_docparse(project: Path) -> list[GateCheck]:
+    checks = _check_prerequisite_gate(project, "00_SPEC", "00_SPEC gate must pass before DocParse exit")
     required = [
         "01_DocParse/structured_spec/interface_spec.yaml",
         "01_DocParse/structured_spec/test_intent.yaml",
@@ -184,7 +186,7 @@ def _check_docparse(project: Path) -> list[GateCheck]:
         "01_DocParse/trace_matrix/req_to_rtl.yaml",
         "01_DocParse/trace_matrix/req_to_test.yaml",
     ]
-    checks = _path_checks(project, [*required, *required_frontend_paths()])
+    checks.extend(_path_checks(project, [*required, *required_frontend_paths()]))
     result = check_requirements_frontend(project, require_ready=True)
     checks.append(
         GateCheck(
@@ -197,13 +199,19 @@ def _check_docparse(project: Path) -> list[GateCheck]:
         checks.append(GateCheck("requirements_frontdoor_error", "FAIL", error))
     for warning in result.warnings:
         checks.append(GateCheck("requirements_frontdoor_warning", "PASS", warning))
+    checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm", "fpga"]))
+    checks.append(_check_official_protocol_naming(project))
     return checks
 
 
 def _check_loop1(project: Path) -> list[GateCheck]:
     evidence = _node_evidence(project, "02_Loop1_RTL_TB")
-    checks = _check_skill_policy(project, "02_Loop1_RTL_TB")
+    checks = _check_prerequisite_gate(project, "01_DocParse", "DocParse must pass before Loop1 starts")
+    checks.extend(_check_skill_policy(project, "02_Loop1_RTL_TB"))
     checks.extend(_check_source_policy(project, "02_Loop1_RTL_TB"))
+    checks.append(_check_official_protocol_naming(project))
+    checks.append(_check_rtl_comment_headers(project))
+    checks.extend(_check_design_doc(project, ["requirements", "rtl"]))
     run_report_rel = _evidence_str(evidence, "reports", "run", "05_Output/reports/loop1/loop1_rtl_tb_run_report.md")
     exit_report_rel = _evidence_str(evidence, "reports", "exit", "05_Output/reports/loop1/loop1_exit_report.md")
     checks.extend(_path_checks(
@@ -228,6 +236,9 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks = _check_prerequisite_gate(project, "02_Loop1_RTL_TB", "Loop1 must pass before Loop2 starts")
     checks.extend(_check_skill_policy(project, "03_Loop2_UVM_Verify"))
     checks.extend(_check_source_policy(project, "03_Loop2_UVM_Verify"))
+    checks.append(_check_official_protocol_naming(project))
+    checks.append(_check_rtl_comment_headers(project))
+    checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm"]))
     checks.extend(_check_loop2_uvm_policy(project))
     regression_rel = _evidence_str(evidence, "reports", "regression", "05_Output/reports/loop2/loop2_uvm_regression_report.md")
     exit_rel = _evidence_str(evidence, "reports", "exit", "05_Output/reports/loop2/loop2_exit_report.md")
@@ -256,6 +267,10 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks.append(_coverage_check("loop2_functional_coverage", coverage, _evidence_str(evidence, "coverage_patterns", "functional", r"legal_scenario_cg=([0-9.]+)"), _threshold(project, level, "functional")))
     checks.append(_coverage_check("loop2_code_statement_coverage", coverage, _evidence_str(evidence, "coverage_patterns", "code_statement", r"Aggregate \|\s*([0-9.]+)%"), _threshold(project, level, "code")))
     checks.append(_loop2_transaction_count_check(project, text + "\n" + coverage, evidence))
+    checks.append(_loop2_coverage_triage_check(project, coverage))
+    checks.append(_loop2_bound_assertion_check(project))
+    checks.append(_loop2_functional_coverage_sampling_check(project))
+    checks.append(_loop2_stimulus_breadth_check(project, level))
     checks.append(_check_bug_tracking(project, "03_Loop2_UVM_Verify/bug_tracking"))
     return checks
 
@@ -270,7 +285,9 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
     timing_rel = _evidence_str(evidence, "reports", "timing", "05_Output/fpga/vivado/reports/post_impl_timing_summary.rpt")
     drc_rel = _evidence_str(evidence, "reports", "drc", "05_Output/fpga/vivado/reports/post_impl_drc.rpt")
     serial_rel = _evidence_str(evidence, "reports", "serial", "05_Output/reports/loop3/serial/latest_serial_text.log")
+    serial_validation_rel = _evidence_str(evidence, "reports", "serial_validation", "05_Output/reports/loop3/serial/latest_serial_validation_report.md")
     checks = _check_prerequisite_gate(project, "03_Loop2_UVM_Verify", "Loop2 must pass before Loop3 starts")
+    checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm", "fpga"]))
     checks.extend(_path_checks(
         project,
         [
@@ -279,6 +296,7 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
             timing_rel,
             drc_rel,
             serial_rel,
+            serial_validation_rel,
         ],
     ))
     checks.append(
@@ -292,18 +310,158 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
     plan = _read(_project_path(project, prototype_plan_rel))
     timing = _read(_project_path(project, timing_rel))
     drc = _read(_project_path(project, drc_rel))
-    serial = _read(_project_path(project, serial_rel))
+    serial_path = _project_path(project, serial_rel)
+    serial_validation_path = _project_path(project, serial_validation_rel)
+    serial_text = _read(serial_path)
+    serial_validation = _read(serial_validation_path)
     checks.append(_contains_any("loop3_database_preflight_pass", preflight, _evidence_list(evidence, "required_markers", "database_preflight_pass_any", ["result: PASS"])))
     checks.append(_contains_any("loop3_prototype_plan_pass", plan, _evidence_list(evidence, "required_markers", "prototype_plan_pass_any", ["result: PASS"])))
-    checks.append(_contains("loop3_timing_setup_met", timing, _evidence_list(evidence, "required_markers", "timing_setup_all", ["Setup :", "0  Failing Endpoints"])))
-    checks.append(_contains("loop3_timing_hold_met", timing, _evidence_list(evidence, "required_markers", "timing_hold_all", ["Hold  :", "0  Failing Endpoints"])))
-    checks.append(_contains("loop3_serial_echo", serial, _evidence_list(evidence, "required_markers", "serial_echo_all", ["TX ", "RX "])))
+    checks.extend(_loop3_timing_checks(timing))
+    checks.append(_loop3_serial_echo_check(serial_validation, serial_text))
+    checks.append(_loop3_database_ug_flow_check(preflight, _read(project / "05_Output" / "fpga" / "vivado" / "reports" / "pure_pl_uart_led_proto_run.md")))
     if level == "release":
-        checks.append(_release_warning_check("loop3_drc_release_clean", drc, forbidden=_evidence_list(evidence, "release_forbidden_markers", "drc", [" Warning", "Warnings", "Checks found: 1"])))
-        checks.append(_release_warning_check("loop3_timing_methodology_release_clean", timing, forbidden=_evidence_list(evidence, "release_forbidden_markers", "timing", ["TIMING-18", "Missing input or output delay", "no_input_delay", "no_output_delay"])))
+        checks.append(_loop3_release_warning_check(project, "loop3_drc_release_clean", drc, "vivado_drc", _evidence_list(evidence, "release_forbidden_markers", "drc", [" Warning", "Warnings", "Checks found: 1"])))
+        checks.append(_loop3_release_warning_check(project, "loop3_timing_methodology_release_clean", timing, "timing_methodology", _evidence_list(evidence, "release_forbidden_markers", "timing", ["TIMING-18", "Missing input or output delay", "no_input_delay", "no_output_delay"])))
     else:
         checks.append(GateCheck("loop3_warning_policy", "PASS", "develop gate allows documented Vivado warnings; release gate is strict"))
     return checks
+
+
+def _loop3_serial_echo_check(serial_validation: str, serial_text: str) -> GateCheck:
+    serial_text = serial_text.lstrip("\ufeff").strip()
+    tx_match = re.search(r"^-\s*TX\[[^\]]+\]\s*[：:]\s*(.+?)\s*$", serial_validation, flags=re.MULTILINE)
+    rx_match = re.search(r"^-\s*RX\[[^\]]+\]\s*[：:]\s*(.+?)\s*$", serial_validation, flags=re.MULTILINE)
+    result_pass = re.search(r"^-\s*result:\s*PASS\s*$", serial_validation, flags=re.MULTILINE)
+    if not tx_match or not rx_match or not result_pass:
+        return GateCheck("loop3_serial_echo", "FAIL", "serial validation must contain TX[time], RX[time], and result: PASS")
+    tx_payload = tx_match.group(1).strip()
+    rx_payload = rx_match.group(1).strip()
+    if tx_payload != rx_payload:
+        return GateCheck("loop3_serial_echo", "FAIL", f"TX/RX payload mismatch: tx={tx_payload!r}, rx={rx_payload!r}")
+    raw_match = re.search(r"^RX\[[^\]]+\]\s*[：:]\s*(.+?)\s*$", serial_text.strip(), flags=re.MULTILINE)
+    if not raw_match:
+        return GateCheck("loop3_serial_echo", "FAIL", "latest_serial_text.log must contain RX[time]：payload")
+    raw_payload = raw_match.group(1).strip()
+    if raw_payload != rx_payload:
+        return GateCheck("loop3_serial_echo", "FAIL", f"raw RX log payload mismatch: log={raw_payload!r}, report={rx_payload!r}")
+    return GateCheck("loop3_serial_echo", "PASS", f"TX/RX payloads match and raw RX log is timestamped: {rx_payload}")
+
+
+def _loop3_timing_checks(timing: str) -> list[GateCheck]:
+    if "All user specified timing constraints are met." not in timing:
+        detail = "Vivado timing report does not state that all user specified timing constraints are met"
+        return [
+            GateCheck("loop3_timing_setup_met", "FAIL", detail),
+            GateCheck("loop3_timing_hold_met", "FAIL", detail),
+        ]
+    summary = _loop3_timing_summary_values(timing)
+    if not summary:
+        detail = "Vivado timing summary table could not be parsed"
+        return [
+            GateCheck("loop3_timing_setup_met", "FAIL", detail),
+            GateCheck("loop3_timing_hold_met", "FAIL", detail),
+        ]
+    wns, tns_fail, whs, ths_fail = summary
+    setup_ok = wns >= 0.0 and tns_fail == 0
+    hold_ok = whs >= 0.0 and ths_fail == 0
+    return [
+        GateCheck("loop3_timing_setup_met", "PASS" if setup_ok else "FAIL", f"WNS={wns}, TNS failing endpoints={tns_fail}"),
+        GateCheck("loop3_timing_hold_met", "PASS" if hold_ok else "FAIL", f"WHS={whs}, THS failing endpoints={ths_fail}"),
+    ]
+
+
+def _loop3_timing_summary_values(timing: str) -> tuple[float, int, float, int] | None:
+    header_seen = False
+    for line in timing.splitlines():
+        if "WNS(ns)" in line and "TNS Failing Endpoints" in line and "WHS(ns)" in line:
+            header_seen = True
+            continue
+        if not header_seen:
+            continue
+        values = line.split()
+        if len(values) < 12:
+            continue
+        try:
+            wns = float(values[0])
+            tns_fail = int(values[2])
+            whs = float(values[4])
+            ths_fail = int(values[6])
+        except ValueError:
+            continue
+        return wns, tns_fail, whs, ths_fail
+    return None
+
+
+def _loop3_database_ug_flow_check(preflight: str, run_report: str) -> GateCheck:
+    required = [
+        "## Hardware Resources",
+        "## Vivado Tcl Commands",
+        "result: PASS",
+        "## Database and UG Provenance",
+        "ug_flow_guard: PASS",
+        "vivado_tcl_source: local software UG/Tcl database",
+    ]
+    missing = [marker for marker in required[:3] if marker not in preflight]
+    missing.extend(marker for marker in required[3:] if marker not in run_report)
+    if missing:
+        return GateCheck("loop3_database_ug_flow", "FAIL", "missing database/UG provenance marker(s): " + ", ".join(missing))
+    return GateCheck("loop3_database_ug_flow", "PASS", "prototype Tcl run is guarded by database preflight and local UG/Tcl command evidence")
+
+
+def _loop3_release_warning_check(project: Path, name: str, report: str, waiver_section: str, forbidden: list[str]) -> GateCheck:
+    hits = [marker for marker in forbidden if marker in report]
+    if not hits:
+        return GateCheck(name, "PASS", "no release-blocking warning marker found")
+    waiver_ids = _loop3_release_waiver_ids(project, waiver_section)
+    if not waiver_ids:
+        return GateCheck(name, "FAIL", "release gate blocks warning marker(s): " + ", ".join(hits))
+    if waiver_section == "vivado_drc":
+        report_rule_ids = _vivado_drc_warning_rule_ids(report)
+        unwaived_rules = sorted(rule for rule in report_rule_ids if rule not in waiver_ids)
+        if unwaived_rules:
+            return GateCheck(name, "FAIL", "release gate blocks unwaived DRC rule(s): " + ", ".join(unwaived_rules))
+        return GateCheck(name, "PASS", f"DRC warning rule(s) documented by prototype release waiver(s): {', '.join(sorted(report_rule_ids))}")
+    unwaived = [marker for marker in hits if not _loop3_marker_is_waived(marker, report, waiver_ids)]
+    if unwaived:
+        return GateCheck(name, "FAIL", "release gate blocks unwaived warning marker(s): " + ", ".join(unwaived))
+    return GateCheck(name, "PASS", f"warning marker(s) documented by prototype release waiver(s): {', '.join(sorted(waiver_ids))}")
+
+
+def _vivado_drc_warning_rule_ids(report: str) -> set[str]:
+    ids: set[str] = set()
+    for match in re.finditer(r"^\|\s*([A-Z]+[A-Z0-9-]*\d+)\s*\|\s*Warning\s*\|", report, flags=re.MULTILINE):
+        ids.add(match.group(1))
+    for match in re.finditer(r"^([A-Z]+[A-Z0-9-]*\d+)#\d+\s+Warning\b", report, flags=re.MULTILINE):
+        ids.add(match.group(1))
+    return ids
+
+
+def _loop3_release_waiver_ids(project: Path, section: str) -> set[str]:
+    plan = project / "04_Loop3_FPGA_Prototype" / "board_tests" / "prototype_plan.yaml"
+    try:
+        data = load_yaml(plan)
+    except Exception:
+        return set()
+    waivers = data.get("release_waivers", {}) if isinstance(data, dict) else {}
+    items = waivers.get(section, []) if isinstance(waivers, dict) else []
+    ids: set[str] = set()
+    if isinstance(items, list):
+        for item in items:
+            if isinstance(item, dict) and item.get("id"):
+                ids.add(str(item.get("id")))
+            elif isinstance(item, str):
+                ids.add(item)
+    return ids
+
+
+def _loop3_marker_is_waived(marker: str, report: str, waiver_ids: set[str]) -> bool:
+    if marker in {" Warning", "Warnings", "Checks found: 1"}:
+        return all(waiver_id in report for waiver_id in waiver_ids)
+    if marker in waiver_ids:
+        return True
+    if marker == "Missing input or output delay":
+        return {"no_input_delay", "no_output_delay"}.issubset(waiver_ids)
+    return any(waiver_id in report for waiver_id in waiver_ids)
 
 
 def _check_final(project: Path, level: str) -> list[GateCheck]:
@@ -471,6 +629,118 @@ def _loop2_transaction_count_check(project: Path, text: str, evidence: dict[str,
     return GateCheck("loop2_checked_transaction_count", "PASS", f"{count} checked transaction(s) >= {min_count}")
 
 
+def _loop2_coverage_triage_check(project: Path, coverage: str) -> GateCheck:
+    policy = _loop2_policy(project)
+    if not _policy_bool(policy, "coverage_triage_required", True):
+        return GateCheck("loop2_coverage_triage_closed", "PASS", "coverage triage closure not required by policy")
+    unresolved = [line for line in coverage.splitlines() if "Classify as " in line]
+    if not unresolved:
+        return GateCheck("loop2_coverage_triage_closed", "PASS", "no unresolved coverage triage rows found")
+    if _coverage_triage_has_closure_record(project):
+        return GateCheck("loop2_coverage_triage_closed", "PASS", "coverage triage closure record or waiver exists")
+    return GateCheck(
+        "loop2_coverage_triage_closed",
+        "FAIL",
+        f"{len(unresolved)} coverage triage row(s) still ask for classification/waiver before Loop2 closure",
+    )
+
+
+def _loop2_bound_assertion_check(project: Path) -> GateCheck:
+    policy = _loop2_policy(project)
+    if not _policy_bool(policy, "bound_assertions_required", True):
+        return GateCheck("loop2_bound_assertions_present", "PASS", "bound assertions not required by policy")
+    root = project / "05_Output" / "uvm" / "assertions"
+    files = sorted(path for path in root.glob("*") if path.is_file() and path.suffix.lower() in {".sv", ".svh"} and path.suffix.lower() != ".template")
+    if not files:
+        return GateCheck("loop2_bound_assertions_present", "FAIL", "no real SVA/bind files under 05_Output/uvm/assertions")
+    hits = []
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if re.search(r"\b(bind|property|assert\s+property)\b", text):
+            hits.append(_rel(project, path))
+    if hits:
+        return GateCheck("loop2_bound_assertions_present", "PASS", "assertion source present: " + ", ".join(hits[:4]))
+    return GateCheck("loop2_bound_assertions_present", "FAIL", "assertion files exist but no bind/property/assert property syntax was found")
+
+
+def _loop2_functional_coverage_sampling_check(project: Path) -> GateCheck:
+    policy = _loop2_policy(project)
+    if not _policy_bool(policy, "monitor_sampled_functional_coverage_required", True):
+        return GateCheck("loop2_functional_coverage_observed", "PASS", "monitor-sampled functional coverage not required by policy")
+    tests = project / "05_Output" / "uvm" / "tests" / "tests.svh"
+    text = _read(tests)
+    if re.search(r"\bsample_scenario\s*\(", text):
+        return GateCheck(
+            "loop2_functional_coverage_observed",
+            "FAIL",
+            "tests.svh calls sample_scenario directly; functional coverage must be sampled from observed monitor/scoreboard transactions",
+        )
+    coverage_text = _read(project / "05_Output" / "uvm" / "cov" / "coverage.sv")
+    if re.search(r"\bwrite\s*\(|uvm_subscriber|analysis_export|analysis_imp", coverage_text):
+        return GateCheck("loop2_functional_coverage_observed", "PASS", "coverage collector appears connected to observed analysis traffic")
+    return GateCheck("loop2_functional_coverage_observed", "FAIL", "no monitor/scoreboard-sampled functional coverage path detected")
+
+
+def _loop2_stimulus_breadth_check(project: Path, level: str) -> GateCheck:
+    policy = _loop2_policy(project)
+    if not _policy_bool(policy, "stimulus_breadth_required", True):
+        return GateCheck("loop2_stimulus_breadth", "PASS", "stimulus breadth check not required by policy")
+    if level == "debug":
+        return GateCheck("loop2_stimulus_breadth", "PASS", "debug gate does not require full breadth stimulus")
+    patterns = {
+        "reset_mid_frame": [r"reset_mid_frame", r"mid_frame_reset", r"reset.*mid.*frame"],
+        "bad_stop_bit": [r"bad_stop", r"stop_bit_error", r"framing_error"],
+        "glitch": [r"glitch", r"noise", r"short_pulse"],
+        "overflow": [r"overflow", r"fifo_full", r"pending_full"],
+        "baud_div_434": [r"baud_div_434", r"BAUD_DIV\s*[=:(]\s*434\b", r"\b434\b.*baud"],
+    }
+    configured = policy.get("required_stimulus_scenarios")
+    names = [str(item) for item in configured if str(item) in patterns] if isinstance(configured, list) else list(patterns.keys())
+    haystack = "\n".join(
+        path.read_text(encoding="utf-8", errors="ignore")
+        for path in _source_files_by_suffix(project, {"05_Output/uvm": {".sv", ".svh"}, "03_Loop2_UVM_Verify/sim": {".do"}})
+    )
+    missing = [name for name in names if not any(re.search(pattern, haystack, flags=re.IGNORECASE | re.DOTALL) for pattern in patterns[name])]
+    if missing:
+        return GateCheck("loop2_stimulus_breadth", "FAIL", "missing required stress stimulus: " + ", ".join(missing))
+    return GateCheck("loop2_stimulus_breadth", "PASS", "required stress stimulus patterns found")
+
+
+def _coverage_triage_has_closure_record(project: Path) -> bool:
+    waiver = project / "loop" / "coverage_waiver.json"
+    try:
+        data = json.loads(waiver.read_text(encoding="utf-8")) if waiver.exists() else {}
+    except Exception:
+        data = {}
+    if isinstance(data, dict):
+        waivers = data.get("waivers")
+        if isinstance(waivers, list) and waivers:
+            return True
+    tracking = project / "03_Loop2_UVM_Verify" / "coverage_tracking"
+    if tracking.exists():
+        for path in tracking.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in {".md", ".yaml", ".yml", ".json", ".txt"}:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore").lower()
+            if any(marker in text for marker in ["unreachable-by-spec", "missing legal stimulus", "waiver", "classified"]):
+                return True
+    return False
+
+
+def _loop2_policy(project: Path) -> dict[str, Any]:
+    policy = _node_config(project, "03_Loop2_UVM_Verify").get("uvm_policy", {})
+    return policy if isinstance(policy, dict) else {}
+
+
+def _policy_bool(policy: dict[str, Any], key: str, default: bool) -> bool:
+    value = policy.get(key, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return default
+
+
 def _threshold(project: Path, level: str, kind: str) -> float | None:
     key_by_kind = {
         "code": "code_coverage_percent",
@@ -513,6 +783,20 @@ def _check_bug_tracking(project: Path, rel_dir: str) -> GateCheck:
     if blockers:
         return GateCheck("bug_closure_pass", "FAIL", "open critical/major bug candidate(s): " + ", ".join(blockers))
     return GateCheck("bug_closure_pass", "PASS", "no open critical/major bug candidates found")
+
+
+def _check_design_doc(project: Path, sections: list[str]) -> list[GateCheck]:
+    result = check_design_document(project, sections=sections)
+    checks = [
+        GateCheck(
+            "design_doc_sync",
+            "PASS" if result.ok else "FAIL",
+            f"{design_doc_report_rel()} synchronized" if result.ok else "; ".join(result.errors),
+        )
+    ]
+    for warning in result.warnings:
+        checks.append(GateCheck("design_doc_warning", "PASS", warning))
+    return checks
 
 
 def _check_evidence_freshness(project: Path, source_paths: list[Path], evidence_paths: list[Path]) -> list[GateCheck]:
@@ -598,6 +882,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
     if node == "01_DocParse":
         evidence_rels = [rel for rel in required_frontend_paths() if rel.startswith("01_DocParse/")]
         evidence_rels.append("05_Output/reports/docparse/requirements_frontend_report.md")
+        evidence_rels.extend([design_doc_report_rel(), design_doc_manifest_rel()])
         return (_requirement_source_files(project), _files(project, evidence_rels))
     if node == "02_Loop1_RTL_TB":
         evidence = _node_evidence(project, node)
@@ -644,13 +929,23 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
         evidence = _node_evidence(project, node)
         bitstream_glob = _evidence_str(evidence, "globs", "bitstreams", "05_Output/fpga/vivado/bitstream/*.bit")
         return (
-            _files(project, ["05_Output/rtl", "05_Output/fpga/vivado/constraints", "04_Loop3_FPGA_Prototype/board_tests"]),
+            _files(
+                project,
+                [
+                    "05_Output/rtl",
+                    "05_Output/fpga/vivado/constraints",
+                    "05_Output/fpga/vivado/scripts",
+                    "04_Loop3_FPGA_Prototype/board_tests",
+                    "04_Loop3_FPGA_Prototype/scripts",
+                ],
+            ),
             _files(project, _evidence_report_paths(evidence, [
                 "05_Output/reports/loop3/preflight/database_preflight.md",
                 "05_Output/reports/loop3/preflight/prototype_plan_check.md",
                 "05_Output/fpga/vivado/reports/post_impl_timing_summary.rpt",
                 "05_Output/fpga/vivado/reports/post_impl_drc.rpt",
                 "05_Output/reports/loop3/serial/latest_serial_text.log",
+                "05_Output/reports/loop3/serial/latest_serial_validation_report.md",
             ])) + _glob_project_files(project, bitstream_glob),
         )
     if node == "05_Output":
@@ -751,6 +1046,47 @@ def _check_source_policy(project: Path, node: str) -> list[GateCheck]:
             continue
         checks.append(GateCheck(f"source_policy:{section_name}", "PASS", f"{root_rel} follows {section.get('language', 'configured language')} policy"))
     return checks
+
+
+def _check_official_protocol_naming(project: Path) -> GateCheck:
+    """Block direction suffixes on official UART physical boundary names."""
+
+    scan_roots = [
+        "00_SPEC/requirements",
+        "01_DocParse/architecture",
+        "01_DocParse/prototype",
+        "05_Output/rtl",
+        "05_Output/tb",
+        "05_Output/uvm",
+    ]
+    forbidden = ["uart_rx_i", "uart_tx_o"]
+    hits: list[str] = []
+    for root in _files(project, scan_roots):
+        if not root.exists() or not root.is_file():
+            continue
+        if root.suffix.lower() not in {".v", ".sv", ".svh", ".yaml", ".yml", ".md"}:
+            continue
+        text = root.read_text(encoding="utf-8", errors="ignore")
+        found = [name for name in forbidden if re.search(rf"\b{re.escape(name)}\b", text)]
+        if found:
+            hits.append(f"{_rel(project, root)}: {', '.join(found)}")
+    if hits:
+        return GateCheck("official_protocol_naming", "FAIL", "official UART boundary names must be uart_rx/uart_tx: " + "; ".join(hits[:8]))
+    return GateCheck("official_protocol_naming", "PASS", "official UART boundary names use uart_rx/uart_tx")
+
+
+def _check_rtl_comment_headers(project: Path) -> GateCheck:
+    rtl_dir = project / "05_Output" / "rtl"
+    if not rtl_dir.exists():
+        return GateCheck("rtl_comment_headers", "PASS", "05_Output/rtl does not exist yet")
+    missing: list[str] = []
+    for path in sorted(rtl_dir.glob("*.v")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if "// Module" not in text[:800] or "// Description" not in text[:800] or "// Scope:" not in text[:1200]:
+            missing.append(_rel(project, path))
+    if missing:
+        return GateCheck("rtl_comment_headers", "FAIL", "missing required RTL header comment(s): " + ", ".join(missing[:8]))
+    return GateCheck("rtl_comment_headers", "PASS", "RTL files include module description and scope headers")
 
 
 def _check_skill_policy(project: Path, node: str) -> list[GateCheck]:
