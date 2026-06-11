@@ -1,37 +1,39 @@
 # Runtime and tool outputs
 **/_runtime/
-**/work/
 **/transcript
 **/*.wlf
 **/*.vcd
 **/*.fst
 **/*.log
 **/*.jou
+!prj/*/output/sim/**/*.wlf
+!prj/*/output/sim/**/*.vcd
 **/*.pb
 **/*.rpt.tmp
 clockInfo.txt
 *.statebak
 **/.memory.lock
 .Xil/
+local/
 
 # Local project instances are not published from this platform repository.
-projects/*/
-!projects/
-!projects/README.md
-!projects/.gitkeep
-config/projects/*/
-!config/projects/
-!config/projects/README.md
+prj/*/
+!prj/
+!prj/README.md
+!prj/.gitkeep
+config/prj/*/
+!config/prj/
+!config/prj/README.md
 
 # Project-local memory that should stay outside permanent history.
-projects/*/memory/transient/**
-projects/*/memory/**/transient/**
-projects/*/_archive/memory_history/**
+prj/*/work/memory/transient/**
+prj/*/work/memory/**/transient/**
+prj/*/_archive/memory_history/**
 
 # Local/vendor source documents and parser extracts.
 # Review source-document redistribution rights before publishing these.
-projects/*/00_SPEC/raw_docs/*.pdf
-projects/*/01_DocParse/mineru_raw/**
+prj/*/input/raw_docs/*.pdf
+prj/*/work/docparse/mineru_raw/**
 
 # Python/tool cache
 __pycache__/
@@ -39,31 +41,30 @@ __pycache__/
 .pytest_cache/
 
 # Local generated library database and large uploaded source files.
-library/.local/
-library/work/
-library/files/**/*.pdf
-library/files/**/*.zip
-library/files/**/*.tar
-library/files/**/*.tar.gz
-library/files/**/*.7z
-library/files/fpga_io_tables/**/*.xlsx
-library/files/fpga_io_tables/**/*.xls
-library/files/fpga_io_tables/**/*.csv
-library/files/fpga_io_tables/**/*.tsv
-library/files/fpga_schematics/**/*.pdf
-library/files/fpga_schematics/**/*.zip
-library/parsed/**/images/
-library/parsed/**/mineru_raw/
-library/parsed/**/mineru_extract/
-library/parsed/**/text_raw/
-library/parsed/**/chunks/
-library/parsed/**/extracted_tables/
-library/parsed/**/*.pdf
-library/parsed/**/*.zip
+lib/local/
+lib/work/
+lib/files/**/*.pdf
+lib/files/**/*.zip
+lib/files/**/*.tar
+lib/files/**/*.tar.gz
+lib/files/**/*.7z
+lib/files/fpga_io_tables/**/*.xlsx
+lib/files/fpga_io_tables/**/*.xls
+lib/files/fpga_io_tables/**/*.csv
+lib/files/fpga_io_tables/**/*.tsv
+lib/files/fpga_schematics/**/*.pdf
+lib/files/fpga_schematics/**/*.zip
+lib/parsed/**/images/
+lib/parsed/**/mineru_raw/
+lib/parsed/**/mineru_extract/
+lib/parsed/**/text_raw/
+lib/parsed/**/chunks/
+lib/parsed/**/extracted_tables/
+lib/parsed/**/*.pdf
+lib/parsed/**/*.zip
 
 # Local workflow runtime state
-.omx/
-.codex/skills/
+local/runtime/
 
 # Local audit and migration notes
 *_AUDIT.md

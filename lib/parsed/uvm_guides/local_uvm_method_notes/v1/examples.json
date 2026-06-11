@@ -1,0 +1,36 @@
+{
+  "examples": [
+    {
+      "example_id": "local_uvm_method_notes.v1.example_0001",
+      "doc_id": "local_uvm_method_notes.v1",
+      "page": 1,
+      "language_hint": "systemverilog",
+      "caption": "uvm_config_db virtual interface publication",
+      "code": "uvm_config_db#(virtual dut_if)::set(null, \"uvm_test_top\", \"vif\", tb_vif);"
+    },
+    {
+      "example_id": "local_uvm_method_notes.v1.example_0002",
+      "doc_id": "local_uvm_method_notes.v1",
+      "page": 1,
+      "language_hint": "systemverilog",
+      "caption": "uvm_analysis_port transaction publication",
+      "code": "uvm_analysis_port#(spi_item) ap; ap = new(\"ap\", this); ap.write(item);"
+    },
+    {
+      "example_id": "local_uvm_method_notes.v1.example_0003",
+      "doc_id": "local_uvm_method_notes.v1",
+      "page": 1,
+      "language_hint": "systemverilog",
+      "caption": "uvm_sequence item start and finish",
+      "code": "class legal_sequence extends uvm_sequence#(spi_item); task body(); start_item(req); finish_item(req); endtask endclass"
+    },
+    {
+      "example_id": "local_uvm_method_notes.v1.example_0004",
+      "doc_id": "local_uvm_method_notes.v1",
+      "page": 1,
+      "language_hint": "systemverilog",
+      "caption": "uvm_reg_adapter converts register bus item",
+      "code": "class csr_adapter extends uvm_reg_adapter; virtual function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw); endfunction endclass"
+    }
+  ]
+}

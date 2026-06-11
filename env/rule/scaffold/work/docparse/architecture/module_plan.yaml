@@ -1,0 +1,24 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: arch
+source_refs: []
+rtl_planning_policy_ref: work/docparse/architecture/rtl_planning_rules.yaml
+module_partition_policy:
+  hierarchy_required: true
+  one_function_per_module: true
+  major_function_one_primary_rtl_file: true
+  composite_modules_instantiate_children: true
+modules: []
+top_level:
+  name: ""
+  wrapper_policy: hierarchy-only top required by rtl-architecture-and-gen
+clock_reset: []
+composition: []
+dependencies: []
+agent_consumers:
+  - Exec Agent
+  - Sim Agent
+  - Review Agent
+  - Arbtr Agent
+assumptions: []

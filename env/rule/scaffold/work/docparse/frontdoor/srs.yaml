@@ -1,0 +1,20 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: spec
+purpose: single shared executable chip spec baseline for Arch, Exec, Sim, Review, and Arbtr
+source_refs: []
+stakeholders: []
+scope:
+  in_scope: []
+  out_of_scope: []
+functional_requirements: []
+non_functional_requirements: []
+interfaces: []
+boundary_conditions: []
+protocol_sources: []
+metric_parameters: []
+legal_design_boundaries: []
+ambiguities: []
+assumptions: []
+acceptance_summary: []

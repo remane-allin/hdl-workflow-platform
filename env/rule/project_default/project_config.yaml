@@ -1,0 +1,719 @@
+schema_version: 1
+project:
+  name: change_me
+  owner: change_me
+  description: change_me
+  simulator: modelsim
+  project_memory_scope: project_local_only
+creation:
+  required_entrypoint: env/tool/scripts/New-HdlProject.ps1
+  engine_command: internal scaffold engine
+  entrypoint_guard_env: HDLFLOW_PROJECT_CREATE_ENTRYPOINT
+  allowed_entrypoints:
+    - env/tool/scripts/New-HdlProject.ps1
+    - env/tool/scripts/new_hdl_project.py
+  template_source: env/rule/scaffold
+  marker: project_scaffold.yaml
+  manual_project_directory_creation: forbidden
+gate_policy:
+  default_level: develop
+  final_required_level: release
+memory:
+  index: work/memory/index.yaml
+  active_versions: work/memory/active_versions.md
+  active_plan: work/memory/00_global/ACTIVE_PLAN.md
+  plan_findings: work/memory/00_global/PLAN_FINDINGS.md
+  plan_errors: work/memory/00_global/PLAN_ERRORS.md
+  transient_keep_latest_iterations: 3
+  recovery:
+    checkpoints: work/memory/recovery/checkpoints
+    rollback_manifests: work/memory/recovery/rollback_manifests
+    failure_records: work/memory/recovery/failure_records
+change_control:
+  requests: work/change/requests
+  impact_analysis: work/change/impact_analysis
+  approvals: work/change/approvals
+  trace_updates: work/change/trace_updates
+agent_model:
+  mode: isolated_serial_flow
+  directories_preserved: true
+  forward_flow:
+    - spec
+    - arch
+    - exec
+    - sim
+    - review
+    - arbtr
+  reverse_iteration:
+    rule: Review classifies the defect layer, Arbtr selects the feedback target, and the flow restarts forward from that target.
+    targets:
+      spec: requirement, protocol, metric, or legal-boundary defect
+      arch: topology, interface, hierarchy, throughput, dataflow, or timing-architecture defect
+      exec: RTL logic, module instance, complete functional TB, combinational, or sequential implementation defect
+      sim: test stimulus, UVM, waveform comparison, coverage, log, or board-validation defect
+  termination:
+    - review_no_open_defects
+    - arbtr_confirms_compliance
+  shared_knowledge:
+    source: lib
+    rule: Use the existing workspace lib only; do not create new knowledge-lib roots.
+  agents:
+    spec:
+      title: Spec Agent
+      context:
+        - input/spec
+        - work/docparse/frontdoor
+        - lib
+      can_write:
+        - input/spec
+        - work/docparse/frontdoor
+        - work/docparse/structured_spec
+        - work/docparse/req_decompose
+        - work/docparse/trace_matrix
+    arch:
+      title: Arch Agent
+      context:
+        - input/spec
+        - work/docparse/frontdoor
+        - work/docparse/structured_spec
+        - work/config
+        - lib
+      can_write:
+        - work/docparse/architecture
+    exec:
+      title: Exec Agent
+      context:
+        - work/docparse/architecture
+        - work/docparse/trace_matrix
+        - env/rule/skills/rtl-architecture-and-gen
+        - lib
+      can_write:
+        - output/rtl
+        - output/tb
+    sim:
+      title: Sim Agent
+      context:
+        - output/rtl
+        - output/tb
+        - output/uvm
+        - lib
+      can_write:
+        - output/uvm
+        - output/sim
+        - output/reports/loop1
+        - output/reports/loop2
+        - output/reports/loop3
+        - work/loop1_rtl_tb/_runtime
+        - work/loop1_rtl_tb/sim
+        - work/loop2_uvm/_runtime
+        - work/loop2_uvm/sim
+        - work/loop3_fpga_proto/_runtime
+    review:
+      title: Review Agent
+      context:
+        - input
+        - work/docparse
+        - output
+        - env/rule/skills/rtl-architecture-and-gen
+        - output/reports/loop1/rtl_skill_audit.md
+        - lib
+      can_write:
+        - work/docparse/review
+        - output/reports/review
+      cannot_write:
+        - input/spec
+        - work/docparse/architecture
+        - output/rtl
+    arbtr:
+      title: Arbtr Agent
+      context:
+        - memory
+        - loop
+        - output/reports
+        - lib
+      can_write:
+        - memory
+        - loop
+        - output/reports/gates
+        - output/reports/freeze
+      cannot_write:
+        - input/spec
+        - work/docparse/architecture
+        - output/rtl
+pipeline_expected:
+  - input
+  - work/docparse
+  - work/loop1_rtl_tb
+  - work/loop2_uvm
+  - work/loop3_fpga_proto
+  - output
+nodes:
+  input:
+    inputs:
+      spec: input/spec
+    gates:
+      exit:
+        - source_spec_available
+        - requirements_reviewed
+  work/docparse:
+    inputs:
+      spec: input/spec
+    outputs:
+      frontdoor: work/docparse/frontdoor
+      architecture: work/docparse/architecture
+      verification: work/docparse/verification
+      prototype: work/docparse/prototype
+      review: work/docparse/review
+      parsed_extract: work/docparse/parsed/mineru_extract
+      parser_channel: mineru-open-api high_precision_api
+      parser_provenance: work/docparse/parsed/mineru_extract/provenance.yaml
+      structured_spec: work/docparse/structured_spec
+      machine_readable_specs:
+        - work/docparse/structured_spec/document_analysis.yaml
+        - work/docparse/structured_spec/interface_spec.yaml
+        - work/docparse/structured_spec/interface_timing.yaml
+        - work/docparse/structured_spec/register_map.yaml
+        - work/docparse/structured_spec/test_intent.yaml
+        - work/docparse/structured_spec/timing_rules.yaml
+      req_decompose: work/docparse/req_decompose
+      trace_matrix: work/docparse/trace_matrix
+    parser_policy:
+      required_api_endpoints:
+        - /api/v4/file-urls/batch
+        - /api/v4/extract/task
+      illegal_parsed_evidence:
+        - parse_operation_record.md
+        - operation_record.md
+        - analysis_record.md
+        - process_violation_record.md
+        - violation_record.md
+      review_record_root: work/docparse/review
+    gates:
+      exit:
+        - requirements_frontdoor_ready
+        - requirement_questions_reviewed
+        - machine_readable_specs_ready
+        - spec_agent_ready
+        - arch_agent_ready
+        - exec_agent_boundary_ready
+        - sim_agent_plan_ready
+        - review_agent_ready
+        - review_findings_gate
+        - arbtr_flow_ready
+        - architecture_plan_available
+        - verification_plan_available
+        - prototype_plan_available
+        - structured_spec_available
+        - requirement_decomposition_available
+        - trace_matrix_available
+        - source_document_analysis_ready
+        - docparse_extract_policy
+        - docparse_no_ad_hoc_analysis_artifacts
+        - forbidden_formal_text
+  work/loop1_rtl_tb:
+    inputs:
+      structured_spec: work/docparse/structured_spec
+      req_decompose: work/docparse/req_decompose
+      trace_matrix: work/docparse/trace_matrix
+      rtl: output/rtl
+      tb: output/tb
+    outputs:
+      reports: output/reports/loop1
+      waveforms: output/sim/loop1/wave
+    runtime: work/loop1_rtl_tb/_runtime
+    source_policy:
+      rtl:
+        language: Verilog-2001
+        root: output/rtl
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      directed_tb:
+        language: Verilog-2001
+        root: output/tb
+        required_plan: output/tb/full_function_test_plan.md
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+    skill_policy:
+      required_skills:
+        hdl-workflow-orchestrator:
+          path: env/rule/skills/hdl-workflow-orchestrator/SKILL.md
+          required_markers:
+            - "output/rtl/"
+            - "output/tb/"
+            - "$rtl-architecture-and-gen"
+            - "$modelsim-run-triage-debug"
+            - "python -m hdlflow.cli rtl-skill-audit --project <project>"
+            - "Review Agent must then add a structured finding"
+        rtl-architecture-and-gen:
+          path: env/rule/skills/rtl-architecture-and-gen/SKILL.md
+          required_markers:
+            - "Generate or patch synthesizable Verilog-2001 `.v` files in `output/rtl/`."
+            - "Directed Loop1 TB under `output/tb/` is also Verilog-2001 `.v` only."
+            - "RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations."
+            - "Directed TB `.v` files under `output/tb/` may use Verilog `task` helpers"
+            - "output/tb/full_function_test_plan.md"
+            - "Directed Loop1 TB must print one structured `HDLFLOW_TEST_CASE` marker for every checked item"
+            - "HDLFLOW_WAVE_BEGIN"
+            - "loop1-waveform-check"
+            - "Preserve official bus/protocol/IP signal names exactly"
+            - "Do not place all behavior in one file-level FSM."
+            - "python -m hdlflow.cli rtl-skill-audit --project <project>"
+            - "output/reports/loop1/rtl_skill_audit.md"
+            - "no `.sv` or `.svh` files exist under `output/rtl/` or `output/tb/`"
+        modelsim-run-triage-debug:
+          path: env/rule/skills/modelsim-run-triage-debug/SKILL.md
+          required_markers:
+            - "work/loop1_rtl_tb/sim/"
+            - "output/sim/loop1/wave"
+            - "HDLFLOW_WAVE_GROUP"
+            - "waveform_hierarchy.json"
+            - "loop1-waveform-check"
+            - "Do not edit RTL or UVM blindly before classifying the failure."
+    evidence:
+      reports:
+        run: output/reports/loop1/loop1_rtl_tb_run_report.md
+        exit: output/reports/loop1/loop1_exit_report.md
+        waveform: output/reports/loop1/waveform_check.json
+        waveform_hierarchy: output/reports/loop1/waveform_hierarchy.json
+        rtl_skill_audit: output/reports/loop1/rtl_skill_audit.md
+      artifacts:
+        waveform_dir: output/sim/loop1/wave
+      required_markers:
+        directed_pass_any:
+          - PASS
+        zero_errors_any:
+          - "Errors: 0"
+    directed_test_policy:
+      required_opcodes_explicit: false
+      required_opcodes: []
+      required_boundary_markers:
+        - partial
+        - rx_location32_overwrite
+        - master_reset_keeps_control_register
+        - selftest
+        - tx_fifo
+    gates:
+      exit:
+        - rtl_compile_zero_error
+        - directed_tb_regression_pass
+        - rtl_skill_per_file_audit
+        - no_open_critical_or_major_bug
+        - requirement_trace_complete
+  work/loop2_uvm:
+    inputs:
+      frozen_rtl: output/rtl
+      tb: output/tb
+      uvm: output/uvm
+      structured_spec: work/docparse/structured_spec
+      trace_matrix: work/docparse/trace_matrix
+    outputs:
+      bug_tracking: work/loop2_uvm/bug_tracking
+      coverage_tracking: work/loop2_uvm/coverage_tracking
+      reports: output/reports/loop2
+    runtime: work/loop2_uvm/_runtime
+    rtl_change_policy: controlled_loop1_patch_required
+    source_policy:
+      rtl:
+        language: Verilog-2001
+        root: output/rtl
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      directed_tb:
+        language: Verilog-2001
+        root: output/tb
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      uvm:
+        language: SystemVerilog
+        root: output/uvm
+        allowed_extensions:
+          - .sv
+          - .svh
+        forbidden_extensions:
+          - .template
+    skill_policy:
+      required_skills:
+        hdl-workflow-orchestrator:
+          path: env/rule/skills/hdl-workflow-orchestrator/SKILL.md
+          required_markers:
+            - "output/uvm/"
+            - "$uvm-env-and-test-build"
+            - "$modelsim-run-triage-debug"
+        rtl-architecture-and-gen:
+          path: env/rule/skills/rtl-architecture-and-gen/SKILL.md
+          required_markers:
+            - "RTL under `output/rtl/` is Verilog-2001 `.v` only."
+            - "RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations."
+            - "SystemVerilog is reserved for UVM under `output/uvm/`."
+            - "Preserve official bus/protocol/IP signal names exactly"
+        uvm-env-and-test-build:
+          path: env/rule/skills/uvm-env-and-test-build/SKILL.md
+          required_markers:
+            - "Use this skill for SystemVerilog/UVM verification code under `output/uvm/`."
+            - "Keep SystemVerilog in `output/uvm/`."
+            - "Build the scoreboard and reference model from the spec, not from the buggy DUT behavior."
+            - "The binding database is an intermediate trace artifact, not the Loop2 completion result."
+            - "A Loop2 signoff plan must include at least `uvm_policy.min_scenario_tests` scenario tests."
+            - "Emit structured `HDLFLOW_TEST_CASE` log markers from sequences, tests, monitors, or scoreboards"
+        modelsim-run-triage-debug:
+          path: env/rule/skills/modelsim-run-triage-debug/SKILL.md
+          required_markers:
+            - "work/loop2_uvm/sim/"
+            - "Route the smallest justified next action:"
+    uvm_policy:
+      require_loop1_gate_pass: true
+      template_artifacts_forbidden: true
+      full_uvm_required: true
+      baseline_artifacts_transient: true
+      final_functional_evidence_only: true
+      overwrite_reports_after_each_full_regression: true
+      min_checked_transactions: 64
+      min_scenario_tests: 5
+      min_stress_stimuli_per_transaction: 2
+      coverage_triage_required: true
+      bound_assertions_required: true
+      monitor_sampled_functional_coverage_required: true
+      stimulus_breadth_required: true
+      required_stimulus_scenarios:
+        - reset_mid_frame
+        - bad_stop_bit
+        - glitch
+        - overflow
+        - baud_div_434
+      database_preflight_required: true
+      database_preflight_report: output/reports/loop2/preflight/database_preflight.md
+      flesh_plan_required: true
+      flesh_plan_report: output/reports/loop2/preflight/uvm_flesh_plan.md
+      binding_database: work/loop2_uvm/_runtime/loop2_bindings.sqlite
+      template_library: lib/local/library.sqlite
+      required_template_entries:
+        - uvm.rkv_style_framework
+        - uvm.rkv_i2c_reference_profile
+      required_guide_entries:
+        - uvm.methodology_reference
+        - accellera.uvm_users_guide.1_1
+        - verification_academy.uvm_cookbook.complete
+      database_flesh_topics:
+        - uvm_config_db virtual interface
+        - uvm agent driver monitor sequencer
+        - uvm_sequence virtual sequence sequencer
+        - scoreboard analysis port analysis export
+        - functional coverage covergroup monitor sampling
+        - uvm_reg_adapter register model bus item
+      required_real_files:
+        - output/uvm/cfg/uvm_config.sv
+        - output/uvm/cov/coverage.sv
+        - output/uvm/env/env.sv
+        - output/uvm/env/scoreboard.sv
+        - output/uvm/env/uvm_pkg.sv
+        - output/uvm/seq_lib/virtual_sequences.svh
+        - output/uvm/tests/tests.svh
+        - output/uvm/tb/tb_dut_if.sv
+        - output/uvm/tb/tb_uvm.sv
+      required_real_globs:
+        - output/uvm/agents/*/*_item.sv
+        - output/uvm/agents/*/*_driver.sv
+        - output/uvm/agents/*/*_monitor.sv
+        - output/uvm/agents/*/*_sequencer.sv
+        - output/uvm/agents/*/*_agent.sv
+      forbidden_markers:
+        - __PROJECT_NAME__
+        - PROJECT_
+        - ".template"
+    evidence:
+      reports:
+        database_preflight: output/reports/loop2/preflight/database_preflight.md
+        flesh_plan: output/reports/loop2/preflight/uvm_flesh_plan.md
+        regression: output/reports/loop2/loop2_uvm_regression_report.md
+        exit: output/reports/loop2/loop2_exit_report.md
+        coverage: output/reports/loop2/coverage_index.md
+      artifacts:
+        binding_database: work/loop2_uvm/_runtime/loop2_bindings.sqlite
+      required_markers:
+        regression_structured_result:
+          - "result: PASS"
+        scoreboard_pass_any:
+          - SCOREBOARD_PASS
+          - "Scoreboard | PASS"
+          - "scoreboard | PASS"
+        assertion_pass_any:
+          - "Assertions | PASS"
+      count_labels:
+        uvm_error: UVM_ERROR
+        uvm_fatal: UVM_FATAL
+      coverage_patterns:
+        functional: legal_scenario_cg=([0-9.]+)
+        code_statement: Aggregate \|\s*([0-9.]+)%
+      metric_patterns:
+        checked_transactions: "transactions_total:\s*([0-9]+)"
+    gates:
+      exit:
+        - database_preflight_report_available
+        - uvm_flesh_plan_available
+        - binding_database_available
+        - uvm_compile_zero_error
+        - uvm_regression_pass
+        - zero_uvm_error
+        - zero_uvm_fatal
+        - assertion_no_failure
+        - bound_assertions_present
+        - functional_coverage_observed
+        - coverage_triage_closed
+        - stimulus_breadth_complete
+        - bug_closure_pass
+        - requirement_trace_complete
+  work/loop3_fpga_proto:
+    inputs:
+      signed_rtl: output/rtl
+      fpga_sources: output/fpga
+    outputs:
+      fpga: output/fpga
+      vivado: output/fpga/vivado
+      vitis: output/fpga/vitis
+      reports: output/reports/loop3
+    runtime: work/loop3_fpga_proto/_runtime
+    source_policy:
+      rtl:
+        language: Verilog-2001
+        root: output/rtl
+        allowed_extensions:
+          - .v
+        forbidden_extensions:
+          - .sv
+          - .svh
+      fpga_constraints:
+        language: XDC
+        root: output/fpga/vivado/constraints
+        allowed_extensions:
+          - .xdc
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+      fpga_scripts:
+        language: Tcl
+        root: output/fpga/vivado/scripts
+        allowed_extensions:
+          - .tcl
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+      vitis_sources:
+        language: C/C++/headers/linker
+        root: output/fpga/vitis/src
+        allowed_extensions:
+          - .c
+          - .cpp
+          - .h
+          - .hpp
+          - .s
+          - .ld
+          - .yaml
+          - .yml
+          - .md
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+      board_profiles:
+        language: YAML/Tcl/Markdown
+        root: work/loop3_fpga_proto/board_profiles
+        allowed_extensions:
+          - .yaml
+          - .yml
+          - .tcl
+          - .md
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+      board_tests:
+        language: YAML/JSON/Markdown
+        root: work/loop3_fpga_proto/board_tests
+        allowed_extensions:
+          - .yaml
+          - .yml
+          - .json
+          - .md
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+      loop3_scripts:
+        language: PowerShell/Python/Markdown
+        root: work/loop3_fpga_proto/scripts
+        allowed_extensions:
+          - .ps1
+          - .py
+          - .md
+        forbidden_extensions:
+          - .template
+        enforce_all_extensions: true
+    skill_policy:
+      required_skills:
+        hdl-workflow-orchestrator:
+          path: env/rule/skills/hdl-workflow-orchestrator/SKILL.md
+          required_markers:
+            - "work/loop3_fpga_proto"
+            - "prototype-preflight"
+            - "validate-prototype-plan"
+            - "generate-xdc"
+            - "generate-ps-pl-bd"
+            - "generate-vitis-boot"
+            - "loop3-refresh-reports"
+            - "Invoke-HdlLoop3BoardVerify.ps1"
+        rtl-architecture-and-gen:
+          path: env/rule/skills/rtl-architecture-and-gen/SKILL.md
+          required_markers:
+            - "RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations."
+            - "Preserve official bus/protocol/IP signal names exactly"
+        requirements-frontdoor:
+          path: env/rule/skills/requirements-frontdoor/SKILL.md
+          required_markers:
+            - "document_analysis.yaml"
+            - "work/docparse/frontdoor/open_questions.md"
+            - "question_review"
+            - "unresolved_count: 0"
+            - "Sim Agent: owns simulation stimulus"
+            - "Review Agent: owns defect lists"
+            - "Arbtr Agent: owns global flow records"
+    prototype_policy:
+      default_board: navigator_zynq_7020
+      selected_board: navigator_zynq_7020
+      tool_version: "2024.2"
+      board_profiles: work/loop3_fpga_proto/board_profiles
+      ps7_preset_tcl: work/loop3_fpga_proto/board_profiles/navigator_zynq_7020_ps7_preset.tcl
+      board_test_config: work/loop3_fpga_proto/board_tests/board_test_config.yaml
+      database_preflight_required: true
+      database_preflight_report: output/reports/loop3/preflight/database_preflight.md
+      prototype_plan: work/loop3_fpga_proto/board_tests/prototype_plan.yaml
+      prototype_plan_check_report: output/reports/loop3/preflight/prototype_plan_check.md
+      toolchain_config: env/rule/global/toolchains/toolchains.yaml
+      vivado_project_root: output/fpga/vivado
+      vitis_project_root: output/fpga/vitis
+      vivado_constraints_dir: output/fpga/vivado/constraints
+      vivado_scripts_dir: output/fpga/vivado/scripts
+      vivado_reports_dir: output/fpga/vivado/reports
+      vivado_logs_dir: output/fpga/vivado/logs
+      vivado_bitstream_dir: output/fpga/vivado/bitstream
+      vivado_hw_platform_dir: output/fpga/vivado/hw_platform
+      vitis_workspace_dir: output/fpga/vitis/workspace
+      vitis_src_dir: output/fpga/vitis/src
+      vitis_platform_dir: output/fpga/vitis/platform
+      vitis_apps_dir: output/fpga/vitis/apps
+      vitis_reports_dir: output/fpga/vitis/reports
+      loop3_report_dir: output/reports/loop3
+      loop3_preflight_report_dir: output/reports/loop3/preflight
+      loop3_serial_report_dir: output/reports/loop3/serial
+      generated_xdc: output/fpga/vivado/constraints/generated_board.xdc
+      generated_ps_pl_bd_tcl: output/fpga/vivado/scripts/generated_ps_pl_bd.tcl
+      vitis_boot_dir: output/fpga/vitis/boot
+      vivado_timing_report: output/fpga/vivado/reports/post_impl_timing_summary.rpt
+      vivado_drc_report: output/fpga/vivado/reports/post_impl_drc.rpt
+      vivado_implementation_report: output/reports/loop3/vivado_implementation_report.md
+      vitis_boot_report: output/reports/loop3/vitis_boot_report.md
+      board_validation_report: output/reports/loop3/board_validation_report.md
+      loop3_exit_report: output/reports/loop3/loop3_exit_report.md
+      serial_text_log: output/reports/loop3/serial/latest_serial_text.log
+      xdc_clock_ports:
+        - sys_clk=20.000
+      xdc_generation: database_required
+      bd_generation: database_ug_and_plan_required
+      ps_pl_external_stimulus_boundary: required
+      boot_image_generation: template_required
+      resource_queries:
+        pl:
+          - PL_GCLK_50MHZ
+          - PL_LED0
+        ps_pl:
+          - PS_KEY0
+          - PS_LED1
+          - DDR
+          - PL_GCLK_50MHZ
+          - PL_LED0
+          - UART3_RX
+          - UART3_TX
+    evidence:
+      reports:
+        database_preflight: output/reports/loop3/preflight/database_preflight.md
+        prototype_plan_check: output/reports/loop3/preflight/prototype_plan_check.md
+        timing: output/fpga/vivado/reports/post_impl_timing_summary.rpt
+        drc: output/fpga/vivado/reports/post_impl_drc.rpt
+        serial: output/reports/loop3/serial/latest_serial_text.log
+        serial_validation: output/reports/loop3/serial/latest_serial_validation_report.md
+        vivado_implementation: output/reports/loop3/vivado_implementation_report.md
+        vitis_boot: output/reports/loop3/vitis_boot_report.md
+        board_validation: output/reports/loop3/board_validation_report.md
+        loop3_exit: output/reports/loop3/loop3_exit_report.md
+      globs:
+        bitstreams: output/fpga/vivado/bitstream/*.bit
+      required_markers:
+        database_preflight_pass_any:
+          - "result: PASS"
+        prototype_plan_pass_any:
+          - "result: PASS"
+        timing_setup_all:
+          - "Setup :"
+          - "0  Failing Endpoints"
+        timing_hold_all:
+          - "Hold  :"
+          - "0  Failing Endpoints"
+        serial_echo_all:
+          - "TX["
+          - "RX["
+      release_forbidden_markers:
+        drc:
+          - " Warning"
+          - Warnings
+          - "Checks found: 1"
+        timing:
+          - TIMING-18
+          - "Missing input or output delay"
+          - no_input_delay
+          - no_output_delay
+    gates:
+      exit:
+        - database_preflight_report_available
+        - prototype_plan_check_report_available
+        - implementation_report_available
+        - timing_report_available
+        - board_test_report_available
+  output:
+    inputs:
+      loop1_reports: output/reports/loop1
+      loop2_reports: output/reports/loop2
+      loop3_reports: output/reports/loop3
+    outputs:
+      rtl: output/rtl
+      tb: output/tb
+      uvm: output/uvm
+      fpga: output/fpga
+      reports: output/reports
+    evidence:
+      reports:
+        manifest: output/manifest.yaml
+      required_markers:
+        manifest:
+          - "loop1_gate: PASS"
+          - "loop2_gate: PASS"
+          - "loop3_gate: PASS"
+    gates:
+      final:
+        - all_enabled_nodes_passed
+        - manifest_available
+        - final_audit_report_available
+versioning:
+  tag_on_final_gate_pass: false
+  record_tool_versions: true
+  record_skill_versions: true
+archive:
+  project_archive: _archive
+  runtime_cleanup_after_pass: true

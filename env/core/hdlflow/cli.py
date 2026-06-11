@@ -1,0 +1,1486 @@
+"""Command-line entry point for the HDL workflow platform scaffold."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+from pathlib import Path
+
+from .artifacts import ensure_output_dirs
+from .change_control import approve_change, check_changes, close_change, open_change, record_impact
+from .config import load_project, load_workspace, validate_config
+from .design_doc import generate_design_document
+from .doctor import run_doctor
+from .frontdoor_guard import require_frontdoor_ready, require_stage_ready
+from .gates import run_final_audit, run_gate
+from .library import (
+    build_library,
+    format_detail,
+    format_hardware_resources,
+    format_io_pins,
+    format_schematic_nets,
+    format_tcl_command_detail,
+    format_tcl_command_rows,
+    format_tcl_example_rows,
+    format_tcl_topic_rows,
+    format_toc,
+    format_uvm_example_rows,
+    get_entry,
+    get_software_tcl_command,
+    query_uvm_examples,
+    query_diagnostics,
+    query_fpga_hardware_resources,
+    query_fpga_io_pins,
+    query_fpga_schematic_nets,
+    query_software_tcl_commands,
+    query_software_tcl_examples,
+    query_software_tcl_topics,
+    search_software_doc_chunks,
+    search_uvm_doc_chunks,
+    query_toc,
+)
+from .loop2_bindings import (
+    build_loop2_binding_database,
+    format_loop2_binding_rows,
+    write_loop2_database_preflight,
+)
+from .loop1_reports import refresh_loop1_reports
+from .loop2_reports import refresh_loop2_reports
+from .memory import (
+    append_plan_note,
+    auto_record_workflow_event,
+    check_memory,
+    record_failure_event,
+    record_memory_iteration,
+    start_active_plan,
+    update_active_plan_step,
+)
+from .pipeline import build_pipeline, format_pipeline
+from .prototype import write_prototype_preflight
+from .prototype import (
+    generate_ps_pl_bd_tcl,
+    generate_vitis_boot_files,
+    generate_xdc_from_database,
+    refresh_loop3_reports,
+    validate_prototype_plan,
+)
+from .reports import write_config_run_report
+from .requirements_frontend import check_requirements_frontend, initialize_requirements_frontend
+from .ralph_loop import ralph_check, ralph_status, ralph_step
+from .release import release_preflight
+from .repair import apply_repair_ticket, diagnose_repairs
+from .review import check_review_findings
+from .rtl_skill_audit import run_rtl_skill_audit
+from .sandbox import add_exploration_note, promote_exploration, start_exploration
+from .scaffold import create_project
+from .schema_contracts import schema_check
+from .state_sync import sync_project_state
+from .validate import validate_project
+from .waveform import check_loop1_waveform
+from .workflow_advisor import advise_next_action
+
+
+DEFAULT_TOOL_LAUNCHERS = {
+    "modelsim": {
+        "vsim_exe": "D:/Modelsim/Modelsim/win64/vsim.exe",
+        "vlog_exe": "D:/Modelsim/Modelsim/win64/vlog.exe",
+        "vlib_exe": "D:/Modelsim/Modelsim/win64/vlib.exe",
+        "vdel_exe": "D:/Modelsim/Modelsim/win64/vdel.exe",
+    },
+    "vivado": {
+        "vivado_bat": "E:/Vivado/Vivado/2024.2/bin/vivado.bat",
+        "vivado_exe": "E:/Vivado/Vivado/2024.2/bin/vivado.exe",
+    },
+    "vitis": {
+        "xsct_bat": "E:/Vivado/Vitis/2024.2/bin/xsct.bat",
+        "vitis_bat": "E:/Vivado/Vitis/2024.2/bin/vitis.bat",
+        "vitis_exe": "E:/Vivado/Vitis/2024.2/bin/vitis.exe",
+        "bootgen_bat": "E:/Vivado/Vitis/2024.2/bin/bootgen.bat",
+    },
+    "iverilog": {
+        "iverilog_exe": "D:/Iverilog/iverilog/bin/iverilog.exe",
+        "vvp_exe": "D:/Iverilog/iverilog/bin/vvp.exe",
+    },
+}
+
+DEFAULT_TOOL_SETTINGS = {
+    "modelsim": {
+        "uvm_src": "D:/Modelsim/Modelsim/verilog_src/uvm-1.1d/src",
+    },
+}
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="hdlflow",
+        description="Manage the clean HDL workflow platform layout.",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    init_parser = subparsers.add_parser("init-project", help="Internal project scaffold command used only by creation scripts.")
+    init_parser.add_argument("name", help="Project directory name under prj/.")
+    init_parser.add_argument(
+        "--workspace",
+        default=".",
+        help="Workspace root containing env/rule/scaffold/ and prj/. Defaults to current directory.",
+    )
+    init_parser.add_argument("--force", action="store_true", help="Overwrite an existing empty project directory.")
+
+    check_parser = subparsers.add_parser("check-project", help="Validate required project layout files.")
+    check_parser.add_argument("project_path", help="Path to a project directory.")
+
+    doctor_parser = subparsers.add_parser("doctor", help="Validate workspace config, project config, and layout.")
+    doctor_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    doctor_parser.add_argument(
+        "--project",
+        required=True,
+        help="Project path to validate, for example prj/<project_name>.",
+    )
+
+    plan_parser = subparsers.add_parser("plan", help="Print the active config-derived pipeline.")
+    plan_parser.add_argument("--project", required=True, help="Project path.")
+
+    run_parser = subparsers.add_parser("run-config", help="Run the configuration pipeline checks and write a report.")
+    run_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    run_parser.add_argument("--project", required=True, help="Project path.")
+
+    ensure_parser = subparsers.add_parser("ensure-output", help="Ensure canonical output directories exist.")
+    ensure_parser.add_argument("--project", required=True, help="Project path.")
+
+    gate_parser = subparsers.add_parser("run-gate", help="Run executable gate checks for a workflow node.")
+    gate_parser.add_argument("--project", required=True, help="Project path.")
+    gate_parser.add_argument("--node", required=True, help="Node or alias: spec, docparse, loop1, loop2, loop3, final.")
+    gate_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
+    gate_parser.add_argument("--change-id", help="Approved change request ID to bind to this gate run.")
+
+    final_audit_parser = subparsers.add_parser("final-audit", help="Run the strict final release gate and write final audit evidence.")
+    final_audit_parser.add_argument("--project", required=True, help="Project path.")
+    final_audit_parser.add_argument("--level", choices=["debug", "develop", "release"], default="release")
+
+    sync_parser = subparsers.add_parser("sync-project-state", help="Synchronize loop runtime JSON state from passed gate evidence.")
+    sync_parser.add_argument("--project", required=True, help="Project path.")
+
+    next_action_parser = subparsers.add_parser("next-action", help="Write a lightweight advisory next-action report.")
+    next_action_parser.add_argument("--project", required=True, help="Project path.")
+
+    schema_check_parser = subparsers.add_parser("schema-check", help="Run friendly strong-shape YAML checks before formal gates.")
+    schema_check_parser.add_argument("--project", required=True, help="Project path.")
+    schema_check_parser.add_argument("--file", help="Project-relative YAML file to check. Defaults to known workflow schemas.")
+
+    repair_diagnose_parser = subparsers.add_parser("repair-diagnose", help="Open repair tickets for common workflow drift.")
+    repair_diagnose_parser.add_argument("--project", required=True, help="Project path.")
+    repair_diagnose_parser.add_argument("--no-tickets", action="store_true", help="Report diagnostics without writing ticket files.")
+
+    repair_apply_parser = subparsers.add_parser("repair-apply", help="Apply a supported mechanical repair ticket.")
+    repair_apply_parser.add_argument("--project", required=True, help="Project path.")
+    repair_apply_parser.add_argument("--ticket-id", required=True, help="Ticket ID under work/repair/tickets.")
+    repair_apply_parser.add_argument("--dry-run", action="store_true", help="Print the repair actions without moving files.")
+
+    release_preflight_parser = subparsers.add_parser("release-preflight", help="Report what is missing before release promotion.")
+    release_preflight_parser.add_argument("--project", required=True, help="Project path.")
+
+    explore_start_parser = subparsers.add_parser("explore-start", help="Start a lightweight exploration sandbox session.")
+    explore_start_parser.add_argument("--project", required=True, help="Project path.")
+    explore_start_parser.add_argument("--title", required=True, help="Short exploration title.")
+    explore_start_parser.add_argument("--objective", default="", help="Optional exploration objective.")
+
+    explore_note_parser = subparsers.add_parser("explore-note", help="Append a note to an exploration sandbox session.")
+    explore_note_parser.add_argument("--project", required=True, help="Project path.")
+    explore_note_parser.add_argument("--session-id", required=True)
+    explore_note_parser.add_argument("--note", required=True)
+
+    explore_promote_parser = subparsers.add_parser("explore-promote", help="Promote exploration notes into an advisory next-step record.")
+    explore_promote_parser.add_argument("--project", required=True, help="Project path.")
+    explore_promote_parser.add_argument("--session-id", required=True)
+    explore_promote_parser.add_argument(
+        "--target",
+        choices=["change-request", "frontdoor-note", "repair-ticket"],
+        default="change-request",
+    )
+
+    change_open_parser = subparsers.add_parser("change-open", help="Open a controlled design change request.")
+    change_open_parser.add_argument("--project", required=True, help="Project path.")
+    change_open_parser.add_argument("--title", required=True)
+    change_open_parser.add_argument("--reason", required=True)
+    change_open_parser.add_argument("--scope", required=True)
+    change_open_parser.add_argument("--risk", required=True)
+    change_open_parser.add_argument("--owner", default="project_local")
+
+    change_impact_parser = subparsers.add_parser("change-impact", help="Record impact analysis for a change request.")
+    change_impact_parser.add_argument("--project", required=True, help="Project path.")
+    change_impact_parser.add_argument("--change-id", required=True)
+    change_impact_parser.add_argument("--requirement", action="append", default=[])
+    change_impact_parser.add_argument("--artifact", action="append", default=[])
+    change_impact_parser.add_argument("--verification", action="append", default=[])
+    change_impact_parser.add_argument("--rollback", required=True)
+    change_impact_parser.add_argument("--risk", required=True)
+
+    change_approve_parser = subparsers.add_parser("change-approve", help="Approve or reject a change request.")
+    change_approve_parser.add_argument("--project", required=True, help="Project path.")
+    change_approve_parser.add_argument("--change-id", required=True)
+    change_approve_parser.add_argument("--approver", required=True)
+    change_approve_parser.add_argument("--decision", choices=["approved", "rejected"], required=True)
+    change_approve_parser.add_argument("--notes", required=True)
+
+    change_close_parser = subparsers.add_parser("change-close", help="Close a change request after gate evidence is available.")
+    change_close_parser.add_argument("--project", required=True, help="Project path.")
+    change_close_parser.add_argument("--change-id", required=True)
+    change_close_parser.add_argument("--gate-report", required=True)
+    change_close_parser.add_argument("--notes", required=True)
+
+    change_check_parser = subparsers.add_parser("change-check", help="Validate change-control records.")
+    change_check_parser.add_argument("--project", required=True, help="Project path.")
+
+    frontdoor_init_parser = subparsers.add_parser(
+        "requirements-frontdoor-init",
+        help="Create the multi-role input to work/docparse front-end artifact contract.",
+    )
+    frontdoor_init_parser.add_argument("--project", required=True, help="Project path.")
+    frontdoor_init_parser.add_argument("--status", choices=["DRAFT", "READY"], default="DRAFT")
+    frontdoor_init_parser.add_argument("--force", action="store_true", help="Overwrite existing front-end artifacts.")
+
+    frontdoor_check_parser = subparsers.add_parser(
+        "requirements-frontdoor-check",
+        help="Validate multi-role requirements, architecture, verification, prototype, review, and trace artifacts.",
+    )
+    frontdoor_check_parser.add_argument("--project", required=True, help="Project path.")
+    frontdoor_check_parser.add_argument(
+        "--allow-draft",
+        action="store_true",
+        help="Check structure only and do not require status: READY.",
+    )
+
+    frontdoor_guard_parser = subparsers.add_parser(
+        "requirements-frontdoor-guard",
+        help="Check that formal implementation output generation is allowed by requirements front-door evidence.",
+    )
+    frontdoor_guard_parser.add_argument("--project", required=True, help="Project path.")
+    frontdoor_guard_parser.add_argument("--action", default="implementation output generation")
+
+    stage_guard_parser = subparsers.add_parser(
+        "workflow-stage-guard",
+        help="Check prerequisite gate manifests before entering Loop1, Loop2, or Loop3 tool work.",
+    )
+    stage_guard_parser.add_argument("--project", required=True, help="Project path.")
+    stage_guard_parser.add_argument(
+        "--stage",
+        choices=["docparse", "loop1", "loop2", "loop3", "loop3-preflight"],
+        required=True,
+        help="Workflow stage whose prerequisites must already be satisfied.",
+    )
+    stage_guard_parser.add_argument("--action", default="workflow stage entry")
+
+    design_doc_parser = subparsers.add_parser(
+        "generate-design-doc",
+        help="Generate the user-readable requirements, RTL, UVM, and FPGA design document.",
+    )
+    design_doc_parser.add_argument("--project", required=True, help="Project path.")
+
+    rtl_skill_audit_parser = subparsers.add_parser(
+        "rtl-skill-audit",
+        help="Run the platform RTL skill audit and refresh output/reports/loop1/rtl_skill_audit.md.",
+    )
+    rtl_skill_audit_parser.add_argument("--project", required=True, help="Project path.")
+
+    preflight_parser = subparsers.add_parser(
+        "prototype-preflight",
+        help="Run required Loop3 database lookups and write a preflight report.",
+    )
+    preflight_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    preflight_parser.add_argument("--project", required=True, help="Project path.")
+    preflight_parser.add_argument("--mode", choices=["pl", "ps_pl"], required=True, help="Prototype mode.")
+    preflight_parser.add_argument("--board", help="Board ID. Overrides project prototype_policy.selected_board.")
+    preflight_parser.add_argument("--signal", action="append", help="Hardware signal/resource to query. Repeatable.")
+    preflight_parser.add_argument("--tcl-command", action="append", help="Vivado Tcl command to query. Repeatable.")
+    preflight_parser.add_argument("--tool-version", help="Tool database version. Defaults to project prototype_policy.tool_version or 2024.2.")
+
+    xdc_parser = subparsers.add_parser("generate-xdc", help="Generate XDC constraints from the local FPGA database.")
+    xdc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    xdc_parser.add_argument("--project", required=True, help="Project path.")
+    xdc_parser.add_argument("--port", action="append", help="Port mapping PORT=DATABASE_SIGNAL. Repeatable. Defaults to prototype_plan.pl_port_assignments.")
+    xdc_parser.add_argument("--clock", action="append", help="Clock mapping PORT=PERIOD_NS. Repeatable.")
+    xdc_parser.add_argument("--output", help="Project-relative output XDC path.")
+
+    plan_check_parser = subparsers.add_parser("validate-prototype-plan", help="Check AXI, MIO, PL IO, DDR, and cache plan rules.")
+    plan_check_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    plan_check_parser.add_argument("--project", required=True, help="Project path.")
+    plan_check_parser.add_argument("--plan", help="Project-relative prototype plan path.")
+
+    bd_parser = subparsers.add_parser("generate-ps-pl-bd", help="Generate a PS7 + AXI-Lite Block Design Tcl skeleton.")
+    bd_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    bd_parser.add_argument("--project", required=True, help="Project path.")
+    bd_parser.add_argument("--plan", help="Project-relative prototype plan path.")
+    bd_parser.add_argument("--output", help="Project-relative Tcl output path.")
+
+    boot_parser = subparsers.add_parser("generate-vitis-boot", help="Generate Vitis boot image template files.")
+    boot_parser.add_argument("--project", required=True, help="Project path.")
+    boot_parser.add_argument("--output-dir", help="Project-relative output directory.")
+
+    loop3_report_parser = subparsers.add_parser(
+        "loop3-refresh-reports",
+        help="Regenerate canonical Loop3 reports from Vivado, Vitis, and board evidence.",
+    )
+    loop3_report_parser.add_argument("--project", required=True, help="Project path.")
+
+    launcher_parser = subparsers.add_parser("get-tool-launcher", help="Print a configured tool launcher path.")
+    launcher_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    launcher_parser.add_argument("--tool", required=True, help="Tool name under env/rule/global/toolchains/toolchains.yaml.")
+    launcher_parser.add_argument("--launcher", required=True, help="Launcher key, for example vivado_bat or xsct_bat.")
+
+    tool_setting_parser = subparsers.add_parser("get-tool-setting", help="Print a configured tool setting value.")
+    tool_setting_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tool_setting_parser.add_argument("--tool", required=True, help="Tool name under env/rule/global/toolchains/toolchains.yaml.")
+    tool_setting_parser.add_argument("--key", required=True, help="Setting key, for example uvm_src.")
+
+    memory_record_parser = subparsers.add_parser("memory-record", help="Write a synchronized project memory iteration.")
+    memory_record_parser.add_argument("--project", required=True, help="Project path.")
+    memory_record_parser.add_argument("--iteration-id", required=True)
+    memory_record_parser.add_argument("--node", required=True)
+    memory_record_parser.add_argument("--gate-level", required=True)
+    memory_record_parser.add_argument("--gate-result", required=True)
+    memory_record_parser.add_argument("--memory-record", required=True)
+    memory_record_parser.add_argument("--report", required=True)
+    memory_record_parser.add_argument("--notes", required=True)
+    memory_record_parser.add_argument("--version")
+    memory_record_parser.add_argument("--artifact", action="append", help="Project-relative artifact path. Repeatable.")
+    memory_record_parser.add_argument("--latest-summary")
+    memory_record_parser.add_argument("--next-action")
+    memory_record_parser.add_argument("--agent", choices=["spec", "arch", "exec", "sim", "review", "arbtr"])
+    memory_record_parser.add_argument("--flow-direction", choices=["forward", "backward", "freeze"], default="forward")
+    memory_record_parser.add_argument("--feedback-target", choices=["spec", "arch", "exec", "sim", "review", "arbtr"])
+    memory_record_parser.add_argument("--arbtr-decision")
+    memory_record_parser.add_argument("--baseline-version")
+
+    memory_check_parser = subparsers.add_parser("memory-check", help="Validate project memory synchronization.")
+    memory_check_parser.add_argument("--project", required=True, help="Project path.")
+
+    plan_start_parser = subparsers.add_parser("plan-start", help="Create a file-backed active execution plan.")
+    plan_start_parser.add_argument("--project", required=True, help="Project path.")
+    plan_start_parser.add_argument("--title", required=True)
+    plan_start_parser.add_argument("--objective", required=True)
+    plan_start_parser.add_argument("--step", action="append", required=True, help="Plan step text. Repeatable.")
+    plan_start_parser.add_argument("--plan-id")
+    plan_start_parser.add_argument("--force", action="store_true", help="Replace an unfinished active plan.")
+
+    plan_step_parser = subparsers.add_parser("plan-step", help="Update a step in the active execution plan.")
+    plan_step_parser.add_argument("--project", required=True, help="Project path.")
+    plan_step_parser.add_argument("--step-id", required=True, help="Step ID such as P001.")
+    plan_step_parser.add_argument("--status", choices=["pending", "in_progress", "done", "blocked"], required=True)
+    plan_step_parser.add_argument("--note", default="")
+    plan_step_parser.add_argument("--evidence", default="")
+
+    plan_note_parser = subparsers.add_parser("plan-note", help="Append a durable plan finding or error.")
+    plan_note_parser.add_argument("--project", required=True, help="Project path.")
+    plan_note_parser.add_argument("--kind", choices=["finding", "error"], required=True)
+    plan_note_parser.add_argument("--note", required=True)
+    plan_note_parser.add_argument("--source", default="")
+    plan_note_parser.add_argument("--command", default="")
+    plan_note_parser.add_argument("--detail", default="")
+
+    ralph_status_parser = subparsers.add_parser("ralph-status", help="Synchronize state and print the file-backed Ralph loop status.")
+    ralph_status_parser.add_argument("--project", required=True, help="Project path.")
+
+    ralph_step_parser = subparsers.add_parser("ralph-step", help="Mark the selected or next active Ralph plan step.")
+    ralph_step_parser.add_argument("--project", required=True, help="Project path.")
+    ralph_step_parser.add_argument("--step-id", help="Step ID such as P001. Defaults to the next open step.")
+    ralph_step_parser.add_argument("--status", choices=["pending", "in_progress", "done", "blocked"], required=True)
+    ralph_step_parser.add_argument("--note", default="")
+    ralph_step_parser.add_argument("--evidence", default="")
+
+    ralph_check_parser = subparsers.add_parser("ralph-check", help="Validate the Ralph loop stop condition.")
+    ralph_check_parser.add_argument("--project", required=True, help="Project path.")
+    ralph_check_parser.add_argument("--require-final", action="store_true", help="Require the final output gate to be passed.")
+
+    review_check_parser = subparsers.add_parser("review-check", help="Validate structured Review Agent findings and open blockers.")
+    review_check_parser.add_argument("--project", required=True, help="Project path.")
+    review_check_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
+
+    loop2_bind_parser = subparsers.add_parser("loop2-build-bindings", help="Build the Loop2 requirement/UVM binding SQLite database.")
+    loop2_bind_parser.add_argument("--project", required=True, help="Project path.")
+    loop2_bind_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    loop2_bind_parser.add_argument("--db", help="Optional project-relative or absolute SQLite output path.")
+
+    loop1_report_parser = subparsers.add_parser(
+        "loop1-refresh-reports",
+        help="Overwrite Loop1 reports from the latest directed RTL/TB simulation log.",
+    )
+    loop1_report_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop1_waveform_parser = subparsers.add_parser(
+        "loop1-waveform-check",
+        help="Validate Loop1 top-level waveform windows from the latest VCD dump.",
+    )
+    loop1_waveform_parser.add_argument("--project", required=True, help="Project path.")
+    loop1_waveform_parser.add_argument("--vcd", help="Optional VCD path. Defaults to the latest Loop1 runtime VCD.")
+    loop1_waveform_parser.add_argument("--log", help="Optional ModelSim log path. Defaults to output/reports/loop1/modelsim_loop1.log.")
+
+    loop2_report_parser = subparsers.add_parser(
+        "loop2-refresh-reports",
+        help="Overwrite Loop2 final reports from the latest full functional regression log and coverage.",
+    )
+    loop2_report_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop2_preflight_parser = subparsers.add_parser(
+        "loop2-database-preflight",
+        help="Run required Loop2 template database lookups and write a preflight report.",
+    )
+    loop2_preflight_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    loop2_preflight_parser.add_argument("--project", required=True, help="Project path.")
+
+    loop2_query_parser = subparsers.add_parser("loop2-query-bindings", help="Query the Loop2 binding SQLite database.")
+    loop2_query_parser.add_argument("--project", required=True, help="Project path.")
+    loop2_query_parser.add_argument("--req", help="Optional requirement ID filter.")
+
+    library_build_parser = subparsers.add_parser("library-build", help="Build the local SQLite library index.")
+    library_build_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+
+    toc_parser = subparsers.add_parser("get-workflow-toc", help="List library entries for a workflow or context.")
+    toc_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    toc_parser.add_argument("--flow", help="Flow ID, for example fpga.timing_analysis.")
+    toc_parser.add_argument("--node", help="Workflow node, for example work/loop3_fpga_proto.")
+    toc_parser.add_argument("--tool", help="Tool name, for example vivado.")
+    toc_parser.add_argument("--stage", help="Stage name, for example implementation.")
+    toc_parser.add_argument("--domain", help="Library domain, for example fpga or rtl_templates.")
+
+    command_parser = subparsers.add_parser("get-command-detail", help="Read a command detail entry by ID.")
+    command_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    command_parser.add_argument("--id", required=True, help="Command entry ID.")
+
+    template_parser = subparsers.add_parser("get-template-detail", help="Read a template detail entry by ID.")
+    template_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    template_parser.add_argument("--id", required=True, help="Template entry ID.")
+
+    detail_parser = subparsers.add_parser("get-library-detail", help="Read any library detail entry by ID.")
+    detail_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    detail_parser.add_argument("--id", required=True, help="Library entry ID.")
+
+    diagnostic_parser = subparsers.add_parser("get-diagnostic-candidates", help="List diagnostic library entries.")
+    diagnostic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    diagnostic_parser.add_argument("--tool", help="Tool name, for example vivado.")
+    diagnostic_parser.add_argument("--text", help="Error text or log excerpt to match.")
+
+    io_parser = subparsers.add_parser("get-fpga-io-pins", help="Query normalized FPGA IO table pins.")
+    io_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    io_parser.add_argument("--table-id", help="IO table ID.")
+    io_parser.add_argument("--connector", help="Connector name, for example X3.")
+    io_parser.add_argument("--signal", help="Signal name substring.")
+    io_parser.add_argument("--bank", help="Bank name, for example Bank35.")
+    io_parser.add_argument("--category", help="Signal category, for example pl_io.")
+    io_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
+
+    schematic_parser = subparsers.add_parser("get-fpga-schematic-nets", help="Query normalized FPGA schematic nets.")
+    schematic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    schematic_parser.add_argument("--schematic-id", help="Schematic ID.")
+    schematic_parser.add_argument("--net", help="Net name substring, for example SD_D2 or SD D2.")
+    schematic_parser.add_argument("--interface", help="Interface name, for example hdmi or sd_card.")
+    schematic_parser.add_argument("--category", help="Net category, for example clock or reset.")
+    schematic_parser.add_argument("--connector", help="Schematic or core connector name, for example J2 or X3.")
+    schematic_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
+
+    hw_parser = subparsers.add_parser("get-fpga-hardware-resource", help="Query FPGA hardware guide resources.")
+    hw_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    hw_parser.add_argument("--guide-id", help="Hardware guide ID.")
+    hw_parser.add_argument("--signal", help="Signal or alias substring, for example PL_LED0 or led[0].")
+    hw_parser.add_argument("--interface", help="Interface name, for example hdmi or rgb_lcd.")
+    hw_parser.add_argument("--package-pin", help="FPGA package pin, for example H15.")
+    hw_parser.add_argument("--mio-pin", help="PS MIO pin, for example MIO7.")
+    hw_parser.add_argument("--keyword", help="Keyword in description, group, or cross references.")
+    hw_parser.add_argument("--limit", type=int, default=200, help="Maximum rows to print.")
+
+    tcl_search_parser = subparsers.add_parser("search-tcl-commands", help="Search software Tcl commands.")
+    tcl_search_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_search_parser.add_argument("--command", dest="tcl_command", help="Exact command name or command ID.")
+    tcl_search_parser.add_argument("--keyword", help="Keyword in summary, syntax, arguments, examples, or description.")
+    tcl_search_parser.add_argument("--option", help="Exact Tcl option name, for example -file.")
+    tcl_search_parser.add_argument("--tool", default="vivado", help="Tool name. Defaults to vivado.")
+    tcl_search_parser.add_argument("--version", default="2024.2", help="Tool version. Defaults to 2024.2.")
+    tcl_search_parser.add_argument("--category", help="Command category substring.")
+    tcl_search_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    tcl_detail_parser = subparsers.add_parser("get-tcl-command-detail", help="Read a software Tcl command by ID or name.")
+    tcl_detail_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_detail_parser.add_argument("--id", required=True, help="Command ID or command name.")
+
+    tcl_chunk_parser = subparsers.add_parser("search-tcl-doc", help="Full-text search software Tcl document chunks.")
+    tcl_chunk_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_chunk_parser.add_argument("--query", required=True, help="Search text.")
+    tcl_chunk_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_chunk_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_chunk_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_chunk_parser.add_argument("--limit", type=int, default=10, help="Maximum chunks to print.")
+
+    tcl_topic_parser = subparsers.add_parser("search-tcl-topics", help="Search software Tcl guide topics.")
+    tcl_topic_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_topic_parser.add_argument("--keyword", help="Keyword in title, summary, tags, or text.")
+    tcl_topic_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_topic_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_topic_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_topic_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    tcl_example_parser = subparsers.add_parser("search-tcl-examples", help="Search software Tcl guide examples.")
+    tcl_example_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    tcl_example_parser.add_argument("--keyword", help="Keyword in title, description, tags, or code.")
+    tcl_example_parser.add_argument("--command", dest="example_command", help="Command name used in the example.")
+    tcl_example_parser.add_argument("--doc-id", help="Document ID.")
+    tcl_example_parser.add_argument("--tool", help="Tool name, for example vivado, vitis, or pdm.")
+    tcl_example_parser.add_argument("--version", help="Tool version, for example 2024.2.")
+    tcl_example_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    uvm_chunk_parser = subparsers.add_parser("search-uvm-doc", help="Full-text search UVM guide chunks.")
+    uvm_chunk_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    uvm_chunk_parser.add_argument("--query", required=True, help="Search text.")
+    uvm_chunk_parser.add_argument("--doc-id", help="Document ID.")
+    uvm_chunk_parser.add_argument("--version", help="UVM guide version label, for example 1.1 or cookbook.")
+    uvm_chunk_parser.add_argument("--limit", type=int, default=10, help="Maximum chunks to print.")
+
+    uvm_example_parser = subparsers.add_parser("search-uvm-examples", help="Search parsed UVM guide code examples.")
+    uvm_example_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    uvm_example_parser.add_argument("--keyword", help="Keyword in caption or code.")
+    uvm_example_parser.add_argument("--doc-id", help="Document ID.")
+    uvm_example_parser.add_argument("--language", help="Language hint, for example systemverilog.")
+    uvm_example_parser.add_argument("--limit", type=int, default=50, help="Maximum rows to print.")
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        if args.command == "init-project":
+            project_path = create_project(Path(args.workspace), args.name, force=args.force)
+            print(f"created: {project_path}")
+            return 0
+        if args.command == "check-project":
+            result = validate_project(Path(args.project_path))
+            for line in result.messages:
+                print(line)
+            return 0 if result.ok else 1
+        if args.command == "doctor":
+            result = run_doctor(Path(args.workspace), Path(args.project))
+            for line in result.messages:
+                print(line)
+            return 0 if result.ok else 1
+        if args.command == "plan":
+            project = load_project(Path(args.project))
+            for line in format_pipeline(build_pipeline(project.data)):
+                print(line)
+            return 0
+        if args.command == "run-config":
+            workspace = load_workspace(Path(args.workspace))
+            project = load_project(Path(args.project))
+            errors = validate_config(workspace, project)
+            pipeline = build_pipeline(project.data)
+            report = write_config_run_report(project.path, pipeline, errors)
+            print(f"report: {report}")
+            if errors:
+                for error in errors:
+                    print(f"error: {error}")
+                return 1
+            print("configuration run: PASS")
+            return 0
+        if args.command == "ensure-output":
+            result = ensure_output_dirs(Path(args.project))
+            for line in result.messages:
+                print(line)
+            return 0
+        if args.command == "run-gate":
+            result = run_gate(Path(args.project), args.node, level=args.level, change_id=args.change_id)
+            print(f"report: {result.report_path}")
+            for check in result.checks:
+                print(f"{check.status}: {check.name} - {check.detail}")
+            if result.ok:
+                if result.manifest_path:
+                    print(f"manifest: {result.manifest_path}")
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event=f"gate-{result.node}-{args.level}".replace("_", "-"),
+                        node=result.node,
+                        gate_level=args.level,
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes=f"{result.node} {args.level} gate passed",
+                        artifacts=[result.report_path, *( [result.manifest_path] if result.manifest_path else [] )],
+                        latest_summary=f"{result.node} {args.level} gate passed",
+                    )
+                )
+                sync = sync_project_state(Path(args.project))
+                print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+                for path in sync.updated_files:
+                    print(f"state_sync_file: {path}")
+                return 0
+            failure = record_failure_event(
+                Path(args.project),
+                command=f"run-gate --node {args.node} --level {args.level}",
+                message=f"{result.node} gate failed",
+                detail=str(result.report_path),
+            )
+            print(f"failure_record: {failure.path}")
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            if sync.failed_nodes:
+                print("failed_nodes: " + ", ".join(sync.failed_nodes))
+            return 1
+        if args.command == "final-audit":
+            result = run_final_audit(Path(args.project), level=args.level)
+            print(f"report: {result.report_path}")
+            for check in result.checks:
+                print(f"{check.status}: {check.name} - {check.detail}")
+            if result.ok:
+                if result.manifest_path:
+                    print(f"manifest: {result.manifest_path}")
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event=f"final-audit-{args.level}",
+                        node=result.node,
+                        gate_level=args.level,
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes=f"Final {args.level} audit passed",
+                        artifacts=[result.report_path, *( [result.manifest_path] if result.manifest_path else [] )],
+                        latest_summary=f"Final {args.level} audit passed",
+                        next_action="Archive or tag the release evidence",
+                    )
+                )
+                sync = sync_project_state(Path(args.project))
+                print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+                for path in sync.updated_files:
+                    print(f"state_sync_file: {path}")
+                return 0
+            failure = record_failure_event(
+                Path(args.project),
+                command=f"final-audit --level {args.level}",
+                message="final audit failed",
+                detail=str(result.report_path),
+            )
+            print(f"failure_record: {failure.path}")
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            if sync.failed_nodes:
+                print("failed_nodes: " + ", ".join(sync.failed_nodes))
+            return 1
+        if args.command == "sync-project-state":
+            sync = sync_project_state(Path(args.project))
+            print(f"state_sync: {sync.overall_status} current_loop={sync.current_loop}")
+            print("passed_nodes: " + (", ".join(sync.passed_nodes) if sync.passed_nodes else "none"))
+            print("failed_nodes: " + (", ".join(sync.failed_nodes) if sync.failed_nodes else "none"))
+            for path in sync.updated_files:
+                print(f"updated: {path}")
+            return 0
+        if args.command == "next-action":
+            result = advise_next_action(Path(args.project))
+            print(f"report: {result.report_path}")
+            print(f"next_action: {result.next_action}")
+            for message in result.messages:
+                print(message)
+            return 0 if result.ok else 1
+        if args.command == "schema-check":
+            result = schema_check(Path(args.project), file_rel=args.file)
+            print(f"report: {result.report_path}")
+            for issue in result.issues:
+                print(f"{issue.severity}: {issue.path} - {issue.message}")
+            print("schema check: PASS" if result.ok else "schema check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "repair-diagnose":
+            result = diagnose_repairs(Path(args.project), write_tickets=not args.no_tickets)
+            print(f"report: {result.report_path}")
+            for ticket in result.tickets:
+                print(f"ticket: {ticket.ticket_id} {ticket.severity}/{ticket.category} {ticket.summary}")
+                print(f"ticket_path: {ticket.path}")
+            for message in result.messages:
+                print(message)
+            return 0 if result.ok else 1
+        if args.command == "repair-apply":
+            result = apply_repair_ticket(Path(args.project), ticket_id=args.ticket_id, dry_run=args.dry_run)
+            for message in result.messages:
+                print(message)
+            print("repair apply: APPLIED" if result.applied else "repair apply: NOT_APPLIED")
+            return 0 if result.applied or args.dry_run else 1
+        if args.command == "release-preflight":
+            result = release_preflight(Path(args.project))
+            print(f"report: {result.report_path}")
+            for blocker in result.blockers:
+                print(f"blocker: {blocker}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for command in result.required_commands:
+                print(f"required_command: {command}")
+            print("release preflight: PASS" if result.ok else "release preflight: BLOCKED")
+            return 0 if result.ok else 1
+        if args.command == "explore-start":
+            result = start_exploration(Path(args.project), title=args.title, objective=args.objective)
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "explore-note":
+            result = add_exploration_note(Path(args.project), session_id=args.session_id, note=args.note)
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "explore-promote":
+            result = promote_exploration(Path(args.project), session_id=args.session_id, target=args.target)
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-open":
+            result = open_change(
+                Path(args.project),
+                title=args.title,
+                reason=args.reason,
+                scope=args.scope,
+                risk=args.risk,
+                owner=args.owner,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-impact":
+            result = record_impact(
+                Path(args.project),
+                change_id=args.change_id,
+                requirements=args.requirement,
+                artifacts=args.artifact,
+                verification=args.verification,
+                rollback=args.rollback,
+                risk=args.risk,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-approve":
+            result = approve_change(
+                Path(args.project),
+                change_id=args.change_id,
+                approver=args.approver,
+                decision=args.decision,
+                notes=args.notes,
+            )
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-close":
+            result = close_change(Path(args.project), change_id=args.change_id, gate_report=args.gate_report, notes=args.notes)
+            for message in result.messages:
+                print(message)
+            return 0
+        if args.command == "change-check":
+            result = check_changes(Path(args.project))
+            print(f"report: {result.report_path}")
+            for message in result.messages:
+                print(message)
+            return 0 if result.ok else 1
+        if args.command == "requirements-frontdoor-init":
+            result = initialize_requirements_frontend(Path(args.project), status=args.status, force=args.force)
+            print(f"report: {result.report_path}")
+            for item in result.created:
+                print(f"created: {item}")
+            for item in result.updated:
+                print(f"updated: {item}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok and args.status == "READY":
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="requirements-frontdoor-ready",
+                        node="work/docparse",
+                        gate_level="frontdoor",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Six-agent requirements front door initialized and ready",
+                        artifacts=[result.report_path],
+                        latest_summary="Requirements front door ready for DocParse gate",
+                        agent="arbtr",
+                        flow_direction="forward",
+                    )
+                )
+            print("requirements frontdoor init: PASS" if result.ok else "requirements frontdoor init: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "requirements-frontdoor-check":
+            result = check_requirements_frontend(Path(args.project), require_ready=not args.allow_draft)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok and not args.allow_draft:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="requirements-frontdoor-check",
+                        node="work/docparse",
+                        gate_level="frontdoor",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Six-agent requirements front door check passed",
+                        artifacts=[result.report_path],
+                        latest_summary="Requirements front door check passed",
+                        agent="arbtr",
+                        flow_direction="forward",
+                    )
+                )
+            print("requirements frontdoor check: PASS" if result.ok else "requirements frontdoor check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "requirements-frontdoor-guard":
+            result = require_frontdoor_ready(Path(args.project), args.action)
+            print(("PASS: " if result.ok else "FAIL: ") + result.reason)
+            return 0 if result.ok else 1
+        if args.command == "workflow-stage-guard":
+            result = require_stage_ready(Path(args.project), args.stage, args.action)
+            print(("PASS: " if result.ok else "FAIL: ") + result.reason)
+            return 0 if result.ok else 1
+        if args.command == "generate-design-doc":
+            result = generate_design_document(Path(args.project))
+            print(f"report: {result.report_path}")
+            print(f"manifest: {result.manifest_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="design-doc-generated",
+                        node="work/docparse",
+                        gate_level="design_doc",
+                        gate_result="PASS",
+                        memory_record=result.manifest_path,
+                        report=result.report_path,
+                        notes="Generated user-readable requirements, RTL, UVM, and FPGA design document",
+                        artifacts=[result.report_path, result.manifest_path],
+                        latest_summary="Design document synchronized with project artifacts",
+                    )
+                )
+            print("design doc: PASS" if result.ok else "design doc: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "rtl-skill-audit":
+            result = run_rtl_skill_audit(Path(args.project))
+            print(f"report: {result.report_path}")
+            for error in result.errors:
+                print(f"error: {error}")
+            for item in result.file_results:
+                print(f"{item.result}: {item.rel_path} issues={len(item.issues)}")
+                for issue in item.issues[:5]:
+                    print(f"  - {issue}")
+            print("rtl skill audit: PASS" if result.ok else "rtl skill audit: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "prototype-preflight":
+            guard = require_stage_ready(Path(args.project), "loop3", "prototype-preflight")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = write_prototype_preflight(
+                Path(args.workspace),
+                Path(args.project),
+                mode=args.mode,
+                board=args.board,
+                signals=args.signal,
+                tcl_commands=args.tcl_command,
+                tool_version=args.tool_version,
+            )
+            print(f"report: {result.report_path}")
+            if result.missing_items:
+                for item in result.missing_items:
+                    print(f"missing: {item}")
+                return 1
+            print("prototype preflight: PASS")
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-database-preflight",
+                    node="work/loop3_fpga_proto",
+                    gate_level="preflight",
+                    gate_result="PASS",
+                    memory_record=result.report_path,
+                    report=result.report_path,
+                    notes=f"Database preflight passed for {result.mode} on {result.board}",
+                    artifacts=[result.report_path],
+                )
+            )
+            return 0
+        if args.command == "generate-xdc":
+            guard = require_stage_ready(Path(args.project), "loop3-preflight", "generate-xdc")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = generate_xdc_from_database(
+                Path(args.workspace),
+                Path(args.project),
+                ports=args.port,
+                output=args.output,
+                clock_ports=args.clock,
+            )
+            print(f"xdc: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-xdc",
+                    node="work/loop3_fpga_proto",
+                    gate_level="constraints",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated database-backed XDC constraints",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "validate-prototype-plan":
+            guard = require_stage_ready(Path(args.project), "loop3", "validate-prototype-plan")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = validate_prototype_plan(Path(args.workspace), Path(args.project), plan=args.plan)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            if result.ok:
+                _print_memory_messages(
+                    auto_record_workflow_event(
+                        Path(args.project),
+                        event="loop3-prototype-plan-check",
+                        node="work/loop3_fpga_proto",
+                        gate_level="process",
+                        gate_result="PASS",
+                        memory_record=result.report_path,
+                        report=result.report_path,
+                        notes="Prototype plan check passed",
+                        artifacts=[result.report_path],
+                    )
+            )
+            return 0 if result.ok else 1
+        if args.command == "generate-ps-pl-bd":
+            guard = require_stage_ready(Path(args.project), "loop3-preflight", "generate-ps-pl-bd")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = generate_ps_pl_bd_tcl(Path(args.workspace), Path(args.project), plan=args.plan, output=args.output)
+            print(f"bd_tcl: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-ps-pl-bd",
+                    node="work/loop3_fpga_proto",
+                    gate_level="bd_generation",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated PS_PL Block Design Tcl skeleton",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "generate-vitis-boot":
+            guard = require_stage_ready(Path(args.project), "loop3-preflight", "generate-vitis-boot")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = generate_vitis_boot_files(Path(args.project), output_dir=args.output_dir)
+            print(f"boot_dir: {result.path}")
+            for message in result.messages:
+                print(message)
+            _print_memory_messages(
+                auto_record_workflow_event(
+                    Path(args.project),
+                    event="loop3-generate-vitis-boot",
+                    node="work/loop3_fpga_proto",
+                    gate_level="boot_template",
+                    gate_result="PASS",
+                    memory_record=result.path,
+                    report=result.path,
+                    notes="Generated Vitis boot image template files",
+                    artifacts=[result.path],
+                )
+            )
+            return 0
+        if args.command == "loop3-refresh-reports":
+            result = refresh_loop3_reports(Path(args.project))
+            for path in result.report_paths:
+                print(f"report: {path}")
+            for name, status in result.statuses.items():
+                print(f"{status}: {name}")
+            return 0 if result.ok else 1
+        if args.command == "get-tool-launcher":
+            workspace = load_workspace(Path(args.workspace))
+            tool = workspace.data.get("toolchains", {}).get("toolchains", {}).get(args.tool, {})
+            value = _tool_launcher_value(args.tool, args.launcher, tool)
+            if not value:
+                print(f"error: launcher not configured: {args.tool}.{args.launcher}", file=sys.stderr)
+                return 1
+            print(value)
+            return 0
+        if args.command == "get-tool-setting":
+            workspace = load_workspace(Path(args.workspace))
+            tool = workspace.data.get("toolchains", {}).get("toolchains", {}).get(args.tool, {})
+            value = _tool_setting_value(args.tool, args.key, tool)
+            if not value:
+                print(f"error: setting not configured: {args.tool}.{args.key}", file=sys.stderr)
+                return 1
+            print(value)
+            return 0
+        if args.command == "memory-record":
+            result = record_memory_iteration(
+                Path(args.project),
+                iteration_id=args.iteration_id,
+                node=args.node,
+                gate_level=args.gate_level,
+                gate_result=args.gate_result,
+                memory_record=args.memory_record,
+                report=args.report,
+                notes=args.notes,
+                version=args.version,
+                artifacts=args.artifact,
+                latest_summary=args.latest_summary,
+                next_action=args.next_action,
+                agent=args.agent,
+                flow_direction=args.flow_direction,
+                feedback_target=args.feedback_target,
+                arbtr_decision=args.arbtr_decision,
+                baseline_version=args.baseline_version,
+            )
+            for message in result.messages:
+                print(message)
+            print("memory record: PASS")
+            return 0
+        if args.command == "memory-check":
+            result = check_memory(Path(args.project))
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            return 0 if result.ok else 1
+        if args.command == "plan-start":
+            result = start_active_plan(
+                Path(args.project),
+                title=args.title,
+                objective=args.objective,
+                steps=args.step,
+                plan_id=args.plan_id,
+                force=args.force,
+            )
+            print(f"plan: {result.path}")
+            for message in result.messages:
+                print(message)
+            print("plan start: PASS")
+            return 0
+        if args.command == "plan-step":
+            result = update_active_plan_step(
+                Path(args.project),
+                step_id=args.step_id,
+                status=args.status,
+                note=args.note,
+                evidence=args.evidence,
+            )
+            print(f"plan: {result.path}")
+            for message in result.messages:
+                print(message)
+            print("plan step: PASS")
+            return 0
+        if args.command == "plan-note":
+            result = append_plan_note(
+                Path(args.project),
+                kind=args.kind,
+                note=args.note,
+                source=args.source,
+                command=args.command,
+                detail=args.detail,
+            )
+            print(f"plan_log: {result.path}")
+            for message in result.messages:
+                print(message)
+            print("plan note: PASS")
+            return 0
+        if args.command == "ralph-status":
+            result = ralph_status(Path(args.project))
+            for message in result.messages:
+                print(message)
+            if result.open_step:
+                print(f"open_step: {result.open_step.step_id} {result.open_step.status} {result.open_step.text}")
+            print(f"next_action: {result.next_action}")
+            if result.open_changes:
+                print("open_changes: " + ", ".join(result.open_changes))
+            if result.approved_changes:
+                print("approved_changes: " + ", ".join(result.approved_changes))
+            if result.review_blockers:
+                for blocker in result.review_blockers:
+                    print(f"review_blocker: {blocker}")
+            if result.failed_nodes:
+                print("failed_nodes: " + ", ".join(result.failed_nodes))
+            for error in result.memory_errors:
+                print(f"memory_error: {error}")
+            return 0 if result.ok else 1
+        if args.command == "ralph-step":
+            result = ralph_step(
+                Path(args.project),
+                step_id=args.step_id,
+                status=args.status,
+                note=args.note,
+                evidence=args.evidence,
+            )
+            print(f"plan: {result.path}")
+            print(f"step: {result.step_id}")
+            for message in result.messages:
+                print(message)
+            print(f"ralph step: {result.status}")
+            return 0
+        if args.command == "ralph-check":
+            result = ralph_check(Path(args.project), require_final=args.require_final)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            print("ralph check: PASS" if result.ok else "ralph check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "review-check":
+            result = check_review_findings(Path(args.project), level=args.level)
+            print(f"report: {result.report_path}")
+            for blocker in result.blocking_findings:
+                print(f"review_blocker: {blocker}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            print("review check: PASS" if result.ok else "review check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "loop2-build-bindings":
+            guard = require_stage_ready(Path(args.project), "loop2", "loop2-build-bindings")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            db_path = Path(args.db) if args.db else None
+            result = build_loop2_binding_database(Path(args.project), db_path=db_path, workspace=Path(args.workspace))
+            print(f"loop2_binding_db: {result.db_path}")
+            print(f"requirements: {result.requirement_count}")
+            print(f"artifacts: {result.artifact_count}")
+            print(f"bindings: {result.binding_count}")
+            print(f"evidence: {result.evidence_count}")
+            print(f"missing_artifacts: {result.missing_artifacts}")
+            print(f"missing_database_items: {result.missing_database_items}")
+            ok = result.missing_artifacts == 0 and result.missing_database_items == 0
+            print("loop2 binding database: PASS" if ok else "loop2 binding database: FAIL")
+            return 0 if ok else 1
+        if args.command == "loop1-refresh-reports":
+            guard = require_stage_ready(Path(args.project), "loop1", "loop1-refresh-reports")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = refresh_loop1_reports(Path(args.project))
+            for report_path in result.report_paths:
+                print(f"report: {report_path}")
+            print(f"result: {result.result}")
+            print(f"directed_test_count: {result.test_count}")
+            print(f"errors: {result.error_count}")
+            return 0 if result.result == "PASS" else 1
+        if args.command == "loop1-waveform-check":
+            guard = require_stage_ready(Path(args.project), "loop1", "loop1-waveform-check")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = check_loop1_waveform(
+                Path(args.project),
+                vcd_path=Path(args.vcd) if args.vcd else None,
+                log_path=Path(args.log) if args.log else None,
+            )
+            print(f"report: {result.report_path}")
+            print(f"json: {result.json_path}")
+            print(f"result: {'PASS' if result.ok else 'FAIL'}")
+            print(f"windows: {result.window_count}")
+            print(f"signals: {result.signal_count}")
+            for item in result.errors[:20]:
+                print(f"error: {item}")
+            for item in result.warnings[:20]:
+                print(f"warning: {item}")
+            return 0 if result.ok else 1
+        if args.command == "loop2-refresh-reports":
+            guard = require_stage_ready(Path(args.project), "loop2", "loop2-refresh-reports")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = refresh_loop2_reports(Path(args.project))
+            for report_path in result.report_paths:
+                print(f"report: {report_path}")
+            print(f"result: {result.result}")
+            print(f"transactions_total: {result.transactions_total}")
+            print(f"UVM_ERROR: {result.uvm_error_count}")
+            print(f"UVM_FATAL: {result.uvm_fatal_count}")
+            print(f"functional_coverage: {result.functional_coverage}")
+            print(f"code_coverage: {result.code_coverage}")
+            return 0 if result.result == "PASS" else 1
+        if args.command == "loop2-database-preflight":
+            guard = require_stage_ready(Path(args.project), "loop2", "loop2-database-preflight")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            result = write_loop2_database_preflight(Path(args.workspace), Path(args.project))
+            print(f"report: {result.report_path}")
+            for item in result.missing_items:
+                print(f"missing: {item}")
+            print("loop2 database preflight: PASS" if not result.missing_items else "loop2 database preflight: FAIL")
+            return 0 if not result.missing_items else 1
+        if args.command == "loop2-query-bindings":
+            for line in format_loop2_binding_rows(Path(args.project), req_id=args.req):
+                print(line)
+            return 0
+        if args.command == "library-build":
+            db_path = build_library(Path(args.workspace))
+            print(f"library: {db_path}")
+            print("library build: PASS")
+            return 0
+        if args.command == "get-workflow-toc":
+            entries = query_toc(
+                Path(args.workspace),
+                flow=args.flow,
+                node=args.node,
+                tool=args.tool,
+                stage=args.stage,
+                domain=args.domain,
+            )
+            for line in format_toc(entries):
+                print(line)
+            return 0
+        if args.command == "get-command-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id, expected_kind="command")
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-template-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id, expected_kind="template")
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-library-detail":
+            entry, detail = get_entry(Path(args.workspace), args.id)
+            for line in format_detail(entry, detail):
+                print(line)
+            return 0
+        if args.command == "get-diagnostic-candidates":
+            entries = query_diagnostics(Path(args.workspace), tool=args.tool, text=args.text)
+            for line in format_toc(entries):
+                print(line)
+            return 0
+        if args.command == "get-fpga-io-pins":
+            rows = query_fpga_io_pins(
+                Path(args.workspace),
+                table_id=args.table_id,
+                connector=args.connector,
+                signal=args.signal,
+                bank=args.bank,
+                category=args.category,
+                limit=args.limit,
+            )
+            for line in format_io_pins(rows):
+                print(line)
+            return 0
+        if args.command == "get-fpga-schematic-nets":
+            rows = query_fpga_schematic_nets(
+                Path(args.workspace),
+                schematic_id=args.schematic_id,
+                net=args.net,
+                interface=args.interface,
+                category=args.category,
+                connector=args.connector,
+                limit=args.limit,
+            )
+            for line in format_schematic_nets(rows):
+                print(line)
+            return 0
+        if args.command == "get-fpga-hardware-resource":
+            rows = query_fpga_hardware_resources(
+                Path(args.workspace),
+                guide_id=args.guide_id,
+                signal=args.signal,
+                interface=args.interface,
+                package_pin=args.package_pin,
+                mio_pin=args.mio_pin,
+                keyword=args.keyword,
+                limit=args.limit,
+            )
+            for line in format_hardware_resources(rows):
+                print(line)
+            return 0
+        if args.command == "search-tcl-commands":
+            rows = query_software_tcl_commands(
+                Path(args.workspace),
+                command=args.tcl_command,
+                keyword=args.keyword,
+                option=args.option,
+                tool=args.tool,
+                tool_version=args.version,
+                category=args.category,
+                limit=args.limit,
+            )
+            for line in format_tcl_command_rows(rows):
+                print(line)
+            return 0
+        if args.command == "get-tcl-command-detail":
+            row = get_software_tcl_command(Path(args.workspace), args.id)
+            for line in format_tcl_command_detail(row):
+                print(line)
+            return 0
+        if args.command == "search-tcl-doc":
+            rows = search_software_doc_chunks(
+                Path(args.workspace),
+                query_text=args.query,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for row in rows:
+                text = " ".join(str(row.get("text") or "").split())
+                print(f"{row.get('chunk_id')} | {row.get('anchor')} | {text[:240]}")
+            return 0
+        if args.command == "search-tcl-topics":
+            rows = query_software_tcl_topics(
+                Path(args.workspace),
+                keyword=args.keyword,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for line in format_tcl_topic_rows(rows):
+                print(line)
+            return 0
+        if args.command == "search-tcl-examples":
+            rows = query_software_tcl_examples(
+                Path(args.workspace),
+                keyword=args.keyword,
+                command=args.example_command,
+                doc_id=args.doc_id,
+                tool=args.tool,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for line in format_tcl_example_rows(rows):
+                print(line)
+            return 0
+        if args.command == "search-uvm-doc":
+            rows = search_uvm_doc_chunks(
+                Path(args.workspace),
+                query_text=args.query,
+                doc_id=args.doc_id,
+                tool_version=args.version,
+                limit=args.limit,
+            )
+            for row in rows:
+                text = " ".join(str(row.get("text") or "").split())
+                print(f"{row.get('chunk_id')} | {row.get('anchor')} | {text[:240]}")
+            return 0
+        if args.command == "search-uvm-examples":
+            rows = query_uvm_examples(
+                Path(args.workspace),
+                keyword=args.keyword,
+                doc_id=args.doc_id,
+                language_hint=args.language,
+                limit=args.limit,
+            )
+            for line in format_uvm_example_rows(rows):
+                print(line)
+            return 0
+    except Exception as exc:  # pragma: no cover - CLI boundary
+        project_value = getattr(args, "project", None) if "args" in locals() else None
+        if project_value:
+            try:
+                failure = record_failure_event(
+                    Path(project_value),
+                    command=str(getattr(args, "command", "unknown")),
+                    message=str(exc),
+                    detail=repr(args),
+                )
+                print(f"failure_record: {failure.path}", file=sys.stderr)
+            except Exception:
+                pass
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    parser.error(f"unknown command: {args.command}")
+    return 2
+
+
+def _print_memory_messages(result) -> None:
+    for message in result.messages:
+        print(f"memory: {message}")
+
+
+def _tool_launcher_value(tool: str, launcher: str, tool_config: object) -> str | None:
+    """Resolve a tool launcher, allowing machine-local env overrides."""
+
+    if isinstance(tool_config, dict):
+        env_override = tool_config.get("env_override", {})
+        if isinstance(env_override, dict):
+            configured_name = env_override.get(launcher)
+            if configured_name:
+                value = os.environ.get(str(configured_name))
+                if value:
+                    return value
+    env_names = [
+        f"HDLFLOW_{tool}_{launcher}",
+        f"HDL_{tool}_{launcher}",
+        f"{tool}_{launcher}",
+    ]
+    for name in env_names:
+        value = os.environ.get(name.upper())
+        if value:
+            return value
+    launchers = tool_config.get("launchers", {}) if isinstance(tool_config, dict) else {}
+    if isinstance(launchers, dict):
+        value = launchers.get(launcher)
+        if value:
+            return str(value)
+    default_value = DEFAULT_TOOL_LAUNCHERS.get(tool, {}).get(launcher)
+    if default_value:
+        return default_value
+    return None
+
+
+def _tool_setting_value(tool: str, key: str, tool_config: object) -> str | None:
+    """Resolve a non-launcher tool setting, allowing machine-local env overrides."""
+
+    if isinstance(tool_config, dict):
+        env_override = tool_config.get("env_override", {})
+        if isinstance(env_override, dict):
+            configured_name = env_override.get(key)
+            if configured_name:
+                value = os.environ.get(str(configured_name))
+                if value:
+                    return value
+        value = tool_config.get(key)
+        if value is not None:
+            return str(value)
+    default_value = DEFAULT_TOOL_SETTINGS.get(tool, {}).get(key)
+    if default_value:
+        return default_value
+    env_names = [
+        f"HDLFLOW_{tool}_{key}",
+        f"HDL_{tool}_{key}",
+        f"{tool}_{key}",
+    ]
+    for name in env_names:
+        value = os.environ.get(name.upper())
+        if value:
+            return value
+    return None
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())

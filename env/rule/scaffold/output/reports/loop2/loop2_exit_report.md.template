@@ -1,0 +1,48 @@
+# Loop2 Exit Review Report
+
+Navigation: [Report index](../README.md) | [Loop2 reports](README.md)
+
+## Exit Verdict
+
+| Item | Value |
+| --- | --- |
+| Project | TODO |
+| Generated At | TODO |
+| Result | PASS / FAIL / BLOCKED |
+| Loop1 Prerequisite | PASS / FAIL |
+| Precheck Phase | PASS / FAIL / N/A |
+| Regression Report | [loop2_uvm_regression_report.md](loop2_uvm_regression_report.md) |
+| Coverage Index | [coverage_index.md](coverage_index.md) |
+| Reviewer Decision | ACCEPT / REJECT / NEEDS FIX |
+
+## Exit Checklist
+
+| Criterion | Status | Evidence |
+| --- | --- | --- |
+| Loop1 gate closed before Loop2 | TODO | TODO |
+| Real UVM sources exist under `output/uvm` | TODO | TODO |
+| No template artifacts remain under `output/uvm` | TODO | TODO |
+| Binding database exists and is current | TODO | `work/loop2_uvm/_runtime/loop2_bindings.sqlite` |
+| UVM regression passes | TODO | regression report |
+| Entry-check report removed from final evidence | TODO | `loop2_no_entry_check_final_report` gate check |
+| Checked transaction count meets policy | TODO | regression report / gate |
+| Scoreboard/reference model is spec-derived | TODO | UVM source + regression report |
+| `UVM_ERROR` count is zero | TODO | regression report |
+| `UVM_FATAL` count is zero | TODO | regression report |
+| Assertion/protocol checks have no failure | TODO | regression report |
+| Functional coverage meets policy or waiver exists | TODO | coverage index |
+| Code coverage meets policy or waiver exists | TODO | coverage index |
+| Requirement-to-test trace is complete | TODO | trace matrix |
+| No open critical or major verification bug remains | TODO | bug tracking |
+
+## Residual Risk
+
+| Risk | Severity | Disposition |
+| --- | --- | --- |
+| TODO | TODO | TODO |
+
+## Conclusion
+
+Loop2 exit gate: TODO
+
+Loop3 entry readiness: TODO

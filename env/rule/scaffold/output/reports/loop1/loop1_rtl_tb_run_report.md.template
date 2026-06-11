@@ -1,0 +1,70 @@
+# Loop1 RTL/TB Run Report
+
+Navigation: [Report index](../README.md) | [Loop1 reports](README.md) | [RTL](../../rtl/) | [TB](../../tb/)
+
+- project:
+- generated_at:
+- status: PASS/FAIL/BLOCKED
+- simulator: ModelSim/Questa
+- do_file: [work/loop1_rtl_tb/sim/rtl_functional.do](../../../work/loop1_rtl_tb/sim/rtl_functional.do)
+- compile_script: [work/loop1_rtl_tb/sim/compile.do](../../../work/loop1_rtl_tb/sim/compile.do)
+- latest_log:
+- rtl_source_dir: [output/rtl](../../rtl/)
+- tb_source_dir: [output/tb](../../tb/)
+
+## Skill Constraint Evidence
+
+- orchestrator_skill: `env/rule/skills/hdl-workflow-orchestrator/SKILL.md`
+- rtl_skill: `env/rule/skills/rtl-architecture-and-gen/SKILL.md`
+- sim_triage_skill: `env/rule/skills/modelsim-run-triage-debug/SKILL.md`
+- enforced_by_gate: `skill_policy`, `source_policy`, `skill_policy_freshness`, `skill_policy_hash_drift`
+
+## Compile Evidence
+
+- compile_errors:
+- compile_warnings:
+- blocking_warnings:
+- elaboration_status:
+
+## Loop1 Test Case Comparison
+
+| Test Item | Input | Expected Result | Actual Output | Compare |
+| --- | --- | --- | --- | --- |
+| TODO | TODO | TODO | TODO | TODO |
+
+## Structured Test Items
+
+========== LOOP1_TEST_ITEM_001 START ==========
+- test_item: TODO
+- stimulus_sent: TODO
+- expected_result: TODO
+- actual_result: TODO
+- transactions: TODO
+- stimuli: TODO
+- result: PASS/FAIL
+========== LOOP1_TEST_ITEM_001 END ==========
+
+## Simulation Evidence
+
+- tb_top_list:
+- pass_markers:
+- fail_markers:
+- assertion_failures:
+- self_check_summary:
+
+## Requirement Evidence
+
+- requirements_exercised:
+- req_to_rtl_trace: [trace matrix](../trace_matrix/)
+- req_to_test_trace: [trace matrix](../trace_matrix/)
+
+## Source Links
+
+- RTL files:
+- TB files:
+
+## Conclusion
+
+Loop1 status:
+
+Next action:

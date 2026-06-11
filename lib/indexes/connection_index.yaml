@@ -1,0 +1,67 @@
+schema_version: 1
+connections:
+  fpga.clock_reset_baseline:
+    title: FPGA clock and reset baseline
+    domain: fpga
+    category: schematic_pattern
+    workflow_node: work/loop3_fpga_proto
+    short_description: Baseline checklist for clock and reset connectivity during FPGA prototype bring-up.
+    detail_path: sources/schematic_patterns/fpga_clock_reset_baseline.md
+    tags:
+      - fpga
+      - schematic
+      - clock
+      - reset
+  fpga.io_table_review:
+    title: FPGA IO table review
+    domain: fpga
+    category: schematic_pattern
+    workflow_node: work/loop3_fpga_proto
+    short_description: Review FPGA IO tables for pin names, banks, voltages, constraints, and board connections.
+    detail_path: sources/schematic_patterns/fpga_io_table_review.md
+    tags:
+      - fpga
+      - io
+      - pins
+      - schematic
+      - constraints
+  fpga.zynq_core_board_pin_map_v1_0:
+    title: ZYNQ core board pin map V1.0
+    domain: fpga
+    category: io_table
+    workflow_node: work/loop3_fpga_proto
+    short_description: Normalized X3/X4 connector pin lookup database for the ZYNQ core board.
+    detail_path: sources/schematic_patterns/zynq_core_board_pin_map_v1_0.md
+    tags:
+      - fpga
+      - zynq
+      - io
+      - pins
+      - x3
+      - x4
+  fpga.schematic_database_review:
+    title: FPGA schematic database review
+    domain: fpga
+    category: schematic_database
+    workflow_node: work/loop3_fpga_proto
+    short_description: Review normalized schematic database artifacts for nets, interfaces, clocks, resets, power, and connector mapping.
+    detail_path: sources/schematic_patterns/fpga_schematic_database_review.md
+    tags:
+      - fpga
+      - schematic
+      - database
+      - nets
+      - board
+  fpga.navigator_zynq_baseboard_schematic_v3_8:
+    title: Navigator ZYNQ baseboard schematic V3.8
+    domain: fpga
+    category: schematic_database
+    workflow_node: work/loop3_fpga_proto
+    short_description: Normalized net/interface lookup database for the Navigator ZYNQ baseboard schematic.
+    detail_path: sources/schematic_patterns/navigator_zynq_baseboard_schematic_v3_8.md
+    tags:
+      - fpga
+      - zynq
+      - schematic
+      - nets
+      - connector

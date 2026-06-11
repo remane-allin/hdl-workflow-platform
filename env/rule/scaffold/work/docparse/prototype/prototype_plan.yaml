@@ -1,0 +1,16 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: sim
+source_refs: []
+prototype_mode: ""
+board: ""
+resource_estimate: []
+ps_pl_boundary: []
+risk_items: []
+agent_consumers:
+  - Sim Agent
+  - Review Agent
+  - Arbtr Agent
+loop3_feedback_policy: Loop3 RTL issues route through Review and Arbtr, then back to Exec before Loop1/Loop2/Loop3 rerun.
+assumptions: []

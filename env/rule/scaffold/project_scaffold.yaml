@@ -1,0 +1,7 @@
+schema_version: 1
+project: change_me
+created_by: __PROJECT_ENTRYPOINT__
+creation_mode: script_only
+template_source: env/rule/scaffold
+created_at: GENERATED_AT
+manual_project_directory_creation: forbidden

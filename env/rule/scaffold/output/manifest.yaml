@@ -1,0 +1,27 @@
+schema_version: 1
+project: change_me
+output:
+  version:
+  generated_at:
+  signoff_owner:
+  source_origin:
+deliverables:
+  rtl: []
+  tb: []
+  uvm: []
+  sim:
+    loop1_waveforms: []
+  fpga: []
+  vivado: []
+  vitis: []
+reports:
+  index:
+    - output/reports/README.md
+  audit_report:
+  trace_matrix:
+  compliance_summary:
+verification:
+  loop1_gate:
+  loop2_gate:
+  loop3_gate:
+  final_gate:

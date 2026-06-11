@@ -10,10 +10,10 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "engine"}
+package-dir = {"" = "env/core"}
 packages = ["hdlflow"]
 
 [tool.hdlflow]
 supported_os = ["Windows", "Linux"]
 primary_cli = "python -m hdlflow.cli"
-project_create = "python scripts/new_hdl_project.py <name>"
+project_create = "python env/tool/scripts/new_hdl_project.py <name>"

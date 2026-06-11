@@ -1,0 +1,19 @@
+schema_version: 1
+directory_rules:
+  node_prefix_format: two_digit_index
+  runtime_dir_name: _runtime
+  archive_dir_name: _archive
+  output_dir_name: output
+file_rules:
+  config_entry: prj/<project_name>/work/config/project_config.yaml
+  manifest: manifest.yaml
+  memory_index: CURRENT_STATE.md
+path_rules:
+  no_project_files_at_workspace_root: true
+  no_runtime_files_in_output: true
+  no_generated_files_in_input: true
+  project_creation_script_required: true
+  project_scaffold_marker_required: true
+  loop3_database_preflight_required: true
+  vivado_project_root: output/fpga/vivado
+  vitis_project_root: output/fpga/vitis

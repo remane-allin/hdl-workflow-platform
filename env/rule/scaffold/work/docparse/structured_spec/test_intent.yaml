@@ -1,0 +1,15 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+generated_at: GENERATED_AT
+source_refs: []
+owner_role: spec
+functional_tests: []
+corner_cases: []
+coverage_targets: []
+scoreboard_rules: []
+baseline_entry_checks: []
+full_function_matrix: []
+waveform_windows: []
+waveform_observability: []
+assumptions: []
