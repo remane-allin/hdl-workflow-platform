@@ -112,7 +112,7 @@ question_review:
 ```
 
 Normalize into these machine-readable structured spec files before any generated
-design document is written:
+docset document is written:
 
 - `work/docparse/structured_spec/document_analysis.yaml`
 - `work/docparse/structured_spec/interface_spec.yaml`

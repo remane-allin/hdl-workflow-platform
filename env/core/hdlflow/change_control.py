@@ -124,11 +124,11 @@ def record_impact(
         "",
         *[f"- {item}" for item in assessment.verification],
         "",
-        "## Design Document Decision",
+        "## Docset Decision",
         "",
         f"- required: {'yes' if assessment.design_doc_required else 'no'}",
-        f"- sections: {', '.join(assessment.design_doc_sections) if assessment.design_doc_sections else 'none'}",
-        f"- reason: {'changed project requirement/design/verification/prototype artifacts' if assessment.design_doc_required else 'change does not alter project-facing design intent'}",
+        f"- documents: {', '.join(assessment.design_doc_sections) if assessment.design_doc_sections else 'none'}",
+        f"- reason: {'changed project requirement/design/verification/prototype artifacts' if assessment.design_doc_required else 'change does not alter project-facing docset intent'}",
         "",
         "## Rollback Plan",
         "",
@@ -146,7 +146,7 @@ def record_impact(
             f"impact recorded: {change_id}",
             f"impact: {path}",
             "downstream_nodes: " + (", ".join(assessment.downstream_nodes) if assessment.downstream_nodes else "none"),
-            "design_doc: " + ("required" if assessment.design_doc_required else "not_required"),
+            "docset: " + ("required" if assessment.design_doc_required else "not_required"),
         ],
     )
 
@@ -329,7 +329,7 @@ def validate_change_impact(project: Path, change_id: str) -> list[str]:
         "artifacts": "Artifacts",
         "downstream nodes": "Downstream Nodes",
         "required verification": "Required Verification",
-        "design document decision": "Design Document Decision",
+        "docset decision": "Docset Decision",
         "rollback plan": "Rollback Plan",
     }
     for key, label in required_sections.items():
@@ -342,15 +342,13 @@ def validate_change_impact(project: Path, change_id: str) -> list[str]:
         errors.append("impact analysis requirements still contain TBD placeholder")
     if any("tbd" in item.lower() for item in _section_bullets(sections.get("artifacts", []))):
         errors.append("impact analysis artifacts still contain TBD placeholder")
-    decision_lines = sections.get("design document decision", [])
+    decision_lines = sections.get("docset decision", [])
     if decision_lines:
         joined = "\n".join(decision_lines).lower()
         if "required:" not in joined:
-            errors.append("design document decision must state required: yes/no")
-        if re.search(r"required:\s*yes", joined) and (
-            "sections:" not in joined or re.search(r"sections:\s*(?:none|$)", joined)
-        ):
-            errors.append("design document decision requires non-empty sections when required: yes")
+            errors.append("docset decision must state required: yes/no")
+        if re.search(r"required:\s*yes", joined) and ("documents:" not in joined or re.search(r"documents:\s*(?:none|$)", joined)):
+            errors.append("docset decision requires non-empty documents when required: yes")
     rollback_lines = sections.get("rollback plan", [])
     if "rollback plan" in sections and not any(line.strip() for line in rollback_lines):
         errors.append("impact analysis ## Rollback Plan must not be empty")
@@ -420,10 +418,10 @@ _CHANGE_IMPACT_RULES = [
     {
         "prefixes": ("input/spec",),
         "downstream_nodes": ("input", "work/docparse", "work/loop1_rtl_tb", "work/loop2_uvm", "work/loop3_fpga_proto"),
-        "design_doc_sections": ("requirements", "rtl", "uvm", "test_plan", "fpga"),
+        "design_doc_sections": ("application_guide", "microarchitecture_specification", "verification_plan", "delivery_package"),
         "verification": (
             "requirements-frontdoor-check",
-            "generate-design-doc",
+            "generate-docs",
             "run-gate --node spec --change-id <change_id>",
             "run-gate --node docparse --change-id <change_id>",
         ),
@@ -439,10 +437,10 @@ _CHANGE_IMPACT_RULES = [
             "work/docparse/trace_matrix",
         ),
         "downstream_nodes": ("work/docparse", "work/loop1_rtl_tb", "work/loop2_uvm", "work/loop3_fpga_proto"),
-        "design_doc_sections": ("requirements", "rtl", "uvm", "test_plan", "fpga"),
+        "design_doc_sections": ("application_guide", "microarchitecture_specification", "verification_plan", "delivery_package"),
         "verification": (
             "requirements-frontdoor-check",
-            "generate-design-doc",
+            "generate-docs",
             "run-gate --node docparse --change-id <change_id>",
         ),
         "design_doc_required": True,
@@ -450,10 +448,10 @@ _CHANGE_IMPACT_RULES = [
     {
         "prefixes": ("output/rtl", "output/tb", "work/loop1_rtl_tb"),
         "downstream_nodes": ("work/loop1_rtl_tb", "work/loop2_uvm", "work/loop3_fpga_proto"),
-        "design_doc_sections": ("requirements", "rtl", "test_plan"),
+        "design_doc_sections": ("microarchitecture_specification", "verification_plan", "delivery_package"),
         "verification": (
             "requirements-frontdoor-check",
-            "generate-design-doc",
+            "generate-docs",
             "rtl-skill-audit --project <project>",
             "review-check --project <project> --level develop",
             "run-gate --node loop1 --change-id <change_id>",
@@ -463,10 +461,10 @@ _CHANGE_IMPACT_RULES = [
     {
         "prefixes": ("output/uvm", "work/loop2_uvm"),
         "downstream_nodes": ("work/loop2_uvm", "work/loop3_fpga_proto"),
-        "design_doc_sections": ("requirements", "uvm", "test_plan"),
+        "design_doc_sections": ("verification_plan", "delivery_package"),
         "verification": (
             "requirements-frontdoor-check",
-            "generate-design-doc",
+            "generate-docs",
             "review-check --project <project> --level develop",
             "run-gate --node loop2 --change-id <change_id>",
         ),
@@ -475,10 +473,10 @@ _CHANGE_IMPACT_RULES = [
     {
         "prefixes": ("work/loop3_fpga_proto", "output/fpga"),
         "downstream_nodes": ("work/loop3_fpga_proto",),
-        "design_doc_sections": ("requirements", "fpga"),
+        "design_doc_sections": ("verification_plan", "delivery_package"),
         "verification": (
             "requirements-frontdoor-check",
-            "generate-design-doc",
+            "generate-docs",
             "prototype-preflight",
             "validate-prototype-plan",
             "loop3-refresh-reports",

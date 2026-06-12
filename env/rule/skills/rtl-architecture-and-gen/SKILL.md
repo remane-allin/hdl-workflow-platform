@@ -38,11 +38,12 @@ Primary inputs:
 - Directed Loop1 TB under `output/tb/` is also Verilog-2001 `.v` only. SystemVerilog is reserved for UVM under `output/uvm/`.
 - RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations. Use `function` for pure combinational reusable RTL logic, or split the behavior into explicit modules/processes.
 - Directed TB `.v` files under `output/tb/` may use Verilog `task` helpers for stimulus, waits, score checks, and log formatting; this allowance does not apply to design RTL.
-- The complete directed full-function test plan belongs in `output/tb/full_function_test_plan.md`. Do not leave the TB-owned plan only in the design document or UVM plan.
+- The complete directed full-function test plan belongs in `output/tb/full_function_test_plan.md`. Do not leave the TB-owned plan only in the generated docset or UVM plan.
 - Directed Loop1 TB must print one structured `HDLFLOW_TEST_CASE` marker for every checked item, with `id`, `stimulus`, `expected`, `actual`, `result`, `transactions`, and `stimuli` fields. `loop1-refresh-reports` uses those real log markers to generate the final report.
 - Directed Loop1 TB must also print `HDLFLOW_WAVE_BEGIN`/`HDLFLOW_WAVE_END` or `HDLFLOW_WAVE_WINDOW` markers around every functionally checked waveform span. `loop1-waveform-check` validates the generated top-level VCD before Loop1 can exit.
 - Preserve official bus/protocol/IP signal names exactly as written in the vendor UG, protocol specification, or generated IP interface. Do not append local direction suffixes such as `_i` or `_o`, change case, translate, or otherwise rename official protocol boundary signals. If local direction clarity is needed, use a documented adapter or internal alias away from the official boundary.
 - Prefer clear module boundaries over clever coupling.
+- Plan RTL files top-down by cohesive functional domains. Do not over-fragment tiny internal decode, mux, pulse, parity, bit-order, or counter stages into separate files unless they have independent interface, clock/reset, reuse, or verification ownership.
 - Do not place all behavior in one file-level FSM. Split non-trivial command, field, datapath, FIFO, register, and control responsibilities into owned stages or modules.
 - Treat reset, CDC, and parameter propagation as first-class design concerns.
 - Treat [references/verilog-rtl-style-guide.md](references/verilog-rtl-style-guide.md) as the coding-rule authority.

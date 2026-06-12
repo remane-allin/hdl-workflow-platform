@@ -39,7 +39,7 @@ python -m hdlflow.cli requirements-frontdoor-check --project prj\<project_name> 
 Promote the artifact statuses to `READY` only after Spec, Arch, Exec, Sim,
 Review, and Arbtr handoff requirements are complete.
 
-When requirements change, update the requirement/front-door/design documents
+When requirements change, update the requirement/front-door/docset sources
 first and rerun the `work/docparse` gate before returning to Loop1, Loop2, Loop3,
 or final output gates. Downstream gates intentionally block if any file under
 `input/spec` is newer than the latest passed DocParse manifest.

@@ -15,11 +15,15 @@ hard_rules:
   - hierarchy_only_top
   - hierarchical_module_composition
   - one_primary_module_per_file
-  - one_function_per_module
+  - top_down_module_partitioning
+  - cohesive_module_boundary
+  - balanced_module_granularity
   - verilog_2001_rtl_only
   - no_systemverilog_in_rtl_or_directed_tb
   - official_bus_protocol_naming
+  - protocol_naming_follows_official_or_industry_standard
   - three_process_fsm_when_applicable
+  - no_monolithic_fsm_file
   - fsm_single_responsibility
   - standalone_else
   - explicit_final_else
@@ -28,9 +32,12 @@ hard_rules:
 module_plan_requirements:
   - module hierarchy
   - parent/child module composition
-  - one functional responsibility per module
+  - top-down functional-domain partition
+  - clear module boundary and ownership
+  - balanced granularity that avoids broad monoliths and over-fragmented helper files
   - clock/reset ownership
   - interface ownership
   - register block ownership
+  - protocol module naming follows official or industry terminology
   - implementation order
 assumptions: []

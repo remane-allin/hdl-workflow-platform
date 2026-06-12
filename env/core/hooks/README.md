@@ -30,7 +30,7 @@ Spec/DocParse gates.
 After a loop gate baseline exists, requirement-impacting source edits in that
 loop are blocked until the project has a complete approved change request,
 impact analysis that records changed requirements/artifacts/verification, a
-fresh requirements front-door check, and a regenerated design document. Loop1
+fresh requirements front-door check, and a regenerated docset. Loop1
 guards RTL/TB source edits; Loop2 guards UVM source edits; Loop3 guards
 prototype and FPGA source edits.
 

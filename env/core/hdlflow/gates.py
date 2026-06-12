@@ -13,7 +13,8 @@ from typing import Any
 
 from .change_control import validate_change_bundle
 from .config import load_project
-from .design_doc import check_design_document, design_doc_manifest_rel, design_doc_report_rel
+from .docgen import check_docset
+from .docgen.constants import DOC_DEFINITIONS, DOCSET_MANIFEST_REL, DOCSET_REPORT_REL
 from .layout import find_workspace_root, project_memory_path
 from .loop1_reports import refresh_loop1_reports
 from .loop2_reports import refresh_loop2_reports
@@ -68,6 +69,12 @@ ILLEGAL_PROVENANCE_RECORD_MARKERS = {
 PROTECTED_GATE_FILES = [
     "env/core/hdlflow/change_control.py",
     "env/core/hdlflow/cli.py",
+    "env/core/hdlflow/docgen/checks.py",
+    "env/core/hdlflow/docgen/collect.py",
+    "env/core/hdlflow/docgen/constants.py",
+    "env/core/hdlflow/docgen/manifests.py",
+    "env/core/hdlflow/docgen/render.py",
+    "env/core/hdlflow/docgen/snapshots.py",
     "env/core/hdlflow/frontdoor_guard.py",
     "env/core/hdlflow/gates.py",
     "env/core/hdlflow/loop1_reports.py",
@@ -128,7 +135,7 @@ SPEC_REQUIREMENTS_ALLOWED_MARKDOWN = {
 }
 
 DESIGN_REPORT_ALLOWED_MARKDOWN = {
-    "output/reports/design/design_rule_and_architecture.md",
+    definition.doc_rel for definition in DOC_DEFINITIONS
 }
 
 FORBIDDEN_FORMAL_TEXT_PATTERNS = [
@@ -146,7 +153,7 @@ FORMAL_TEXT_SCAN_ROOTS = [
     "work/docparse/review",
     "work/docparse/structured_spec",
     "work/docparse/trace_matrix",
-    "output/reports/design",
+    "output/docs",
     "output/reports/loop1",
     "output/reports/loop2",
     "output/reports/loop3",
@@ -531,13 +538,13 @@ def _check_docparse(project: Path) -> list[GateCheck]:
     for warning in result.warnings:
         checks.append(GateCheck("requirements_frontdoor_warning", "PASS", warning))
     if result.ok:
-        checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm", "test_plan", "fpga"]))
+        checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     else:
         checks.append(
             GateCheck(
-                "design_doc_sync",
+                "docset_sync",
                 "FAIL",
-                "design document generation is blocked until requirements-frontdoor-check passes with READY artifacts",
+                "docset generation is blocked until requirements-frontdoor-check passes with READY artifacts",
             )
         )
     checks.append(_check_official_protocol_naming(project))
@@ -576,7 +583,7 @@ def _check_loop1(project: Path) -> list[GateCheck]:
     checks.append(_check_official_protocol_naming(project))
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_comment_headers(project))
-    checks.extend(_check_design_doc(project, ["requirements", "rtl", "test_plan"]))
+    checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     run_report_rel = _evidence_str(evidence, "reports", "run", "output/reports/loop1/loop1_rtl_tb_run_report.md")
     exit_report_rel = _evidence_str(evidence, "reports", "exit", "output/reports/loop1/loop1_exit_report.md")
     waveform_report_rel = _evidence_str(evidence, "reports", "waveform", LOOP1_WAVEFORM_JSON_REL)
@@ -615,7 +622,7 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_comment_headers(project))
     checks.append(_check_rtl_skill_audit_freshness(project))
-    checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm", "test_plan"]))
+    checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     checks.extend(_check_loop2_uvm_policy(project))
     regression_rel = _evidence_str(evidence, "reports", "regression", "output/reports/loop2/loop2_uvm_regression_report.md")
     exit_rel = _evidence_str(evidence, "reports", "exit", "output/reports/loop2/loop2_exit_report.md")
@@ -675,7 +682,7 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
     board_validation_rel = _loop3_report_rel(evidence, prototype_policy, "board_validation", "board_validation_report", "output/reports/loop3/board_validation_report.md")
     loop3_exit_rel = _loop3_report_rel(evidence, prototype_policy, "loop3_exit", "loop3_exit_report", "output/reports/loop3/loop3_exit_report.md")
     checks = _check_prerequisite_gate(project, "work/loop2_uvm", "Loop2 must pass before Loop3 starts")
-    checks.extend(_check_design_doc(project, ["requirements", "rtl", "uvm", "test_plan", "fpga"]))
+    checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan", "delivery_package"]))
     checks.extend(_check_skill_policy(project, "work/loop3_fpga_proto"))
     checks.extend(_check_source_policy(project, "work/loop3_fpga_proto"))
     checks.append(_check_official_protocol_naming(project))
@@ -1126,6 +1133,7 @@ def _check_final(project: Path, level: str) -> list[GateCheck]:
     evidence = _node_evidence(project, "output")
     manifest_rel = _evidence_str(evidence, "reports", "manifest", "output/manifest.yaml")
     checks = _path_checks(project, [manifest_rel])
+    checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan", "delivery_package"], level=level))
     manifest = _read(_project_path(project, manifest_rel))
     for marker in _evidence_list(evidence, "required_markers", "manifest", ["loop1_gate: PASS", "loop2_gate: PASS", "loop3_gate: PASS"]):
         if marker.strip().startswith("final_gate:"):
@@ -1546,7 +1554,7 @@ def _check_no_ad_hoc_analysis_artifacts(project: Path) -> GateCheck:
         return GateCheck(
             "docparse_no_ad_hoc_analysis_artifacts",
             "FAIL",
-            "ad hoc scope, analysis, design blueprint, or draft files are not gate artifacts; decompose requirements first, then generate the design document from front-door outputs: "
+            "ad hoc scope, analysis, design blueprint, or draft files are not gate artifacts; decompose requirements first, then generate the docset from front-door outputs: "
             + ", ".join(forbidden[:8]),
         )
     return GateCheck("docparse_no_ad_hoc_analysis_artifacts", "PASS", "no ad hoc scope, analysis, or draft artifacts found")
@@ -1998,17 +2006,17 @@ def _check_bug_tracking(project: Path, rel_dir: str) -> GateCheck:
     return GateCheck("bug_closure_pass", "PASS", "no open critical/major bug candidates found")
 
 
-def _check_design_doc(project: Path, sections: list[str]) -> list[GateCheck]:
-    result = check_design_document(project, sections=sections)
+def _check_docset(project: Path, required_docs: list[str], *, level: str = "develop") -> list[GateCheck]:
+    result = check_docset(project, level=level, required_docs=required_docs)
     checks = [
         GateCheck(
-            "design_doc_sync",
+            "docset_sync",
             "PASS" if result.ok else "FAIL",
-            f"{design_doc_report_rel()} synchronized" if result.ok else "; ".join(result.errors),
+            f"{DOCSET_MANIFEST_REL} synchronized" if result.ok else "; ".join(result.errors),
         )
     ]
     for warning in result.warnings:
-        checks.append(GateCheck("design_doc_warning", "PASS", warning))
+        checks.append(GateCheck("docset_warning", "PASS", warning))
     return checks
 
 
@@ -2298,7 +2306,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
                 "output/reports/review/review_check.md",
             ]
         )
-        evidence_rels.extend([design_doc_report_rel(), design_doc_manifest_rel()])
+        evidence_rels.extend(_docset_evidence_rels())
         return (_docparse_source_files(project), _files(project, evidence_rels))
     if node == "work/loop1_rtl_tb":
         evidence = _node_evidence(project, node)
@@ -2381,8 +2389,15 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
             ])) + _glob_project_files(project, bitstream_glob),
         )
     if node == "output":
-        return ([], _files(project, ["output/manifest.yaml", "output/reports/final_audit_report.md"]))
+        return ([], _files(project, ["output/manifest.yaml", "output/reports/final_audit_report.md", *_docset_evidence_rels()]))
     return (_files(project, ["input", "work/docparse"]), _files(project, ["work/docparse"]))
+
+
+def _docset_evidence_rels() -> list[str]:
+    rels = [DOCSET_MANIFEST_REL, DOCSET_REPORT_REL]
+    for definition in DOC_DEFINITIONS:
+        rels.extend([definition.doc_rel, definition.manifest_rel, definition.snapshot_rel])
+    return rels
 
 
 def _source_files_by_suffix(project: Path, roots: dict[str, set[str]]) -> list[Path]:

@@ -2,7 +2,7 @@
 
 Release preflight is advisory. It reports what must be rerun or refreshed before
 `final-audit --level release`; it does not promote develop evidence into release
-evidence and it does not write generated design documents.
+evidence and it does not write generated docset documents.
 """
 
 from __future__ import annotations
@@ -51,10 +51,10 @@ def release_preflight(project_path: Path, *, write_report: bool = True) -> Relea
         alias = _node_alias(node)
         commands.append(f"python -m hdlflow.cli run-gate --project <project> --node {alias} --level release")
 
-    design_manifest = project / "output/reports/design/design_doc_manifest.json"
-    if not design_manifest.exists():
-        blockers.append("missing generated design document manifest")
-        commands.insert(0, "python -m hdlflow.cli generate-design-doc --project <project>")
+    docset_manifest = project / "output/docs/manifests/docset_manifest.json"
+    if not docset_manifest.exists():
+        blockers.append("missing generated docset manifest")
+        commands.insert(0, "python -m hdlflow.cli generate-docs --project <project>")
 
     output_manifest = project / "output/manifest.yaml"
     if not output_manifest.exists():
@@ -158,7 +158,7 @@ def _format_release_report(
             "## Guardrail",
             "",
             "- This preflight does not convert develop evidence into release evidence.",
-            "- Generated design documents remain owned only by `generate-design-doc`.",
+            "- Generated docset documents remain owned only by `generate-docs`.",
         ]
     )
     return "\n".join(lines) + "\n"

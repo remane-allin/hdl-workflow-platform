@@ -65,7 +65,7 @@ Do not use this skill for detailed RTL coding, UVM coding, or direct ModelSim lo
 9. Translate the executable tasks into `work/gates/feature_backlog.json`.
 10. Regenerate `requirements.md` through the local tooling when appropriate.
 11. Refresh `work/gates/scorecard.json` after the requirement baseline changes.
-12. Do not generate sidecar design documents such as `design_blueprint.md`, `*_scope.md`, or `*_implementation_analysis.md`; design intent belongs in front-door YAML and the generated design document.
+12. Do not generate sidecar analysis files such as `design_blueprint.md`, `*_scope.md`, or `*_implementation_analysis.md`; design intent belongs in front-door YAML and the generated docset.
 
 ## Decomposition Rules
 

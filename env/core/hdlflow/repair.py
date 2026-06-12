@@ -32,7 +32,7 @@ REQ_DECOMPOSE_FILES = {
     "decomposition_notes.md",
 }
 
-DESIGN_REPORT_PREFIX = "output/reports/design"
+DESIGN_REPORT_PREFIX = "output/docs"
 
 
 @dataclass(frozen=True)
@@ -208,7 +208,7 @@ def _ticket(
             "guardrails": [
                 "does_not_modify_gate_policy",
                 "does_not_fabricate_gate_evidence",
-                "does_not_write_generated_design_documents",
+                "does_not_write_generated_docset_documents",
             ],
         }
         path.write_text(_yaml_doc(payload), encoding="utf-8")
@@ -232,8 +232,8 @@ def _format_diagnose_report(project: Path, tickets: list[RepairTicket]) -> str:
             "",
             "## Guardrail",
             "",
-            "- Repair commands must not hand-edit `output/reports/design/design_rule_and_architecture.md`.",
-            "- Repair commands must not hand-edit `output/reports/design/design_doc_manifest.json`.",
+            "- Repair commands must not hand-edit generated files under `output/docs/`.",
+            "- Repair commands must not hand-edit `output/docs/manifests/docset_manifest.json`.",
         ]
     )
     return "\n".join(lines) + "\n"

@@ -2,7 +2,7 @@
 
 This module is intentionally outside the gate runner. It summarizes the next
 safe action from existing file-backed state, but it never relaxes a gate and it
-never writes formal design reports.
+    never writes formal docset documents.
 """
 
 from __future__ import annotations
@@ -80,7 +80,7 @@ def _format_report(project: Path, messages: list[str], next_action: str) -> str:
         "## Guardrail",
         "",
         "- This advisory report does not pass, waive, or weaken any gate.",
-        "- Generated design documents remain owned only by `generate-design-doc`.",
+        "- Generated docset documents remain owned only by `generate-docs`.",
     ]
     return "\n".join(lines) + "\n"
 

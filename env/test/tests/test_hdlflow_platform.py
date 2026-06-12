@@ -12,7 +12,9 @@ from pathlib import Path
 from hdlflow.cli import _tool_launcher_value
 from hdlflow.config import GLOBAL_CONFIG_FILES, load_project, load_workspace, validate_config
 from hdlflow.change_control import assess_change_scope, approve_change, record_impact, validate_change_bundle
-from hdlflow.design_doc import check_design_document, generate_design_document
+from hdlflow.design_doc import generate_design_document
+from hdlflow.docgen import RemovedWorkflowError, check_docset, generate_docset, generate_single_doc
+from hdlflow.docgen.constants import DOC_DEFINITIONS
 from hdlflow.doctor import _workspace_root_tool_log_issues
 from hdlflow.frontdoor_guard import evaluate_command_frontdoor_guard, require_frontdoor_ready, require_stage_ready
 from hdlflow.gates import (
@@ -47,6 +49,7 @@ from hdlflow.gates import (
     _zero_count_check,
 )
 from hdlflow.requirements_frontend import (
+    _check_module_plan_contract,
     check_requirements_frontend,
     initialize_requirements_frontend,
     required_frontend_paths,
@@ -1060,10 +1063,10 @@ class DocparsePolicyTests(unittest.TestCase):
                         "- review-check --project prj/demo --level develop",
                         "- run-gate --node loop1 --change-id CR-20260522000000-update-spec",
                         "",
-                        "## Design Document Decision",
+                        "## Docset Decision",
                         "",
                         "- required: yes",
-                        "- sections: requirements, rtl, test_plan",
+                        "- documents: application_guide, microarchitecture_specification, verification_plan",
                         "",
                         "## Rollback Plan",
                         "",
@@ -1089,7 +1092,7 @@ class DocparsePolicyTests(unittest.TestCase):
 
             self.assertEqual(check.status, "PASS")
 
-    def test_change_impact_auto_records_downstream_and_design_doc_decision(self):
+    def test_change_impact_auto_records_downstream_and_docset_decision(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -1109,9 +1112,9 @@ class DocparsePolicyTests(unittest.TestCase):
             text = result.path.read_text(encoding="utf-8")
             self.assertIn("## Downstream Nodes", text)
             self.assertIn("work/loop1_rtl_tb", text)
-            self.assertIn("## Design Document Decision", text)
+            self.assertIn("## Docset Decision", text)
             self.assertIn("- required: yes", text)
-            self.assertIn("sections: requirements, rtl, test_plan", text)
+            self.assertIn("documents: microarchitecture_specification, verification_plan, delivery_package", text)
             self.assertIn("rtl-skill-audit --project <project>", text)
             self.assertIn("review-check --project <project> --level develop", text)
             self.assertEqual(validate_change_bundle(project, change_id, require_approval=False), [])
@@ -1143,10 +1146,10 @@ class DocparsePolicyTests(unittest.TestCase):
                         "",
                         "- run-gate --node loop1 --change-id CR-20260522000000-update-rtl",
                         "",
-                        "## Design Document Decision",
+                        "## Docset Decision",
                         "",
                         "- required: yes",
-                        "- sections: requirements, rtl, test_plan",
+                        "- documents: microarchitecture_specification, verification_plan, delivery_package",
                         "",
                         "## Rollback Plan",
                         "",
@@ -1181,7 +1184,7 @@ class DocparsePolicyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 approve_change(project, change_id=change_id, approver="reviewer", decision="approved", notes="reviewed")
 
-    def test_assess_change_scope_maps_loop3_to_frontdoor_design_doc_and_gate(self):
+    def test_assess_change_scope_maps_loop3_to_docset_and_gate(self):
         assessment = assess_change_scope(
             requirements=["REQ-FPGA-001"],
             artifacts=["work/loop3_fpga_proto/board_tests/prototype_plan.yaml"],
@@ -1189,7 +1192,8 @@ class DocparsePolicyTests(unittest.TestCase):
         )
 
         self.assertTrue(assessment.design_doc_required)
-        self.assertIn("fpga", assessment.design_doc_sections)
+        self.assertIn("verification_plan", assessment.design_doc_sections)
+        self.assertIn("delivery_package", assessment.design_doc_sections)
         self.assertIn("work/loop3_fpga_proto", assessment.downstream_nodes)
         self.assertTrue(any("prototype-preflight" in item for item in assessment.verification))
 
@@ -1404,7 +1408,7 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "A chat confirmation is not enough authority",
             "Do not edit `env/tool/scripts/populate_*_frontdoor.py`",
             "review-check --project <project> --level develop",
-            "generate-design-doc --project <project>` only after steps 7 and 8 pass",
+            "generate-docs --project <project>` only after steps 7 and 8 pass",
             "review_findings_gate",
             "Approved change requests are not allowed to pass a",
             "work/loop3_fpga_proto",
@@ -1595,6 +1599,111 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "work/docparse/structured_spec/timing_rules.yaml",
         ]:
             self.assertIn(rel, paths)
+
+    def test_module_plan_contract_requires_lld_ready_fields(self):
+        errors: list[str] = []
+
+        _check_module_plan_contract(
+            "work/docparse/architecture/module_plan.yaml",
+            {
+                "top_level": {
+                    "name": "demo_top",
+                    "forbidden_responsibilities": [
+                        "protocol_decode",
+                        "register_field_update",
+                        "datapath_mutation",
+                        "fifo_storage",
+                        "monolithic_fsm",
+                    ],
+                },
+                "modules": [
+                    {
+                        "name": "demo_leaf",
+                        "id": "MOD-001",
+                        "type": "leaf",
+                        "source_file": "demo_leaf.v",
+                        "responsibility": "Own a single datapath slice",
+                        "owns": {},
+                    }
+                ],
+            },
+            errors,
+        )
+
+        self.assertTrue(any(".clock_domain must be non-empty" in item for item in errors))
+        self.assertTrue(any(".reset_domain must be non-empty" in item for item in errors))
+        self.assertTrue(any(".interfaces.inputs must be non-empty" in item for item in errors))
+        self.assertTrue(any(".verification_refs must include" in item for item in errors))
+
+    def test_module_plan_contract_accepts_complete_lld_module(self):
+        errors: list[str] = []
+
+        _check_module_plan_contract(
+            "work/docparse/architecture/module_plan.yaml",
+            {
+                "top_level": {
+                    "name": "demo_top",
+                    "forbidden_responsibilities": [
+                        "protocol_decode",
+                        "register_field_update",
+                        "datapath_mutation",
+                        "fifo_storage",
+                        "arbitration_decision",
+                        "monolithic_fsm",
+                    ],
+                },
+                "modules": [
+                    {
+                        "name": "demo_top",
+                        "id": "MOD-001",
+                        "type": "top",
+                        "source_file": "demo_top.v",
+                        "responsibility": "Instantiate child modules and expose top ports",
+                        "clock_domain": "clk",
+                        "reset_domain": "rst_n",
+                        "children": ["demo_leaf"],
+                        "owns": {
+                            "registers": [],
+                            "register_fields": [],
+                            "fsms": [],
+                            "fifos": [],
+                            "memories": [],
+                            "counters": [],
+                            "arbiters": [],
+                        },
+                        "interfaces": {"inputs": ["clk"], "outputs": ["valid_o"]},
+                        "req_ids": ["REQ-DEMO-001"],
+                        "verification_refs": {"tests": ["TC-DEMO-001"]},
+                        "forbidden_responsibilities": ["protocol_decode"],
+                    },
+                    {
+                        "name": "demo_leaf",
+                        "id": "MOD-002",
+                        "type": "leaf",
+                        "source_file": "demo_leaf.v",
+                        "responsibility": "Own valid_o register",
+                        "clock_domain": "clk",
+                        "reset_domain": "rst_n",
+                        "owns": {
+                            "registers": ["valid_o_reg"],
+                            "register_fields": [],
+                            "fsms": [],
+                            "fifos": [],
+                            "memories": [],
+                            "counters": [],
+                            "arbiters": [],
+                        },
+                        "interfaces": {"inputs": ["clk", "rst_n"], "outputs": ["valid_o"]},
+                        "design_feature_ids": ["DF-DEMO-LEAF"],
+                        "verification_refs": {"assertions": ["SVA-DEMO-LEAF"]},
+                        "forbidden_responsibilities": ["unowned_register_update"],
+                    },
+                ],
+            },
+            errors,
+        )
+
+        self.assertEqual(errors, [])
 
     def test_frontdoor_init_creates_document_analysis_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2107,11 +2216,11 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
 
             result = evaluate_command_frontdoor_guard(
                 project,
-                "Set-Content -Path prj/demo/output/reports/design/design_rule_and_architecture.md -Value plan",
+                "Set-Content -Path prj/demo/output/docs/design/microarchitecture_spec.md -Value plan",
             )
 
             self.assertFalse(result.ok)
-            self.assertIn("generate-design-doc", result.reason)
+            self.assertIn("generate-docs", result.reason)
 
     def test_blocks_manual_rtl_skill_audit_write(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2199,7 +2308,7 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("approved front-door change", result.reason)
 
-    def test_blocks_prototype_source_write_after_approval_without_generated_design_doc(self):
+    def test_blocks_prototype_source_write_after_approval_without_generated_docset(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -2215,9 +2324,9 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             )
 
             self.assertFalse(result.ok)
-            self.assertIn("generate-design-doc", result.reason)
+            self.assertIn("generate-docs", result.reason)
 
-    def test_allows_prototype_source_write_after_approved_frontdoor_and_design_doc(self):
+    def test_allows_prototype_source_write_after_approved_frontdoor_and_docset(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -2227,7 +2336,7 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             request = _write_complete_change_request(project, timestamp=1_800_000_000.0)
             after_request = request.stat().st_mtime + 10
             _write_frontdoor_pass_report(project, timestamp=after_request)
-            _write_design_doc_manifest(project, timestamp=after_request, sections=("requirements", "fpga"))
+            _write_docset_manifest(project, timestamp=after_request, documents=("verification_plan", "delivery_package"))
 
             result = evaluate_command_frontdoor_guard(
                 project,
@@ -2246,7 +2355,7 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             request = _write_complete_change_request(project, timestamp=1_800_000_000.0)
             after_request = request.stat().st_mtime + 10
             _write_frontdoor_pass_report(project, timestamp=after_request)
-            _write_design_doc_manifest(project, timestamp=after_request, sections=("requirements", "fpga"))
+            _write_docset_manifest(project, timestamp=after_request, documents=("verification_plan", "delivery_package"))
 
             result = evaluate_command_frontdoor_guard(
                 project,
@@ -2290,7 +2399,7 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("Loop2 UVM requirement changes", result.reason)
 
-    def test_blocks_loop1_tb_write_after_approval_without_generated_design_doc(self):
+    def test_blocks_loop1_tb_write_after_approval_without_generated_docset(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -2307,9 +2416,9 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             )
 
             self.assertFalse(result.ok)
-            self.assertIn("generate-design-doc", result.reason)
+            self.assertIn("generate-docs", result.reason)
 
-    def test_allows_loop1_tb_write_after_complete_approved_frontdoor_and_design_doc(self):
+    def test_allows_loop1_tb_write_after_complete_approved_frontdoor_and_docset(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -2320,7 +2429,11 @@ class RequirementsFrontdoorGuardTests(unittest.TestCase):
             request = _write_complete_change_request(project, timestamp=1_800_000_000.0)
             after_request = request.stat().st_mtime + 10
             _write_frontdoor_pass_report(project, timestamp=after_request)
-            _write_design_doc_manifest(project, timestamp=after_request, sections=("requirements", "rtl", "test_plan"))
+            _write_docset_manifest(
+                project,
+                timestamp=after_request,
+                documents=("microarchitecture_specification", "verification_plan", "delivery_package"),
+            )
 
             result = evaluate_command_frontdoor_guard(
                 project,
@@ -2781,7 +2894,7 @@ class HdlPreToolHookTests(unittest.TestCase):
                 "tool_input": "\n".join(
                     [
                         "*** Begin Patch",
-                        "*** Add File: prj/demo/output/reports/design/design_rule_and_architecture.md",
+                        "*** Add File: prj/demo/output/docs/design/microarchitecture_spec.md",
                         "+plan",
                         "*** End Patch",
                     ]
@@ -2811,7 +2924,7 @@ class HdlPreToolHookTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertEqual(payload["decision"], "block")
             self.assertFalse(payload["continue"])
-            self.assertIn("generate-design-doc", payload["reason"])
+            self.assertIn("generate-docs", payload["reason"])
 
     def test_pre_tool_guard_blocks_frontdoor_source_patch_without_change_request(self):
         powershell = shutil.which("powershell.exe") or shutil.which("powershell")
@@ -3474,6 +3587,10 @@ class FinalOutputGateTests(unittest.TestCase):
             (project / "output" / "rtl").mkdir(parents=True, exist_ok=True)
             (project / "output" / "rtl" / "demo_top.v").write_text("module demo_top; endmodule\n", encoding="utf-8")
             _write_empty_review_findings(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+            docset = generate_docset(project, allow_draft=True)
+            self.assertTrue(docset.ok, docset.check_result.errors)
 
             result = run_final_audit(project, level="develop")
 
@@ -3487,6 +3604,131 @@ class FinalOutputGateTests(unittest.TestCase):
             self.assertTrue((project / "output" / "reports" / "final_audit_report.md").exists())
 
 
+class DocsetTests(unittest.TestCase):
+    def test_removed_design_doc_api_fails_explicitly(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+
+            with self.assertRaises(RemovedWorkflowError) as caught:
+                generate_design_document(project)
+
+            self.assertIn("generate-design-doc has been removed", str(caught.exception))
+
+    def test_generate_docset_refuses_when_frontdoor_is_not_ready(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+
+            result = generate_docset(project)
+
+            self.assertFalse(result.ok)
+            self.assertIn("generate-docs blocked: requirements-frontdoor-check did not pass", result.errors)
+            self.assertFalse(result.doc_paths)
+
+    def test_generate_docset_creates_four_documents_and_manifests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+
+            result = generate_docset(project, change_id="CR-202606120001-docset", allow_draft=True)
+
+            self.assertTrue(result.ok, result.check_result.errors)
+            self.assertEqual(
+                {path.name for path in result.doc_paths},
+                {"application_guide.md", "microarchitecture_spec.md", "verification_plan.md", "delivery_package.md"},
+            )
+            self.assertTrue(result.docset_manifest_path.exists())
+            self.assertFalse((project / "output/reports/design/design_rule_and_architecture.md").exists())
+            manifest = json.loads(result.docset_manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {item["doc_type"] for item in manifest["documents"]},
+                {definition.doc_type for definition in DOC_DEFINITIONS},
+            )
+            uarch_text = (project / "output/docs/design/microarchitecture_spec.md").read_text(encoding="utf-8")
+            verif_text = (project / "output/docs/test/verification_plan.md").read_text(encoding="utf-8")
+            app_text = (project / "output/docs/application/application_guide.md").read_text(encoding="utf-8")
+            delivery_text = (project / "output/docs/delivery/delivery_package.md").read_text(encoding="utf-8")
+            self.assertIn("demo_top", uarch_text)
+            self.assertIn("Owns top-level pass-through behavior", uarch_text)
+            self.assertIn("Logic Level Design", uarch_text)
+            self.assertIn("Storage / FIFO / Counter Plan", uarch_text)
+            self.assertIn("State Machines", uarch_text)
+            self.assertIn("valid_o_reg", uarch_text)
+            self.assertIn("demo_leaf_fsm", uarch_text)
+            self.assertIn("Module Topology", uarch_text)
+            self.assertIn("REQ-UNIT-001", app_text)
+            self.assertIn("Decode host command opcodes", app_text)
+            self.assertIn("REQ-WAVE-001", verif_text)
+            self.assertIn("Waveform Secondary Check Plan", verif_text)
+            self.assertNotIn("Source References", app_text)
+            self.assertNotIn("Source References", uarch_text)
+            self.assertNotIn("Source References", verif_text)
+            self.assertNotIn("Source References", delivery_text)
+            self.assertNotIn("TBD", app_text + uarch_text + verif_text + delivery_text)
+
+    def test_generate_single_doc_supports_debug_document_generation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+
+            result = generate_single_doc(project, "verification_plan", change_id="CR-202606120002-single")
+
+            self.assertTrue(result.ok, result.check_result.errors)
+            self.assertEqual(result.doc_paths, [project / "output/docs/test/verification_plan.md"])
+            self.assertTrue((project / "output/docs/manifests/verification_doc_manifest.json").exists())
+            self.assertFalse((project / "output/docs/design/microarchitecture_spec.md").exists())
+
+    def test_check_docset_detects_document_hash_drift(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+            generate_docset(project, allow_draft=True)
+            doc = project / "output/docs/application/application_guide.md"
+            doc.write_text(doc.read_text(encoding="utf-8") + "\nmanual edit\n", encoding="utf-8")
+
+            check = check_docset(project)
+
+            self.assertFalse(check.ok)
+            self.assertTrue(any("hash does not match manifest" in error for error in check.errors))
+
+    def test_check_docset_detects_source_drift(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            source = _write_docset_source_inputs(project)
+            generate_docset(project, allow_draft=True)
+            source.write_text(source.read_text(encoding="utf-8") + "\n# changed source intent\n", encoding="utf-8")
+
+            check = check_docset(project)
+
+            self.assertFalse(check.ok)
+            self.assertTrue(any("source drift" in error for error in check.errors))
+
+    def test_release_check_blocks_placeholders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+            generate_docset(project, allow_draft=True)
+            doc = project / "output/docs/application/application_guide.md"
+            doc.write_text(doc.read_text(encoding="utf-8") + "\nTBD\n", encoding="utf-8")
+
+            check = check_docset(project, level="release")
+
+            self.assertFalse(check.ok)
+            self.assertTrue(any("release-blocking placeholder" in error for error in check.errors))
+
+
+@unittest.skip("single design-doc workflow was replaced by DocsetTests")
 class DesignDocTests(unittest.TestCase):
     def test_generate_design_doc_refuses_when_frontdoor_is_not_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3799,9 +4041,7 @@ class WorkflowOptimizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
-            design_dir = project / "output" / "reports" / "design"
-            design_dir.mkdir(parents=True)
-            (design_dir / "design_doc_manifest.json").write_text('{"sections": []}\n', encoding="utf-8")
+            _write_docset_manifest(project, timestamp=1_800_000_100.0, documents=("application_guide", "microarchitecture_specification", "verification_plan", "delivery_package"))
             (project / "output" / "manifest.yaml").write_text(
                 "\n".join(["loop1_gate: PASS", "loop2_gate: PASS", "loop3_gate: PASS", ""]),
                 encoding="utf-8",
@@ -3814,7 +4054,7 @@ class WorkflowOptimizationTests(unittest.TestCase):
             self.assertTrue(any("develop gate evidence but no release" in item for item in result.blockers))
             text = result.report_path.read_text(encoding="utf-8")
             self.assertIn("does not convert develop evidence into release evidence", text)
-            self.assertFalse((design_dir / "design_rule_and_architecture.md").exists())
+            self.assertFalse((project / "output/reports/design/design_rule_and_architecture.md").exists())
 
     def test_repair_diagnose_detects_generated_input_spec_artifacts(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3832,7 +4072,7 @@ class WorkflowOptimizationTests(unittest.TestCase):
             self.assertIn("frontdoor_layout_migration", categories)
             self.assertIn("req_decompose_layout_migration", categories)
             ticket_text = "\n".join(path.read_text(encoding="utf-8") for path in (project / "work/repair/tickets").glob("*.yaml"))
-            self.assertIn("does_not_write_generated_design_documents", ticket_text)
+            self.assertIn("does_not_write_generated_docset_documents", ticket_text)
 
     def test_repair_apply_quarantines_frontdoor_artifact_without_design_doc_write(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3850,7 +4090,7 @@ class WorkflowOptimizationTests(unittest.TestCase):
             self.assertTrue((project / "work/docparse/frontdoor/srs.yaml").exists())
             self.assertTrue((project / "work/repair/quarantine" / ticket.ticket_id / "srs.yaml").exists())
             self.assertFalse((project / "input/spec/srs.yaml").exists())
-            self.assertFalse((project / "output/reports/design/design_rule_and_architecture.md").exists())
+            self.assertFalse((project / "output/docs/manifests/docset_manifest.json").exists())
 
     def test_schema_check_flags_trace_mappings_instead_of_links(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3878,7 +4118,7 @@ class WorkflowOptimizationTests(unittest.TestCase):
             self.assertTrue(noted.path.exists())
             self.assertTrue(promoted.path.exists())
             self.assertTrue(str(promoted.path.relative_to(project)).replace("\\", "/").startswith("work/explore/"))
-            self.assertFalse((project / "output/reports/design/design_rule_and_architecture.md").exists())
+            self.assertFalse((project / "output/docs/manifests/docset_manifest.json").exists())
 
 
 def _write_change_request(project: Path, status: str, *, timestamp: float) -> Path:
@@ -4108,6 +4348,203 @@ def _write_valid_state_manifest(project: Path, node: str, stamp: str = "20260517
     return _write_manifest_payload(project, node, {})
 
 
+def _write_doc_templates(project: Path) -> None:
+    for definition in DOC_DEFINITIONS:
+        path = project / definition.template_rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"# {definition.title} Template\n", encoding="utf-8")
+
+
+def _write_docset_source_inputs(project: Path) -> Path:
+    frontdoor = project / "work/docparse/frontdoor"
+    structured = project / "work/docparse/structured_spec"
+    architecture = project / "work/docparse/architecture"
+    verification = project / "work/docparse/verification"
+    rtl_dir = project / "output/rtl"
+    frontdoor.mkdir(parents=True, exist_ok=True)
+    structured.mkdir(parents=True, exist_ok=True)
+    architecture.mkdir(parents=True, exist_ok=True)
+    verification.mkdir(parents=True, exist_ok=True)
+    rtl_dir.mkdir(parents=True, exist_ok=True)
+    srs = frontdoor / "srs.yaml"
+    srs.write_text(
+        "\n".join(
+            [
+                "purpose: Demo purpose",
+                "functional_requirements:",
+                "  - id: REQ-UNIT-001",
+                "    title: SPI command decode",
+                "    description: Decode host command opcodes",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (frontdoor / "acceptance_criteria.yaml").write_text(
+        "\n".join(
+            [
+                "criteria:",
+                "  - id: AC-UNIT-001",
+                "    description: Loop1 directed test passes",
+                "    evidence: output/reports/loop1/modelsim_loop1.log",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (structured / "interface_spec.yaml").write_text(
+        "\n".join(
+            [
+                "interfaces:",
+                "  - name: spi_host",
+                "    type: input-output",
+                "    description: Host command channel",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (structured / "test_intent.yaml").write_text(
+        "\n".join(
+            [
+                "waveform_secondary_checks:",
+                "  - id: REQ-WAVE-001",
+                "    description: valid_o toggles during directed command",
+                "    evidence: output/reports/loop1/waveform_check.json",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (architecture / "module_plan.yaml").write_text(
+        "\n".join(
+            [
+                "description: Demo microarchitecture",
+                "top_level:",
+                "  name: demo_top",
+                "  wrapper_policy: hierarchy-only top",
+                "  forbidden_responsibilities:",
+                "    - protocol_decode",
+                "    - register_field_update",
+                "    - datapath_mutation",
+                "    - fifo_storage",
+                "    - monolithic_fsm",
+                "modules:",
+                "  - name: demo_top",
+                "    id: MOD-001",
+                "    type: top",
+                "    source_file: demo_top.v",
+                "    responsibility: Owns top-level pass-through behavior",
+                "    clock_domain: clk",
+                "    reset_domain: rst_n",
+                "    children:",
+                "      - demo_leaf",
+                "    owns:",
+                "      registers: []",
+                "      register_fields: []",
+                "      fsms: []",
+                "      fifos: []",
+                "      memories: []",
+                "      counters: []",
+                "      arbiters: []",
+                "      error_flags: []",
+                "    interfaces:",
+                "      inputs:",
+                "        - clk",
+                "      outputs:",
+                "        - valid_o",
+                "    req_ids:",
+                "      - REQ-UNIT-001",
+                "    verification_refs:",
+                "      tests:",
+                "        - TC-001",
+                "    forbidden_responsibilities:",
+                "      - protocol_decode",
+                "    logic:",
+                "      combinational: wire child output to top-level port",
+                "      sequential: no top-level sequential state",
+                "      edge_cases: reset and command legality are owned by child modules",
+                "  - name: demo_leaf",
+                "    id: MOD-002",
+                "    type: leaf",
+                "    source_file: demo_leaf.v",
+                "    responsibility: Own valid_o register",
+                "    clock_domain: clk",
+                "    reset_domain: rst_n",
+                "    owns:",
+                "      registers:",
+                "        - valid_o_reg",
+                "      register_fields: []",
+                "      fsms:",
+                "        - demo_leaf_fsm",
+                "      fifos: []",
+                "      memories: []",
+                "      counters:",
+                "        - valid_delay_count",
+                "      arbiters: []",
+                "      error_flags: []",
+                "    interfaces:",
+                "      inputs:",
+                "        - clk",
+                "        - rst_n",
+                "      outputs:",
+                "        - valid_o",
+                "    design_feature_ids:",
+                "      - DF-DEMO-LEAF",
+                "    verification_refs:",
+                "      assertions:",
+                "        - SVA-DEMO-LEAF",
+                "      coverage:",
+                "        - COV-DEMO-LEAF",
+                "    forbidden_responsibilities:",
+                "      - unowned_register_update",
+                "    logic:",
+                "      combinational: derive next valid state from command inputs",
+                "      sequential: register valid_o on clk and clear on rst_n",
+                "      edge_cases: invalid command leaves valid_o low",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (architecture / "state_machines.yaml").write_text(
+        "\n".join(
+            [
+                "state_machines:",
+                "  - name: demo_leaf_fsm",
+                "    owning_module: demo_leaf",
+                "    reset_state: IDLE",
+                "    states:",
+                "      - IDLE",
+                "      - ACTIVE",
+                "    transitions:",
+                "      - IDLE -> ACTIVE on command_valid",
+                "      - ACTIVE -> IDLE after valid_o pulse",
+                "    illegal_state_behavior: recover to IDLE and suppress valid_o",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (verification / "verification_plan.yaml").write_text(
+        "\n".join(
+            [
+                "goals:",
+                "  - id: VG-001",
+                "    description: Prove command decode behavior",
+                "tests:",
+                "  - id: TC-001",
+                "    description: Directed SPI command decode",
+                "    expected: scoreboard pass",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (rtl_dir / "demo_top.v").write_text("module demo_top(input wire clk, output wire valid_o); endmodule\n", encoding="utf-8")
+    return srs
+
+
 def _write_project_required_skill_config(workspace: Path, project_name: str, skill_name: str) -> Path:
     config = workspace / "prj" / project_name / "work" / "config" / "project_config.yaml"
     config.parent.mkdir(parents=True, exist_ok=True)
@@ -4206,10 +4643,10 @@ def _write_complete_change_request(project: Path, *, timestamp: float) -> Path:
                 "",
                 "- rerun owning loop gate",
                 "",
-                "## Design Document Decision",
+                "## Docset Decision",
                 "",
                 "- required: yes",
-                "- sections: requirements, rtl, test_plan",
+                "- documents: microarchitecture_specification, verification_plan, delivery_package",
                 "",
                 "## Rollback Plan",
                 "",
@@ -4249,23 +4686,27 @@ def _write_frontdoor_pass_report(project: Path, *, timestamp: float) -> Path:
     return report
 
 
-def _write_design_doc_manifest(project: Path, *, timestamp: float, sections: tuple[str, ...]) -> None:
-    report = project / "output" / "reports" / "design" / "design_rule_and_architecture.md"
-    manifest = project / "output" / "reports" / "design" / "design_doc_manifest.json"
-    report.parent.mkdir(parents=True, exist_ok=True)
-    report.write_text("# Demo Design Document\n", encoding="utf-8")
+def _write_docset_manifest(project: Path, *, timestamp: float, documents: tuple[str, ...]) -> None:
+    doc_paths = {
+        "application_guide": "output/docs/application/application_guide.md",
+        "microarchitecture_specification": "output/docs/design/microarchitecture_spec.md",
+        "verification_plan": "output/docs/test/verification_plan.md",
+        "delivery_package": "output/docs/delivery/delivery_package.md",
+    }
+    manifest = project / "output/docs/manifests/docset_manifest.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for doc_type in doc_paths:
+        doc = project / doc_paths[doc_type]
+        doc.parent.mkdir(parents=True, exist_ok=True)
+        doc.write_text(f"# {doc_type}\n", encoding="utf-8")
+        os.utime(doc, (timestamp, timestamp))
+        if doc_type in documents:
+            entries.append({"doc_type": doc_type, "path": doc_paths[doc_type], "sha256": "unit-test"})
     manifest.write_text(
-        json.dumps(
-            {
-                "sections": list(sections),
-                "source_signature": "unit-test",
-            },
-            indent=2,
-        )
-        + "\n",
+        json.dumps({"docset_version": 1, "documents": entries}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    os.utime(report, (timestamp, timestamp))
     os.utime(manifest, (timestamp, timestamp))
 
 

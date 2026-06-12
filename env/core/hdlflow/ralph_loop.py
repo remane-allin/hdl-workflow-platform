@@ -284,14 +284,14 @@ def _resolve_next_action(
         return "fix memory synchronization, then run `python -m hdlflow.cli memory-check --project <project>`"
     if change_summary["open"]:
         change_id = change_summary["open"][0]
-        return f"record impact for {change_id} with `change-impact`; include affected requirements, artifacts, verification, and design document decision"
+        return f"record impact for {change_id} with `change-impact`; include affected requirements, artifacts, verification, and docset decision"
     if change_summary["impact_ready"]:
         change_id = change_summary["impact_ready"][0]
         return f"review and approve or reject {change_id} with `change-approve`"
     if change_summary["approved"]:
         change_id = change_summary["approved"][0]
         return (
-            f"rerun requirements-frontdoor-check, generate-design-doc, and the affected gate with `--change-id {change_id}`, "
+            f"rerun requirements-frontdoor-check, generate-docs, and the affected gate with `--change-id {change_id}`, "
             "then close the change with `change-close`"
         )
     if review_blockers:
@@ -308,7 +308,7 @@ def _resolve_next_action(
 
 def _next_gate_action(current_loop: str) -> str:
     mapping = {
-        "docparse": "run requirements-frontdoor-check, generate-design-doc, then `run-gate --node docparse`",
+        "docparse": "run requirements-frontdoor-check, generate-docs, then `run-gate --node docparse`",
         "loop1": "run or refresh Loop1 evidence, then `run-gate --node loop1`",
         "loop2": "run Loop2 database/regression evidence, then `run-gate --node loop2`",
         "loop3": "run Loop3 preflight/generation/board evidence, then `run-gate --node loop3`",

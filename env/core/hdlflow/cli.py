@@ -10,7 +10,13 @@ from pathlib import Path
 from .artifacts import ensure_output_dirs
 from .change_control import approve_change, check_changes, close_change, open_change, record_impact
 from .config import load_project, load_workspace, validate_config
-from .design_doc import generate_design_document
+from .docgen import (
+    DEBUG_DOC_COMMANDS,
+    check_docset,
+    generate_docset,
+    generate_single_doc,
+    removed_generate_design_doc_message,
+)
 from .doctor import run_doctor
 from .frontdoor_guard import require_frontdoor_ready, require_stage_ready
 from .gates import run_final_audit, run_gate
@@ -271,9 +277,32 @@ def build_parser() -> argparse.ArgumentParser:
     )
     stage_guard_parser.add_argument("--action", default="workflow stage entry")
 
+    docs_parser = subparsers.add_parser(
+        "generate-docs",
+        help="Generate the official four-document docset under output/docs.",
+    )
+    docs_parser.add_argument("--project", required=True, help="Project path.")
+    docs_parser.add_argument("--change-id", help="Optional change request ID to bind into manifests.")
+
+    for command_name in DEBUG_DOC_COMMANDS:
+        single_parser = subparsers.add_parser(
+            command_name,
+            help="Generate one docset document for development debugging.",
+        )
+        single_parser.add_argument("--project", required=True, help="Project path.")
+        single_parser.add_argument("--change-id", help="Optional change request ID to bind into manifests.")
+
+    check_docset_parser = subparsers.add_parser(
+        "check-docset",
+        help="Check generated docset markers, manifests, hashes, placeholders, and source drift.",
+    )
+    check_docset_parser.add_argument("--project", required=True, help="Project path.")
+    check_docset_parser.add_argument("--level", choices=["develop", "release"], default="develop")
+    check_docset_parser.add_argument("--change-id", help="Optional change request ID expected in manifests.")
+
     design_doc_parser = subparsers.add_parser(
         "generate-design-doc",
-        help="Generate the user-readable requirements, RTL, UVM, and FPGA design document.",
+        help="Removed legacy command. Use generate-docs.",
     )
     design_doc_parser.add_argument("--project", required=True, help="Project path.")
 
@@ -839,31 +868,63 @@ def main(argv: list[str] | None = None) -> int:
             result = require_stage_ready(Path(args.project), args.stage, args.action)
             print(("PASS: " if result.ok else "FAIL: ") + result.reason)
             return 0 if result.ok else 1
-        if args.command == "generate-design-doc":
-            result = generate_design_document(Path(args.project))
-            print(f"report: {result.report_path}")
-            print(f"manifest: {result.manifest_path}")
+        if args.command == "generate-docs":
+            result = generate_docset(Path(args.project), change_id=args.change_id)
+            print(f"docset_manifest: {result.docset_manifest_path}")
+            for path in result.doc_paths:
+                print(f"doc: {path}")
+            for path in result.manifest_paths:
+                print(f"manifest: {path}")
+            print(f"check_report: {result.check_result.report_path}")
             for warning in result.warnings:
                 print(f"warning: {warning}")
+            for warning in result.check_result.warnings:
+                print(f"warning: {warning}")
             for error in result.errors:
+                print(f"error: {error}")
+            for error in result.check_result.errors:
                 print(f"error: {error}")
             if result.ok:
                 _print_memory_messages(
                     auto_record_workflow_event(
                         Path(args.project),
-                        event="design-doc-generated",
+                        event="docset-generated",
                         node="work/docparse",
-                        gate_level="design_doc",
+                        gate_level="docset",
                         gate_result="PASS",
-                        memory_record=result.manifest_path,
-                        report=result.report_path,
-                        notes="Generated user-readable requirements, RTL, UVM, and FPGA design document",
-                        artifacts=[result.report_path, result.manifest_path],
-                        latest_summary="Design document synchronized with project artifacts",
+                        memory_record=result.docset_manifest_path,
+                        report=result.check_result.report_path,
+                        notes="Generated official four-document docset",
+                        artifacts=[*result.doc_paths, *result.manifest_paths, result.docset_manifest_path],
+                        latest_summary="Docset synchronized with project artifacts",
                     )
                 )
-            print("design doc: PASS" if result.ok else "design doc: FAIL")
+            print("docset: PASS" if result.ok else "docset: FAIL")
             return 0 if result.ok else 1
+        if args.command in DEBUG_DOC_COMMANDS:
+            result = generate_single_doc(Path(args.project), DEBUG_DOC_COMMANDS[args.command], change_id=args.change_id)
+            for path in result.doc_paths:
+                print(f"doc: {path}")
+            for path in result.manifest_paths:
+                print(f"manifest: {path}")
+            print(f"docset_manifest: {result.docset_manifest_path}")
+            print(f"check_report: {result.check_result.report_path}")
+            for error in [*result.errors, *result.check_result.errors]:
+                print(f"error: {error}")
+            print("single doc: PASS" if result.ok else "single doc: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "check-docset":
+            result = check_docset(Path(args.project), level=args.level, change_id=args.change_id)
+            print(f"report: {result.report_path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            print("docset check: PASS" if result.ok else "docset check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "generate-design-doc":
+            print(removed_generate_design_doc_message())
+            return 1
         if args.command == "rtl-skill-audit":
             result = run_rtl_skill_audit(Path(args.project))
             print(f"report: {result.report_path}")

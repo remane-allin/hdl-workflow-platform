@@ -6,13 +6,35 @@ source_refs: []
 rtl_planning_policy_ref: work/docparse/architecture/rtl_planning_rules.yaml
 module_partition_policy:
   hierarchy_required: true
-  one_function_per_module: true
-  major_function_one_primary_rtl_file: true
+  one_primary_module_per_file: true
+  top_down_partitioning: true
+  file_boundary_granularity: functional_domain
+  cohesive_responsibility_per_file: true
   composite_modules_instantiate_children: true
+  allow_internal_subblocks_without_files: true
+  no_over_fragmentation: true
+  no_under_fragmentation: true
+  no_monolithic_fsm: true
+  no_free_floating_top_logic: true
+  protocol_module_names_follow_official_standard: true
+  explicit_ownership_required: true
 modules: []
 top_level:
   name: ""
+  type: top
+  source_file: ""
   wrapper_policy: hierarchy-only top required by rtl-architecture-and-gen
+  allowed_responsibilities:
+    - instantiate_child_modules
+    - connect_interfaces
+    - expose_top_ports
+  forbidden_responsibilities:
+    - protocol_decode
+    - register_field_update
+    - datapath_mutation
+    - fifo_storage
+    - arbitration_decision
+    - monolithic_fsm
 clock_reset: []
 composition: []
 dependencies: []
@@ -22,3 +44,17 @@ agent_consumers:
   - Review Agent
   - Arbtr Agent
 assumptions: []
+module_granularity_policy:
+  planning_order: top_down
+  file_boundary_rule: "Use one RTL file for a cohesive protocol, register, FIFO, datapath, status, or boundary block."
+  split_when:
+    - a child has independent clock/reset ownership
+    - a child has reusable storage/IP ownership
+    - a child is a separately verifiable protocol or datapath boundary
+    - keeping it inside the parent would create a broad monolithic FSM or hidden side effect
+  keep_inside_parent_when:
+    - "the logic is only a small decode, mux, counter, bit-order, parity, or pulse-generation subblock"
+    - the subblock has no independent interface contract
+    - the subblock is only meaningful inside one protocol engine
+  naming_rule: "Protocol-facing modules use official or industry names such as spi_slave_if, axi_lite_if, arinc429_tx, or arinc429_rx."
+implementation_order: []

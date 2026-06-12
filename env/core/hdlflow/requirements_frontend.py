@@ -392,10 +392,13 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                     "hierarchy_only_top",
                     "hierarchical_module_composition",
                     "one_primary_module_per_file",
-                    "one_function_per_module",
+                    "top_down_module_partitioning",
+                    "cohesive_module_boundary",
+                    "balanced_module_granularity",
                     "verilog_2001_rtl_only",
                     "no_systemverilog_in_rtl_or_directed_tb",
                     "official_bus_protocol_naming",
+                    "protocol_naming_follows_official_or_industry_standard",
                     "three_process_fsm_when_applicable",
                     "no_monolithic_fsm_file",
                     "fsm_single_responsibility",
@@ -407,10 +410,13 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "module_plan_requirements": [
                     "module hierarchy",
                     "parent/child module composition",
-                    "one functional responsibility per module",
+                    "top-down functional-domain partition",
+                    "clear module boundary and ownership",
+                    "balanced granularity that avoids broad monoliths and over-fragmented helper files",
                     "clock/reset ownership",
                     "interface ownership",
                     "register block ownership",
+                    "protocol module naming follows official or industry terminology",
                     "implementation order",
                 ],
                 "assumptions": [],
@@ -421,17 +427,61 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 **base,
                 "owner_role": "arch",
                 "rtl_planning_policy_ref": "work/docparse/architecture/rtl_planning_rules.yaml",
+                "top_level": {
+                    "name": "",
+                    "type": "top",
+                    "source_file": "",
+                    "wrapper_policy": "hierarchy_only_top",
+                    "allowed_responsibilities": [
+                        "instantiate_child_modules",
+                        "connect_interfaces",
+                        "expose_top_ports",
+                    ],
+                    "forbidden_responsibilities": [
+                        "protocol_decode",
+                        "register_field_update",
+                        "datapath_mutation",
+                        "fifo_storage",
+                        "arbitration_decision",
+                        "monolithic_fsm",
+                    ],
+                },
                 "module_partition_policy": {
                     "hierarchy_required": True,
-                    "one_function_per_module": True,
-                    "major_function_one_primary_rtl_file": True,
+                    "one_primary_module_per_file": True,
+                    "top_down_partitioning": True,
+                    "file_boundary_granularity": "functional_domain",
+                    "cohesive_responsibility_per_file": True,
                     "composite_modules_instantiate_children": True,
+                    "allow_internal_subblocks_without_files": True,
+                    "no_over_fragmentation": True,
+                    "no_under_fragmentation": True,
+                    "no_monolithic_fsm": True,
+                    "no_free_floating_top_logic": True,
+                    "protocol_module_names_follow_official_standard": True,
+                    "explicit_ownership_required": True,
+                },
+                "module_granularity_policy": {
+                    "planning_order": "top_down",
+                    "file_boundary_rule": "Use one RTL file for a cohesive protocol, register, FIFO, datapath, status, or boundary block.",
+                    "split_when": [
+                        "a child has independent clock/reset ownership",
+                        "a child has reusable storage/IP ownership",
+                        "a child is a separately verifiable protocol or datapath boundary",
+                        "keeping it inside the parent would create a broad monolithic FSM or hidden side effect",
+                    ],
+                    "keep_inside_parent_when": [
+                        "the logic is only a small decode, mux, counter, bit-order, parity, or pulse-generation subblock",
+                        "the subblock has no independent interface contract",
+                        "the subblock is only meaningful inside one protocol engine",
+                    ],
+                    "naming_rule": "Protocol-facing modules use official or industry names such as spi_slave_if, axi_lite_if, arinc429_tx, or arinc429_rx.",
                 },
                 "modules": [],
-                "top_level": {"name": "", "wrapper_policy": ""},
                 "clock_reset": [],
                 "throughput_plan": [],
                 "composition": [],
+                "implementation_order": [],
                 "dependencies": [],
                 "agent_consumers": ["Exec Agent", "Sim Agent", "Review Agent", "Arbtr Agent"],
                 "assumptions": [],
@@ -923,10 +973,13 @@ def _check_rtl_planning_rules(project: Path, errors: list[str], warnings: list[s
         "hierarchy_only_top",
         "hierarchical_module_composition",
         "one_primary_module_per_file",
-        "one_function_per_module",
+        "top_down_module_partitioning",
+        "cohesive_module_boundary",
+        "balanced_module_granularity",
         "verilog_2001_rtl_only",
         "no_systemverilog_in_rtl_or_directed_tb",
         "official_bus_protocol_naming",
+        "protocol_naming_follows_official_or_industry_standard",
         "three_process_fsm_when_applicable",
         "no_monolithic_fsm_file",
         "fsm_single_responsibility",
@@ -958,10 +1011,30 @@ def _check_rtl_planning_rules(project: Path, errors: list[str], warnings: list[s
         if require_ready and ("hierarchy" not in wrapper_policy or "only" not in wrapper_policy):
             errors.append(f"{module_plan_rel} top_level.wrapper_policy must require a hierarchy-only top")
         partition_policy = module_plan.get("module_partition_policy") or {}
-        if require_ready and not partition_policy.get("one_function_per_module"):
-            errors.append(f"{module_plan_rel} module_partition_policy.one_function_per_module must be true")
-        if require_ready and not partition_policy.get("composite_modules_instantiate_children"):
+        if require_ready and not _policy_true(partition_policy.get("top_down_partitioning")):
+            errors.append(f"{module_plan_rel} module_partition_policy.top_down_partitioning must be true")
+        if require_ready and "functional" not in str(partition_policy.get("file_boundary_granularity") or "").lower():
+            errors.append(f"{module_plan_rel} module_partition_policy.file_boundary_granularity must be functional_domain")
+        if require_ready and not _policy_true(partition_policy.get("cohesive_responsibility_per_file")):
+            errors.append(f"{module_plan_rel} module_partition_policy.cohesive_responsibility_per_file must be true")
+        if require_ready and not _policy_true(partition_policy.get("no_over_fragmentation")):
+            errors.append(f"{module_plan_rel} module_partition_policy.no_over_fragmentation must be true")
+        if require_ready and not _policy_true(partition_policy.get("no_under_fragmentation")):
+            errors.append(f"{module_plan_rel} module_partition_policy.no_under_fragmentation must be true")
+        if require_ready and not _policy_true(partition_policy.get("protocol_module_names_follow_official_standard")):
+            errors.append(f"{module_plan_rel} module_partition_policy.protocol_module_names_follow_official_standard must be true")
+        if require_ready and not _policy_true(partition_policy.get("composite_modules_instantiate_children")):
             errors.append(f"{module_plan_rel} module_partition_policy.composite_modules_instantiate_children must be true")
+        granularity_policy = module_plan.get("module_granularity_policy") or {}
+        if require_ready:
+            if str(granularity_policy.get("planning_order") or "").lower() != "top_down":
+                errors.append(f"{module_plan_rel} module_granularity_policy.planning_order must be top_down")
+            if not _non_empty_list(granularity_policy.get("split_when")):
+                errors.append(f"{module_plan_rel} module_granularity_policy.split_when must be non-empty")
+            if not _non_empty_list(granularity_policy.get("keep_inside_parent_when")):
+                errors.append(f"{module_plan_rel} module_granularity_policy.keep_inside_parent_when must be non-empty")
+        if require_ready:
+            _check_module_plan_contract(module_plan_rel, module_plan, errors)
 
     state_machines_rel = "work/docparse/architecture/state_machines.yaml"
     state_machines = _load_structured(project / state_machines_rel)
@@ -978,6 +1051,102 @@ def _check_rtl_planning_rules(project: Path, errors: list[str], warnings: list[s
 
     if not require_ready and not missing:
         warnings.append(f"{rules_rel} will be enforced when requirements front door is READY")
+
+
+def _check_module_plan_contract(rel: str, data: dict[str, Any], errors: list[str]) -> None:
+    top = data.get("top_level") if isinstance(data.get("top_level"), dict) else {}
+    if not str(top.get("name") or "").strip():
+        errors.append(f"{rel} top_level.name must be non-empty for READY")
+    top_forbidden = _string_set(top.get("forbidden_responsibilities"))
+    for item in ["protocol_decode", "register_field_update", "datapath_mutation", "fifo_storage", "monolithic_fsm"]:
+        if item not in top_forbidden:
+            errors.append(f"{rel} top_level.forbidden_responsibilities must include {item}")
+
+    modules = data.get("modules")
+    if not isinstance(modules, list) or not modules:
+        errors.append(f"{rel} modules must be a non-empty list for READY")
+        return
+
+    module_names: set[str] = set()
+    ownership: dict[str, dict[str, str]] = {
+        "registers": {},
+        "register_fields": {},
+        "fsms": {},
+        "fifos": {},
+        "memories": {},
+        "counters": {},
+        "arbiters": {},
+    }
+    for index, module in enumerate(modules, start=1):
+        label = f"{rel} modules[{index}]"
+        if not isinstance(module, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        name = str(module.get("name") or "").strip()
+        if not name:
+            errors.append(f"{label}.name must be non-empty")
+        else:
+            if name in module_names:
+                errors.append(f"{rel} duplicate module name: {name}")
+            module_names.add(name)
+        for key in ["id", "type", "responsibility", "clock_domain", "reset_domain"]:
+            if not str(module.get(key) or "").strip():
+                errors.append(f"{label}.{key} must be non-empty")
+        if not str(module.get("source_file") or module.get("file") or "").strip():
+            errors.append(f"{label}.source_file must be non-empty")
+
+        owns = module.get("owns")
+        if not isinstance(owns, dict):
+            errors.append(f"{label}.owns must be a mapping")
+            owns = {}
+        interfaces = module.get("interfaces")
+        if not isinstance(interfaces, dict):
+            errors.append(f"{label}.interfaces must be a mapping")
+            interfaces = {}
+        if not _non_empty_list(interfaces.get("inputs")):
+            errors.append(f"{label}.interfaces.inputs must be non-empty")
+        if not _non_empty_list(interfaces.get("outputs")):
+            errors.append(f"{label}.interfaces.outputs must be non-empty")
+        if not (_non_empty_list(module.get("req_ids")) or _non_empty_list(module.get("design_feature_ids"))):
+            errors.append(f"{label} must bind req_ids or design_feature_ids")
+        verification = module.get("verification_refs")
+        if not isinstance(verification, dict) or not any(_non_empty_list(verification.get(key)) for key in ["tests", "assertions", "coverage"]):
+            errors.append(f"{label}.verification_refs must include tests, assertions, or coverage")
+        if not _non_empty_list(module.get("forbidden_responsibilities")):
+            errors.append(f"{label}.forbidden_responsibilities must be non-empty")
+
+        module_type = str(module.get("type") or "").lower()
+        children = module.get("children")
+        if module_type == "leaf" and _non_empty_list(children):
+            errors.append(f"{label} leaf module must not declare children")
+        if module_type in {"composite", "top"} and not _non_empty_list(children):
+            errors.append(f"{label} composite/top module must declare children")
+
+        for ownership_key, seen in ownership.items():
+            values = owns.get(ownership_key)
+            if not isinstance(values, list):
+                continue
+            for value in values:
+                owned = str(value).strip()
+                if not owned:
+                    continue
+                previous = seen.get(owned)
+                if previous and previous != name:
+                    errors.append(f"{rel} {ownership_key}.{owned} owned by both {previous} and {name}")
+                else:
+                    seen[owned] = name
+
+
+def _policy_true(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"true", "yes", "1"}
+
+
+def _string_set(value: Any) -> set[str]:
+    if not isinstance(value, list):
+        return set()
+    return {str(item).strip() for item in value if str(item).strip()}
 
 
 def _check_requirement_question_review(
@@ -1434,7 +1603,7 @@ def _verification_md(project_name: str, status: str, refs_inline: str) -> str:
             "",
             "- Plan Loop1 waveform windows from requirement IDs before RTL/TB generation.",
             "- Each planned window must define observed scope/signals, trigger or time span, expected activity, and pass/fail criteria.",
-            "- The generated design document must carry this plan into Chapter 4 before Loop1 can be treated as planned.",
+            "- The generated verification_plan.md must carry this plan before Loop1 can be treated as planned.",
             "",
         ]
     )

@@ -54,10 +54,10 @@ Review marks it `verified`, `closed`, or `waived`.
 Do not create sidecar scope, implementation analysis, design blueprint, or
 design draft Markdown files during requirements parsing. Put design intent into
 `frontdoor/` and the structured YAML files, then generate the user-readable
-design document through `python -m hdlflow.cli generate-design-doc`. Do not put
-generated front-door or decomposition files under `input/spec/`.
-Do not hand-write `output/reports/design/design_rule_and_architecture.md` or
-`output/reports/design/design_doc_manifest.json`; the generator writes both
+docset through `python -m hdlflow.cli generate-docs`. Do not put generated
+front-door or decomposition files under `input/spec/`.
+Do not hand-write files under `output/docs/` or
+`output/docs/manifests/docset_manifest.json`; the generator writes the docset
 after frontdoor and review checks pass.
 
 Architecture planning must reference `architecture/rtl_planning_rules.yaml`,

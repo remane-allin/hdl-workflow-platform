@@ -16,7 +16,7 @@
 | --- | --- | --- | --- |
 | Baseline entry checks | Reset, idle, and minimum legal transaction checks | Zero runtime errors and deterministic PASS markers | `HDLFLOW_TEST_CASE` |
 | Full function matrix | One directed case per required function, opcode, register field, and boundary condition | Every item has expected/actual comparison and PASS/FAIL result | `HDLFLOW_TEST_CASE` |
-| Boundary checks | Empty/full/half-full, reset, overwrite, partial transfer, and documented edge conditions | Boundary behavior matches spec and design document | `HDLFLOW_TEST_CASE` |
+| Boundary checks | Empty/full/half-full, reset, overwrite, partial transfer, and documented edge conditions | Boundary behavior matches spec and docset | `HDLFLOW_TEST_CASE` |
 | Waveform windows | Mark the time span around each meaningful function check after score comparison passes | Top-level VCD has clock activity, no X/Z, and non-clock activity in every marked span | `HDLFLOW_WAVE_BEGIN` / `HDLFLOW_WAVE_END` |
 
 Waveform analysis reads the WLF/VCD files in `output/sim/loop1/wave/` in place.

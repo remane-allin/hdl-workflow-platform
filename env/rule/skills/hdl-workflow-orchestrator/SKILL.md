@@ -62,7 +62,7 @@ Each active project should contain:
    iteration is clean.
 2. Read `prj/<project_name>/work/config/project_config.yaml`.
 3. If raw or generated requirements changed, re-enter DocParse before any loop work. External document evidence must be produced only by the MinerU high-precision API path, recorded in `work/docparse/parsed/mineru_extract/provenance.yaml`, and stored under `work/docparse/parsed/mineru_extract/`; the provenance must include `/api/v4/extract/task` or `/api/v4/file-urls/batch`. For chat-only requirements, use the formal exception: capture the request under `input/spec/` with `source_type: chat_request` and bind it from `document_analysis.yaml` with `parser_output: manual_chat_capture`, `analysis_units`, and `evidence_map`. Local parser side outputs, fast-channel page splits, operation records inside parsed evidence, or legacy parsed output paths are not completion evidence.
-4. If the requirements front door is missing or stale, run `requirements-frontdoor-init`, normalize the five machine-readable structured spec files (`interface_spec.yaml`, `interface_timing.yaml`, `register_map.yaml`, `test_intent.yaml`, and `timing_rules.yaml`), and route to `$hdl-requirements-decompose`. During this stage, Spec Agent must write unresolved doubts to `work/docparse/frontdoor/open_questions.md`, mirror them in `work/docparse/structured_spec/document_analysis.yaml.open_questions`, send them to the user for review, and record `question_review.status: REVIEWED` with `unresolved_count: 0` before READY. Sim Agent must plan Loop1 waveform observability in `test_intent.yaml.waveform_windows` and `verification_plan.yaml.waveform_comparison`; the generated design document must show this plan before Loop1 work begins.
+4. If the requirements front door is missing or stale, run `requirements-frontdoor-init`, normalize the five machine-readable structured spec files (`interface_spec.yaml`, `interface_timing.yaml`, `register_map.yaml`, `test_intent.yaml`, and `timing_rules.yaml`), and route to `$hdl-requirements-decompose`. During this stage, Spec Agent must write unresolved doubts to `work/docparse/frontdoor/open_questions.md`, mirror them in `work/docparse/structured_spec/document_analysis.yaml.open_questions`, send them to the user for review, and record `question_review.status: REVIEWED` with `unresolved_count: 0` before READY. Sim Agent must plan Loop1 waveform observability in `test_intent.yaml.waveform_windows` and `verification_plan.yaml.waveform_comparison`; `generate-docs` must carry this plan into `output/docs/test/verification_plan.md` before Loop1 work begins.
    `document_analysis.yaml` must use checker-compatible keys:
    `source_documents[].source_ref`, `parser_output`, `document_type`,
    `analysis_units[].unit_id`, `source_ref`, `section`, `summary`, and
@@ -74,11 +74,11 @@ Each active project should contain:
    change first with `change-open`. Record the affected requirements and
    artifact paths with `change-impact`; record the changed requirements before
    approval. The platform infers downstream nodes,
-   verification, and whether `generate-design-doc` must be rerun. Approval is
+   verification, and whether `generate-docs` must be rerun. Approval is
    blocked until the impact record has non-placeholder requirements, artifacts,
-   downstream nodes, required verification, rollback, and design-document
+   downstream nodes, required verification, rollback, and docset
    decision. After approval, update front-door sources, rerun
-   `requirements-frontdoor-check`, regenerate the requirements/design document
+   `requirements-frontdoor-check`, regenerate the docset
    when required, rerun the affected gate with `--change-id`, and close the
    change with trace evidence.
    Review Agent findings must be structured in
@@ -108,8 +108,8 @@ Each active project should contain:
     after any gate baseline exists, open a controlled change first with
     `change-open`, then record impact and approval. Next update the
     requirements front-door sources, rerun `requirements-frontdoor-check`, and
-    regenerate the requirements/design document with
-    `python -m hdlflow.cli generate-design-doc --project <project>`. Only after
+    regenerate the docset with
+    `python -m hdlflow.cli generate-docs --project <project>`. Only after
     those records exist may the flow edit `work/loop3_fpga_proto/board_tests/`,
     `work/loop3_fpga_proto/board_profiles/`,
     `work/loop3_fpga_proto/scripts/`, or generated FPGA source roots. Do not
@@ -137,7 +137,7 @@ Use these signals to decide the stage quickly:
 - Prefer small forward steps and persist the result before switching topics.
 - If the correct next action is ambiguous, state the branch point and choose the smallest safe step.
 - Never silently overwrite generated or hand-written project files without checking what already exists.
-- Do not create sidecar scope, implementation analysis, design blueprint, or design draft Markdown as a substitute for the requirements front door; put that content into SRS, decomposition, architecture YAML, verification YAML, prototype YAML, and the generated design document.
+- Do not create sidecar scope, implementation analysis, design blueprint, or design draft Markdown as a substitute for the requirements front door; put that content into SRS, decomposition, architecture YAML, verification YAML, prototype YAML, and the generated docset.
 - Do not modify gate policy, gate reports, or temporary artifacts to force progress inside an automatic loop. Do not modify guard code for the same purpose. AI agents must not automatically change gate rules. If a gate appears wrong, record the concern in memory and abort or escalate; gate maintenance is a separate explicit platform task with regression evidence.
 - End by updating the checkpoint through the local PowerShell helper when practical.
 

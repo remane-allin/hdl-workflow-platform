@@ -2,7 +2,7 @@
 
 Exploration artifacts are intentionally kept under work/explore. They can be
 promoted into suggested next actions, but they are not gate evidence and they
-never write generated design reports.
+never write generated docset documents.
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ def start_exploration(project_path: Path, *, title: str, objective: str = "") ->
         "guardrails": [
             "sandbox_not_gate_evidence",
             "sandbox_does_not_modify_formal_artifacts",
-            "sandbox_does_not_write_generated_design_documents",
+            "sandbox_does_not_write_generated_docset_documents",
         ],
     }
     (session_dir / "session.yaml").write_text(_yaml_doc(metadata), encoding="utf-8")
@@ -134,7 +134,7 @@ def _format_promotion(project: Path, session_id: str, target: str, notes: Path) 
         "",
         "- This promotion is advisory and is not gate evidence.",
         "- It does not edit formal workflow artifacts.",
-        "- Generated design documents remain owned only by `generate-design-doc`.",
+        "- Generated docset documents remain owned only by `generate-docs`.",
     ]
     return "\n".join(lines) + "\n"
 

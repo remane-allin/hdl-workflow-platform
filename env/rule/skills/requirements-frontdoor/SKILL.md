@@ -67,7 +67,7 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
 6. Promote artifact `status` values to `READY` only after Spec, Arch, Sim planning, Review, and Arbtr handoff fields are consistent and requirement questions are reviewed.
 7. Run `python -m hdlflow.cli requirements-frontdoor-check --project <project>`.
 8. Run `python -m hdlflow.cli review-check --project <project> --level develop`; critical/high findings must be verified, closed, or waived before the DocParse gate can pass. `fixed` means the owning agent claims a fix exists; it is still blocking until Review marks the finding `verified`, `closed`, or `waived`.
-9. Run `python -m hdlflow.cli generate-design-doc --project <project>` only after steps 7 and 8 pass.
+9. Run `python -m hdlflow.cli generate-docs --project <project>` only after steps 7 and 8 pass.
 10. Run `python -m hdlflow.cli run-gate --project <project> --node docparse --level develop`.
 
 ## Reverse Iteration
@@ -105,8 +105,8 @@ for gates, traceability, permissions, and Loop1/Loop2/Loop3 handoff.
 
 The structured spec YAML files are the required machine-readable bridge
 from DocParse into architecture and verification. Generate or update them before
-writing the generated design document; never create the design document first and
-then backfill these YAML files from prose.
+writing generated docset documents; never create generated docs first and then
+backfill these YAML files from prose.
 
 The document analysis YAML is the first structured DocParse bridge. Build it
 from a Superpowers-style loop: source inventory, bounded section analysis,
@@ -171,24 +171,20 @@ Do not write operation notes, manual command logs, or review commentary under
 analyze process issues while parsed evidence remains parser output plus formal
 provenance only.
 
-Design documents are generated only by `python -m hdlflow.cli generate-design-doc`
+Docset documents are generated only by `python -m hdlflow.cli generate-docs`
 after `requirements-frontdoor-check` passes with `READY` artifacts and
 `review-check --level develop` has no unclosed blocking findings. ad hoc scope,
 implementation analysis, design blueprint, or design draft files are not gate
 artifacts. If generation fails, fix the named frontdoor/review blockers and
-rerun the two checks; do not hand-write
-`output/reports/design/design_rule_and_architecture.md` or
-`output/reports/design/design_doc_manifest.json`.
+rerun the two checks; do not hand-write files under `output/docs/` or
+`output/docs/manifests/docset_manifest.json`.
 
-The generated design document uses this canonical order:
+The generated docset uses this canonical split:
 
-- Chapter 0: project info, sync status, and change sync rules.
-- Chapter 1: requirements, in/out scope, functional and non-functional requirements, top-level interfaces, sign-off criteria, and spec input inventory.
-- Chapter 2: system architecture, module partitioning, data/control flow, clock/reset/CDC, and boundary conditions.
-- Chapter 3: RTL file inventory, RTL rules, and per-module implementation notes.
-- Chapter 4: verification architecture, Directed TB baseline checks, Loop1 waveform secondary-check planning, UVM components, coverage/SVA plan, UVM test matrix, and log format.
-- Chapter 5: FPGA prototype mode, resources, PS-PL planning, prototype risks, and board test plan.
-- Appendix A: requirement traceability matrix.
+- `output/docs/application/application_guide.md`: user-visible integration, interfaces, register/config, operation sequence, and acceptance criteria.
+- `output/docs/design/microarchitecture_spec.md`: module topology, clocks/resets, dataflow, state/register details, and traceability.
+- `output/docs/test/verification_plan.md`: test matrix, coverage, assertions, Loop1 waveform secondary-check planning, and exit criteria.
+- `output/docs/delivery/delivery_package.md`: delivered document set, engineering artifacts, gate summary, verification evidence, and signoff checklist.
 
 When normalizing YAML for the generator, canonical fields are preferred, but the
 generator accepts common aliases so it does not drop valid front-door content:
@@ -207,13 +203,13 @@ and Arbtr decides whether a separate platform-maintenance task is needed.
 Populate/front-door helper scripts are not project requirement sources after a
 baseline exists. If a confirmed requirement changes, update SRS, structured
 spec, architecture, verification, prototype, and trace artifacts first, then run
-the checker and generated design document path.
+the checker and generated docset path.
 
 AI agents must not automatically modify gate rules, guard code, or protected
 gate policy to make a project pass. Gate maintenance is a separate explicit
 platform task with human direction, implementation review, and regression
 evidence.
 
-Formal requirements, verification plans, generated design documents, reports,
+Formal requirements, verification plans, generated docset documents, reports,
 RTL, TB, UVM, and FPGA artifacts must avoid forbidden workflow vocabulary; the
 `forbidden_formal_text` gate owns this check.

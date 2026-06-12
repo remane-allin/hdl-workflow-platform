@@ -150,7 +150,7 @@ python -m hdlflow.cli final-audit --project prj\<project_name>
 After any gate baseline exists, a requirement, architecture, RTL intent, TB,
 UVM, assertion, coverage, prototype, board-test, or FPGA behavior change must
 start with `change-open`. Record impact with `change-impact`; the platform
-infers downstream nodes, required verification, and whether `generate-design-doc`
+infers downstream nodes, required verification, and whether `generate-docs`
 must be rerun from the supplied artifact paths. `change-approve --decision
 approved` refuses incomplete impact records. A changed gate must then be rerun
 with `--change-id`, and the request closes with `change-close` after trace

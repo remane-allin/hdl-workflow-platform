@@ -26,7 +26,7 @@
 - After any gate baseline exists, every requirement-affecting change must start
   with `change-open` before editing sources. Use `change-impact` to record
   affected requirements, artifacts, downstream nodes, verification, rollback,
-  and whether `generate-design-doc` must be rerun; approval and bound gates must
+  and whether `generate-docs` must be rerun; approval and bound gates must
   reject incomplete impact records.
 - Use `review-check` to validate structured Review Agent findings. Open
   critical/high findings block develop gates; open medium findings also block

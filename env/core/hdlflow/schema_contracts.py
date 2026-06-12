@@ -163,7 +163,7 @@ def _format_schema_report(project: Path, issues: list[SchemaIssue]) -> str:
             "",
             "## Guardrail",
             "",
-            "- Schema check reports diagnostics only; it does not repair or generate design documents.",
+            "- Schema check reports diagnostics only; it does not repair or generate docset documents.",
         ]
     )
     return "\n".join(lines) + "\n"
