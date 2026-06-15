@@ -34,6 +34,8 @@ from hdlflow.gates import (
     _refresh_reports_for_gate,
     _check_skill_manifest_drift,
     _loop1_full_function_matrix_check,
+    _loop1_deterministic_gate_check,
+    _check_loop1_waveform_advisory_report,
     _loop2_coverage_triage_check,
     _loop2_configured_scenario_evidence_check,
     _loop2_scenario_count_check,
@@ -85,7 +87,7 @@ from hdlflow.scaffold import PROJECT_CREATE_ENTRYPOINT_ENV, create_project
 from hdlflow.simple_yaml import parse_yaml
 from hdlflow.state_sync import sync_project_state
 from hdlflow.validate import REQUIRED_PATHS, validate_project
-from hdlflow.waveform_gate import check_loop1_waveform_gate_report, run_loop1_waveform_gate
+from hdlflow.waveform_gate import WAVEFORM_GATE_JSON_REL, check_loop1_waveform_gate_report, run_loop1_waveform_gate
 
 
 class SimpleYamlTests(unittest.TestCase):
@@ -340,6 +342,39 @@ class Loop2RiskGateTests(unittest.TestCase):
             self.assertEqual(check.status, "FAIL")
             self.assertIn("01h", check.detail)
 
+    def test_loop1_deterministic_gate_rejects_simulator_error_even_with_tb_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            log_path = project / "work/loop1_rtl_tb/current/log/modelsim.log"
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            log_text = "\n".join(
+                [
+                    "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=case0|txn_id=txn0|sent=a|expected=b|actual=b|latency_cycles=1|result=PASS",
+                    "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS",
+                    "** Error: simulator reported a real error after TB summary",
+                    "",
+                ]
+            )
+            log_path.write_text(log_text, encoding="utf-8")
+            payload = build_report_payload(LOOP1_REPORT, "demo", parse_loop1_events(log_text), change_id=None)
+
+            check = _loop1_deterministic_gate_check(project, payload)
+
+            self.assertEqual(check.status, "FAIL")
+            self.assertIn("simulator_errors_nonzero", check.detail)
+
+    def test_loop1_waveform_report_is_advisory_not_hard_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+
+            check = _check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, "develop")
+
+            self.assertEqual(check.status, "PASS")
+            self.assertEqual(check.name, "loop1_waveform_advisory")
+            self.assertIn("advisory waveform issue", check.detail)
+
     def test_doc_sources_reject_mojibake_requirement_text(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
@@ -446,7 +481,21 @@ class Loop2RiskGateTests(unittest.TestCase):
 
             errors = check_loop1_waveform_gate_report(project)
 
-            self.assertTrue(any("missing Loop1 waveform semantic gate report" in item for item in errors))
+            self.assertTrue(any("missing Loop1 waveform rule-engine report" in item for item in errors))
+
+    def test_loop1_waveform_rule_failure_stays_advisory_for_loop1_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_loop1_semantic_waveform_evidence(project, unknown=True)
+
+            with _fake_pywellen_installed():
+                result = run_loop1_waveform_gate(project)
+
+            self.assertFalse(result.ok)
+            advisory = _check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, "develop")
+            self.assertEqual(advisory.status, "PASS")
+            self.assertIn("advisory waveform issue", advisory.detail)
 
     def test_loop1_waveform_query_gate_passes_manifest_top_ports(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -461,6 +510,8 @@ class Loop2RiskGateTests(unittest.TestCase):
             self.assertEqual(check_loop1_waveform_gate_report(project), [])
             payload = json.loads(result.json_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["result"], "PASS")
+            self.assertEqual(payload["gate_policy"], "advisory")
+            self.assertEqual(payload["llm_decision_source"], False)
             self.assertEqual(payload["manifest"], "work/loop1_rtl_tb/config/top_wave_manifest.yaml")
             self.assertTrue((project / "output/reports/loop1/query_transcript.json").is_file())
 
@@ -1479,6 +1530,7 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "waveform_comparison",
             "Loop1 waveform secondary-check planning",
             "loop1-waveform-gate",
+            "loop1_deterministic_gate",
             "output/sim/loop1/wave",
             "HDLFLOW_WAVE_GROUP",
             "waveform_query_report.md",
@@ -1546,6 +1598,7 @@ class PlatformTemplateContractTests(unittest.TestCase):
 
         self.assertIn("loop1-refresh-reports", rtl_functional)
         self.assertIn("loop1-waveform-gate", rtl_functional)
+        self.assertIn("Loop1 waveform advisory: FAIL", rtl_functional)
         self.assertIn("set wave_dir [file join $project_root output sim loop1 wave]", rtl_functional)
         self.assertIn("HDLFLOW_WAVE_GROUP", rtl_functional)
         self.assertIn("loop1_wave_extra_groups", rtl_functional)

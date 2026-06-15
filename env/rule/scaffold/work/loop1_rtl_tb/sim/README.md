@@ -36,9 +36,10 @@ manifest-driven top-port query gate.
 
 After `loop1-refresh-reports`, the script runs
 `python -m hdlflow.cli loop1-waveform-gate --project <project> --manifest
-work/loop1_rtl_tb/config/top_wave_manifest.yaml`. Loop1 develop/release cannot
-exit unless `waveform_query_report.md`, `waveform_gate.json`, and
-`query_transcript.json` are valid.
+work/loop1_rtl_tb/config/top_wave_manifest.yaml`. A waveform rule failure is
+reported as advisory evidence and does not override a deterministic TB PASS.
+Review `waveform_query_report.md`, `waveform_gate.json`, and
+`query_transcript.json` when the advisory fails.
 
 Waveform analysis must use the VCD/WLF files in `output/sim/loop1/wave/`
 directly. Do not make secondary analysis copies under `work/_runtime`.

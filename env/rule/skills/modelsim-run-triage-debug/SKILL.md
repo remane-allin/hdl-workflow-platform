@@ -45,7 +45,7 @@ Use this skill for evidence-driven simulation work under `work/loop1_rtl_tb/sim/
 - Loop1 waveform capture starts at the TB top and DUT top-level ports. Add `loop1_wave_extra_signals` only when the top-level VCD window fails and a deeper suspect must be isolated.
 - Use `loop1_wave_extra_groups` for deeper hierarchy capture when needed. Each item is `{name scope recursive}`, for example `{rx_core /loop1_tb/dut/u_rx/* 1}`.
 - Treat `output/sim/loop1/wave` as the canonical waveform deliverable. Analyze the VCD/WLF there in place; do not create a second copy under `_runtime` for AI analysis.
-- Treat `output/reports/loop1/waveform_query_report.md`, `output/reports/loop1/waveform_gate.json`, and `output/reports/loop1/query_transcript.json` as the required semantic waveform evidence. The query gate proves manifest alignment, pywellen waveform readability, and top-port behavior.
+- Treat `output/reports/loop1/waveform_query_report.md`, `output/reports/loop1/waveform_gate.json`, and `output/reports/loop1/query_transcript.json` as advisory structured waveform evidence. Pywellen is the extractor; the deterministic signal-rule engine writes the PASS/FAIL fields in `waveform_gate.json`. AI/MCP may explain or extract context, but it must not be the Loop1 pass/fail judge.
 - Distinguish compile, elaboration, and runtime failures early.
 - Repeated failures with the same signature should trigger an upstream contract review, not endless local edits.
 

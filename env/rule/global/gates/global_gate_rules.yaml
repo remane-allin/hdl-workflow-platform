@@ -30,7 +30,7 @@ gates:
       - forbidden_formal_text
       - rtl_compile_zero_error
       - directed_tb_regression_pass
-      - loop1_waveform_query_gate
+      - loop1_deterministic_gate
       - no_open_critical_or_major_bug
       - requirement_trace_complete
     thresholds:

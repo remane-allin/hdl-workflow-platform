@@ -23,10 +23,13 @@
 | Waveform windows | Mark the time span around each meaningful function check after score comparison passes | Top-level VCD has clock activity, no X/Z, non-clock activity, and manifest-selected query checks in every marked span | `HDLFLOW_WAVE_BEGIN` / `HDLFLOW_WAVE_END` |
 
 Waveform analysis reads the WLF/VCD files in `output/sim/loop1/wave/` in place.
-Do not create a second VCD/WLF copy for AI-side analysis.
-The controlled top-port query gate reads `top_wave_manifest.yaml`, writes
-`waveform_query_report.md`, `waveform_gate.json`, and `query_transcript.json`,
-and must pass before a develop/release Loop1 gate can enter Loop2.
+Do not create a second VCD/WLF copy for waveform analysis.
+The controlled top-port query flow uses pywellen as the extractor and a
+deterministic signal-rule engine to write `waveform_query_report.md`,
+`waveform_gate.json`, and `query_transcript.json`. Waveform rule failures are
+structured verification gaps for review; Loop1 pass/fail is decided by the
+deterministic hard gate from TB PASS, zero simulator errors, zero fatal markers,
+and assertion PASS when assertions are enabled.
 
 ## Required Log Events
 

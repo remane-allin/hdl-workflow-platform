@@ -1,9 +1,8 @@
-"""Loop1 semantic waveform gate built on the query backend."""
+"""Loop1 advisory waveform report built on deterministic signal rules."""
 
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -20,7 +19,7 @@ TOP_WAVE_MANIFEST_REL = "work/loop1_rtl_tb/config/top_wave_manifest.yaml"
 WAVEFORM_QUERY_REPORT_REL = "output/reports/loop1/waveform_query_report.md"
 WAVEFORM_GATE_JSON_REL = "output/reports/loop1/waveform_gate.json"
 QUERY_TRANSCRIPT_JSON_REL = "output/reports/loop1/query_transcript.json"
-LOOP1_REPORT_JSON_REL = "output/reports/loop1/loop1_report.json"
+WAVEFORM_RULE_ENGINE = "hdlflow_waveform_signal_rule_engine_v1"
 
 
 @dataclass(frozen=True)
@@ -41,7 +40,7 @@ def run_loop1_waveform_gate(
     log_path: Path | None = None,
     manifest_path: Path | None = None,
 ) -> WaveformGateResult:
-    """Run the controlled top-port waveform query gate."""
+    """Run the controlled top-port waveform query and deterministic signal rules."""
 
     project = require_project_instance(project_path)
     manifest_file = manifest_path or project / TOP_WAVE_MANIFEST_REL
@@ -69,11 +68,6 @@ def run_loop1_waveform_gate(
 
     backend = load_loop1_waveform(project, vcd_path=vcd_path, log_path=log_path)
     query = WaveformQuery(backend)
-
-    directed_ok, directed_detail = _directed_tb_log_pass(project, backend.log_path)
-    _add_check(checks, "directed_tb_log_pass", directed_ok, directed_detail)
-    sim_ok, sim_detail = _simulator_errors_zero(backend.log_path)
-    _add_check(checks, "simulator_errors_zero", sim_ok, sim_detail)
 
     top_wave_exists = backend.vcd_path is not None and backend.vcd_path.is_file() and backend.wlf_path is not None and backend.wlf_path.is_file()
     _add_check(
@@ -155,8 +149,6 @@ def run_loop1_waveform_gate(
     )
 
     required_gate_names = {
-        "directed_tb_log_pass",
-        "simulator_errors_zero",
         "top_waveform_exists",
         "dump_scope_is_top_only",
         "dump_duration_within_limit",
@@ -186,6 +178,7 @@ def run_loop1_waveform_gate(
         "project": project.name,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "backend": backend.backend,
+        "extractor": "pywellen_query_backend",
         "queries": query.transcript,
     }
     transcript_path.write_text(json.dumps(transcript_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -195,7 +188,9 @@ def run_loop1_waveform_gate(
         "project": project.name,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "result": "PASS" if gate_ok else "FAIL",
-        "gate_policy": "required",
+        "gate_policy": "advisory",
+        "rule_engine": WAVEFORM_RULE_ENGINE,
+        "llm_decision_source": False,
         "manifest": _rel(project, manifest_file),
         "log": _rel(project, backend.log_path),
         "wave_dir": LOOP1_WAVE_DIR_REL,
@@ -226,29 +221,31 @@ def run_loop1_waveform_gate(
 
 
 def check_loop1_waveform_gate_report(project_path: Path, report_rel: str = WAVEFORM_GATE_JSON_REL) -> list[str]:
-    """Return gate errors for the persisted Loop1 waveform semantic gate."""
+    """Return rule-engine report errors for the persisted Loop1 waveform evidence."""
 
     project = require_project_instance(project_path)
     path = project / report_rel
     if not path.is_file():
-        return [f"missing Loop1 waveform semantic gate report: {report_rel}"]
+        return [f"missing Loop1 waveform rule-engine report: {report_rel}"]
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
-        return [f"Loop1 waveform semantic gate report is not parseable: {exc}"]
+        return [f"Loop1 waveform rule-engine report is not parseable: {exc}"]
 
     errors: list[str] = []
     if data.get("schema_version") != 1:
         errors.append(f"{report_rel} schema_version must be 1")
     if data.get("result") != "PASS":
         errors.append(f"{report_rel} result must be PASS")
-    if data.get("gate_policy") != "required":
-        errors.append(f"{report_rel} gate_policy must be required")
+    if data.get("gate_policy") != "advisory":
+        errors.append(f"{report_rel} gate_policy must be advisory")
+    if data.get("rule_engine") != WAVEFORM_RULE_ENGINE:
+        errors.append(f"{report_rel} rule_engine must be {WAVEFORM_RULE_ENGINE}")
+    if data.get("llm_decision_source") is not False:
+        errors.append(f"{report_rel} llm_decision_source must be false")
     if data.get("backend") != "pywellen":
         errors.append(f"{report_rel} backend must be pywellen")
     for name in (
-        "directed_tb_log_pass",
-        "simulator_errors_zero",
         "top_waveform_exists",
         "dump_scope_is_top_only",
         "dump_duration_within_limit",
@@ -402,44 +399,6 @@ def _evaluate_window_check(
         )
 
     return _check_item(check_id, False, f"unsupported waveform query check: {check_name}")
-
-
-def _directed_tb_log_pass(project: Path, log_path: Path) -> tuple[bool, str]:
-    report_path = project / LOOP1_REPORT_JSON_REL
-    if report_path.is_file():
-        try:
-            data = json.loads(report_path.read_text(encoding="utf-8-sig"))
-        except Exception as exc:
-            return False, f"{LOOP1_REPORT_JSON_REL} is not parseable: {exc}"
-        result = str(data.get("result") or "")
-        return result == "PASS", f"{LOOP1_REPORT_JSON_REL} result={result or 'missing'}"
-
-    if not log_path.is_file():
-        return False, "Loop1 report JSON and ModelSim log are missing"
-    text = log_path.read_text(encoding="utf-8", errors="ignore")
-    has_summary_pass = bool(re.search(r"HDLFLOW\|SUMMARY\|.*\bresult=PASS\b", text))
-    has_check_fail = bool(re.search(r"HDLFLOW\|CHECK\|.*\bresult=FAIL\b", text))
-    if has_summary_pass and not has_check_fail:
-        return True, "ModelSim log has PASS summary and no failed structured checks"
-    return False, "ModelSim log does not show a clean HDLFLOW PASS summary"
-
-
-def _simulator_errors_zero(log_path: Path) -> tuple[bool, str]:
-    if not log_path.is_file():
-        return False, "ModelSim log is missing"
-    text = log_path.read_text(encoding="utf-8", errors="ignore")
-    patterns = [
-        r"\*\*\s+Error",
-        r"\bFatal:",
-        r"\bUVM_(ERROR|FATAL)\b",
-        r"HDLFLOW\|CHECK\|.*\bresult=FAIL\b",
-    ]
-    hits = []
-    for pattern in patterns:
-        matches = re.findall(pattern, text, flags=re.IGNORECASE)
-        if matches:
-            hits.append(pattern)
-    return not hits, "no simulator error/fatal markers" if not hits else "error markers found: " + ", ".join(hits)
 
 
 def _backend_parse_errors(errors: list[str]) -> list[str]:

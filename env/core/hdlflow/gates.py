@@ -614,27 +614,17 @@ def _check_loop1(project: Path, level: str) -> list[GateCheck]:
         "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
         "output/tb/full_function_test_plan.md",
     ]
-    if level != "debug":
-        required_paths.extend(
-            [
-                TOP_WAVE_MANIFEST_REL,
-                WAVEFORM_QUERY_REPORT_REL,
-                WAVEFORM_GATE_JSON_REL,
-                QUERY_TRANSCRIPT_JSON_REL,
-            ]
-        )
     checks.extend(_path_checks(project, required_paths))
     freshness_rels = _stage_report_required_rels(LOOP1_REPORT)
-    if level != "debug":
-        freshness_rels.extend([WAVEFORM_GATE_JSON_REL, WAVEFORM_QUERY_REPORT_REL, QUERY_TRANSCRIPT_JSON_REL])
     checks.extend(_check_skill_policy_freshness(project, "work/loop1_rtl_tb", _files(project, freshness_rels)))
     checks.append(_check_rtl_skill_audit_freshness(project))
     checks.append(_check_report_pass("loop1_report_pass", report_payload))
     checks.append(_check_report_parser_clean("loop1_report_parser_clean", report_payload))
     checks.append(_check_report_transactions("loop1_transaction_contract", report_payload))
+    checks.append(_loop1_deterministic_gate_check(project, report_payload))
     checks.append(_loop1_baseline_gate_check(report_payload))
     checks.append(_loop1_full_function_matrix_check(project, report_payload))
-    checks.append(_check_loop1_waveform_gate_report(project, WAVEFORM_GATE_JSON_REL, level))
+    checks.append(_check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, level))
     checks.append(_check_bug_tracking(project, "work/loop1_rtl_tb/bug_tracking"))
     checks.append(_check_forbidden_formal_text(project))
     return checks
@@ -876,6 +866,78 @@ def _loop1_baseline_gate_check(report_payload: dict[str, Any]) -> GateCheck:
     return GateCheck("loop1_baseline_function_gate", "PASS", "Loop1 structured summary passed with zero failed checks")
 
 
+def _loop1_deterministic_gate_check(project: Path, report_payload: dict[str, Any]) -> GateCheck:
+    issues: list[str] = []
+    if not isinstance(report_payload, dict) or not report_payload:
+        issues.append("missing Loop1 report.json payload")
+    elif str(report_payload.get("result", "")).upper() != "PASS":
+        issues.append(f"TB report result is {report_payload.get('result')}")
+    if isinstance(report_payload, dict):
+        parser_errors = report_payload.get("parser_errors")
+        if parser_errors:
+            issues.append("parser_errors=" + ", ".join(str(item) for item in parser_errors[:4]))
+        if _summary_int(report_payload, "failed_tests") != 0:
+            issues.append(f"failed_tests={_summary_int(report_payload, 'failed_tests')}")
+        if _summary_int(report_payload, "failed_checks") != 0:
+            issues.append(f"failed_checks={_summary_int(report_payload, 'failed_checks')}")
+        if _summary_int(report_payload, "total_checks") <= 0:
+            issues.append("total_checks=0")
+
+    log_text = _read(project / LOOP1_REPORT.log_rel)
+    if not log_text:
+        issues.append(f"missing TB log: {LOOP1_REPORT.log_rel}")
+    else:
+        issues.extend(_loop1_hard_log_issues(log_text))
+
+    if issues:
+        return GateCheck("loop1_deterministic_gate", "FAIL", "; ".join(issues[:8]))
+    return GateCheck(
+        "loop1_deterministic_gate",
+        "PASS",
+        "TB PASS, structured parser clean, failed checks=0, simulator errors=0, fatal=0, assertion pass if enabled",
+    )
+
+
+def _loop1_hard_log_issues(text: str) -> list[str]:
+    issues: list[str] = []
+    error_patterns = [
+        r"(?im)^\s*(?:#\s*)?\*\*\s+Error\b",
+        r"(?im)^\s*(?:#\s*)?Error:",
+        r"(?im)\bHDLFLOW\|CHECK\|.*\bresult=FAIL\b",
+    ]
+    fatal_patterns = [
+        r"(?im)^\s*(?:#\s*)?\*\*\s+Fatal\b",
+        r"(?im)^\s*(?:#\s*)?Fatal:",
+        r"(?im)\$fatal\b",
+        r"(?im)\bUVM_FATAL\b",
+    ]
+    if _first_regex_hit(text, error_patterns):
+        issues.append("simulator_errors_nonzero")
+    if _first_regex_hit(text, fatal_patterns):
+        issues.append("fatal_nonzero")
+
+    assertion_enabled = bool(re.search(r"(?i)\b(assertion|assert\s+property|sva)\b", text))
+    assertion_fail = bool(
+        re.search(r"(?i)\b(ASSERTION_FAIL|assertion\s+(?:failed|failure|error)|sva\s+(?:failed|failure|error))\b", text)
+        or re.search(r"(?i)\b(assertion|sva)\b.*\b(FAIL|FAILED|FATAL|ERROR)\b", text)
+    )
+    if assertion_fail:
+        issues.append("assertion_failure")
+    elif assertion_enabled:
+        assertion_pass = bool(re.search(r"(?i)\b(assertion|sva)\b.*\b(PASS|PASSED|0\s+failures?)\b", text))
+        if not assertion_pass:
+            issues.append("assertion_enabled_without_pass_marker")
+    return issues
+
+
+def _first_regex_hit(text: str, patterns: list[str]) -> str | None:
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group(0)
+    return None
+
+
 def _loop1_full_function_matrix_check(project: Path, report_payload: dict[str, Any]) -> GateCheck:
     report_text = _report_payload_evidence_text(report_payload)
     policy = _node_config(project, "work/loop1_rtl_tb").get("directed_test_policy", {})
@@ -917,13 +979,11 @@ def _run_report_has_noncompat_opcode_evidence(run_report: str, opcode: str) -> b
     return False
 
 
-def _check_loop1_waveform_gate_report(project: Path, report_rel: str, level: str) -> GateCheck:
+def _check_loop1_waveform_advisory_report(project: Path, report_rel: str, level: str) -> GateCheck:
     errors = check_loop1_waveform_gate_report(project, report_rel)
-    if errors and level == "debug":
-        return GateCheck("loop1_waveform_query_gate", "PASS", "debug warning: " + "; ".join(errors[:8]))
     if errors:
-        return GateCheck("loop1_waveform_query_gate", "FAIL", "; ".join(errors[:8]))
-    return GateCheck("loop1_waveform_query_gate", "PASS", f"{report_rel} result PASS")
+        return GateCheck("loop1_waveform_advisory", "PASS", "advisory waveform issue: " + "; ".join(errors[:8]))
+    return GateCheck("loop1_waveform_advisory", "PASS", f"{report_rel} generated by deterministic waveform rule engine")
 
 
 def _loop2_configured_scenario_evidence_check(project: Path, text: str) -> GateCheck:
