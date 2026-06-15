@@ -18,7 +18,83 @@ module_partition_policy:
   no_free_floating_top_logic: true
   protocol_module_names_follow_official_standard: true
   explicit_ownership_required: true
-modules: []
+module_item_contract:
+  required_fields:
+    - id
+    - name
+    - type
+    - source_file
+    - parent
+    - responsibility
+    - clock_domain
+    - reset_domain
+    - owns
+    - interfaces
+    - dataflow
+    - req_ids or design_feature_ids
+    - verification_refs
+    - forbidden_responsibilities
+  allowed_types:
+    - top
+    - composite
+    - leaf
+  ownership_lists:
+    - registers
+    - register_fields
+    - fsms
+    - fifos
+    - memories
+    - counters
+    - arbiters
+    - error_flags
+  interface_lists:
+    - inputs
+    - outputs
+    - internal
+  dataflow_lists:
+    - consumes
+    - produces
+    - transforms
+modules:
+  -
+    id: ""
+    name: ""
+    type: leaf
+    status: draft
+    confidence: low
+    known_unknowns: []
+    open_questions: []
+    source_file: ""
+    parent: ""
+    children: []
+    responsibility: ""
+    boundary_rationale: ""
+    clock_domain: ""
+    reset_domain: ""
+    owns:
+      registers: []
+      register_fields: []
+      fsms: []
+      fifos: []
+      memories: []
+      counters: []
+      arbiters: []
+      error_flags: []
+    interfaces:
+      inputs: []
+      outputs: []
+      internal: []
+    dataflow:
+      consumes: []
+      produces: []
+      transforms: []
+    req_ids: []
+    design_feature_ids: []
+    verification_refs:
+      tests: []
+      assertions: []
+      coverage: []
+    forbidden_responsibilities: []
 top_level:
   name: ""
   type: top

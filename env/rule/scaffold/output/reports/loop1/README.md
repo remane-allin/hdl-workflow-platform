@@ -4,15 +4,18 @@
 - [RTL source](../../rtl/)
 - [Directed TB source](../../tb/)
 
-## Required Loop1 Outputs
+## Current Run Contract
 
-- `loop1_rtl_tb_run_report.md`: evidence from the latest directed RTL/TB run.
-- `waveform_check.md` / `waveform_check.json`: machine waveform verification
-  from marked Loop1 VCD windows under `output/sim/loop1/wave/`.
-- `waveform_hierarchy.md` / `waveform_hierarchy.json`: VCD signal grouping by
-  module scope for waveform-guided analysis.
-- `loop1_exit_report.md`: gate-level conclusion for Loop1.
+- User-facing report: `loop1_report.md`
+- Machine report: `loop1_report.json`
+- Report manifest: `loop1_report_manifest.json`
+- Command record: `../../../work/loop1_rtl_tb/current/cmd/command.json`
+- Current log: `../../../work/loop1_rtl_tb/current/log/modelsim.log`
+- Current run manifest: `../../../work/loop1_rtl_tb/current/manifest.json`
+- Waveform query gate: `waveform_query_report.md` / `waveform_gate.json`
+- Waveform query transcript: `query_transcript.json`
+- Waveforms: `../../sim/loop1/wave/*.wlf`, `../../sim/loop1/wave/*.vcd`
 
-Use these template files only as report shape references. Final `.md` reports
-must be generated or refreshed from the latest Loop1 RTL/TB run; do not promote
-an unfilled template into final evidence.
+`loop1_report.md` is generated from structured `HDLFLOW|CHECK|...` and
+`HDLFLOW|SUMMARY|...` events. Do not hand edit it, and do not store raw
+simulator logs under `output/reports/loop1/`.

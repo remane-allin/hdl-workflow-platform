@@ -1,0 +1,35 @@
+schema_version: 1
+owner: Loop1 directed TB
+purpose: Controlled DUT top-port waveform query manifest.
+dut_scope: /loop1_tb/dut
+waveform_format: vcd
+dump_policy: top_ports_windowed
+max_dump_duration: 2000000
+max_file_size_mb: 50
+clock:
+  name: clk
+  required: false
+reset:
+  name: rst_n
+  active: low
+  required: false
+ports:
+  -
+    name: clk
+    direction: input
+    width: 1
+    role: clock
+    required: false
+  -
+    name: rst_n
+    direction: input
+    width: 1
+    role: reset
+    required: false
+windows:
+  -
+    name: baseline
+    checks:
+      - no_xz
+      - clock_edges_present
+      - non_clock_activity

@@ -258,9 +258,11 @@ nodes:
             - "RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations."
             - "Directed TB `.v` files under `output/tb/` may use Verilog `task` helpers"
             - "output/tb/full_function_test_plan.md"
-            - "Directed Loop1 TB must print one structured `HDLFLOW_TEST_CASE` marker for every checked item"
+            - "Directed Loop1 TB must print one structured `HDLFLOW|CHECK|...` event for every checked item"
             - "HDLFLOW_WAVE_BEGIN"
-            - "loop1-waveform-check"
+            - "loop1-waveform-gate"
+            - "top_wave_manifest.yaml"
+            - "waveform_gate.json"
             - "Preserve official bus/protocol/IP signal names exactly"
             - "Do not place all behavior in one file-level FSM."
             - "python -m hdlflow.cli rtl-skill-audit --project <project>"
@@ -272,23 +274,30 @@ nodes:
             - "work/loop1_rtl_tb/sim/"
             - "output/sim/loop1/wave"
             - "HDLFLOW_WAVE_GROUP"
-            - "waveform_hierarchy.json"
-            - "loop1-waveform-check"
+            - "loop1-waveform-gate"
+            - "top_wave_manifest.yaml"
+            - "waveform_gate.json"
             - "Do not edit RTL or UVM blindly before classifying the failure."
     evidence:
       reports:
-        run: output/reports/loop1/loop1_rtl_tb_run_report.md
-        exit: output/reports/loop1/loop1_exit_report.md
-        waveform: output/reports/loop1/waveform_check.json
-        waveform_hierarchy: output/reports/loop1/waveform_hierarchy.json
+        report: output/reports/loop1/loop1_report.md
+        report_json: output/reports/loop1/loop1_report.json
+        report_manifest: output/reports/loop1/loop1_report_manifest.json
+        current_manifest: work/loop1_rtl_tb/current/manifest.json
+        command: work/loop1_rtl_tb/current/cmd/command.json
+        modelsim_log: work/loop1_rtl_tb/current/log/modelsim.log
+        waveform_query_report: output/reports/loop1/waveform_query_report.md
+        waveform_gate: output/reports/loop1/waveform_gate.json
+        query_transcript: output/reports/loop1/query_transcript.json
         rtl_skill_audit: output/reports/loop1/rtl_skill_audit.md
       artifacts:
         waveform_dir: output/sim/loop1/wave
+        waveform_manifest: work/loop1_rtl_tb/config/top_wave_manifest.yaml
       required_markers:
-        directed_pass_any:
-          - PASS
-        zero_errors_any:
-          - "Errors: 0"
+        structured_check:
+          - "HDLFLOW|CHECK"
+        structured_summary:
+          - "HDLFLOW|SUMMARY"
     directed_test_policy:
       required_opcodes_explicit: false
       required_opcodes: []
@@ -366,7 +375,7 @@ nodes:
             - "Build the scoreboard and reference model from the spec, not from the buggy DUT behavior."
             - "The binding database is an intermediate trace artifact, not the Loop2 completion result."
             - "A Loop2 signoff plan must include at least `uvm_policy.min_scenario_tests` scenario tests."
-            - "Emit structured `HDLFLOW_TEST_CASE` log markers from sequences, tests, monitors, or scoreboards"
+            - "Emit structured `HDLFLOW|UVM_CHECK|...` log events from sequences, tests, monitors, or scoreboards"
         modelsim-run-triage-debug:
           path: env/rule/skills/modelsim-run-triage-debug/SKILL.md
           required_markers:
@@ -436,28 +445,21 @@ nodes:
       reports:
         database_preflight: output/reports/loop2/preflight/database_preflight.md
         flesh_plan: output/reports/loop2/preflight/uvm_flesh_plan.md
-        regression: output/reports/loop2/loop2_uvm_regression_report.md
-        exit: output/reports/loop2/loop2_exit_report.md
-        coverage: output/reports/loop2/coverage_index.md
+        report: output/reports/loop2/loop2_report.md
+        report_json: output/reports/loop2/loop2_report.json
+        report_manifest: output/reports/loop2/loop2_report_manifest.json
+        current_manifest: work/loop2_uvm/current/manifest.json
+        command: work/loop2_uvm/current/cmd/command.json
+        modelsim_log: work/loop2_uvm/current/log/modelsim.log
       artifacts:
         binding_database: work/loop2_uvm/_runtime/loop2_bindings.sqlite
       required_markers:
-        regression_structured_result:
-          - "result: PASS"
-        scoreboard_pass_any:
-          - SCOREBOARD_PASS
-          - "Scoreboard | PASS"
-          - "scoreboard | PASS"
-        assertion_pass_any:
-          - "Assertions | PASS"
-      count_labels:
-        uvm_error: UVM_ERROR
-        uvm_fatal: UVM_FATAL
-      coverage_patterns:
-        functional: legal_scenario_cg=([0-9.]+)
-        code_statement: Aggregate \|\s*([0-9.]+)%
+        structured_check:
+          - "HDLFLOW|UVM_CHECK"
+        structured_summary:
+          - "HDLFLOW|UVM_SUMMARY"
       metric_patterns:
-        checked_transactions: "transactions_total:\s*([0-9]+)"
+        checked_transactions: "total_checks"
     gates:
       exit:
         - database_preflight_report_available

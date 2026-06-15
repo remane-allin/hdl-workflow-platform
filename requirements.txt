@@ -1,2 +1,1 @@
-# hdlflow currently uses only the Python standard library.
-# Keep this file present so environment bootstrap can pin future runtime dependencies.
+pywellen==0.25.5; python_version < "3.14" or platform_system != "Windows"

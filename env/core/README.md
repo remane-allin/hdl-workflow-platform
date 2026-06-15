@@ -25,7 +25,7 @@ python -m hdlflow.cli ensure-output --project prj\<project_name>
 python -m hdlflow.cli requirements-frontdoor-init --project prj\<project_name> --status DRAFT
 python -m hdlflow.cli requirements-frontdoor-check --project prj\<project_name> --allow-draft
 python -m hdlflow.cli review-check --project prj\<project_name> --level develop
-python -m hdlflow.cli loop1-waveform-check --project prj\<project_name>
+python -m hdlflow.cli loop1-waveform-gate --project prj\<project_name>
 python -m hdlflow.cli run-gate --project prj\<project_name> --node loop2 --level develop
 python -m hdlflow.cli final-audit --project prj\<project_name>
 python -m hdlflow.cli change-open --project prj\<project_name> --title "change title" --reason "why" --scope "files" --risk "low"
@@ -43,7 +43,7 @@ Current scope:
 - run executable node gates against reports, logs, coverage, Vivado evidence, and freshness checks
 - create and validate multi-role requirements front-door artifacts before Loop handoff
 - validate structured Review Agent findings and block open severity issues
-- validate Loop1 top-level VCD waveform windows before Loop2 handoff
+- validate the Loop1 pywellen-backed top-port waveform query gate before Loop2 handoff
 - maintain change-control request, platform-inferred impact, approval, gate-binding, and trace-update records
 - synchronize the file-backed Ralph loop status from active plan, memory, gate state, review blockers, and change records
 - record CLI failures and rollback/hash manifests under project memory

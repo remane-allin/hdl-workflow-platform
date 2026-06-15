@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -471,7 +472,7 @@ def _insert_artifacts(
                 artifact_type,
                 role,
                 1 if (project / path).exists() else 0,
-                "req_to_test" if path in bound_paths else "scan",
+                "loop2_trace" if path in bound_paths else "scan",
             ),
         )
     return artifact_ids
@@ -487,7 +488,7 @@ def _insert_requirements(
     for req_id in sorted(req_bindings):
         conn.execute(
             "INSERT INTO loop2_requirements(req_id, intent_id, source) VALUES (?, ?, ?)",
-            (req_id, intent_by_req.get(req_id, ""), "req_to_test.yaml"),
+            (req_id, intent_by_req.get(req_id, ""), "loop2_trace"),
         )
         for path in sorted(req_bindings[req_id]):
             conn.execute(
@@ -540,27 +541,35 @@ def _insert_artifact_evidence(
 
 
 def _collect_requirement_bindings(project: Path) -> dict[str, set[str]]:
-    trace_path = project / "work/docparse" / "trace_matrix" / "req_to_test.yaml"
-    if not trace_path.is_file():
-        return {}
-    data = load_yaml(trace_path)
-    links = data.get("links", {})
-
     result: dict[str, set[str]] = {}
-    if isinstance(links, dict):
-        items = links.items()
-    elif isinstance(links, list):
-        items = []
-        for item in links:
-            if not isinstance(item, dict):
-                continue
-            req_id = item.get("req_id") or item.get("requirement_id") or item.get("source")
-            raw_paths = item.get("paths") or item.get("artifacts") or item.get("targets")
-            if req_id:
-                items.append((req_id, raw_paths))
-    else:
-        return {}
+    trace_paths = [
+        project / "work/loop2_uvm" / "trace_matrix" / "req_to_uvm.yaml",
+        project / "work/loop2_uvm" / "trace_matrix" / "req_to_assertion.yaml",
+        project / "work/loop2_uvm" / "trace_matrix" / "req_to_coverage.yaml",
+    ]
+    for trace_path in trace_paths:
+        if not trace_path.is_file():
+            continue
+        data = load_yaml(trace_path)
+        links = data.get("links", {})
+        if isinstance(links, dict):
+            items = links.items()
+        elif isinstance(links, list):
+            items = []
+            for item in links:
+                if not isinstance(item, dict):
+                    continue
+                req_id = item.get("req_id") or item.get("requirement_id") or item.get("source")
+                raw_paths = item.get("paths") or item.get("artifacts") or item.get("targets")
+                if req_id:
+                    items.append((req_id, raw_paths))
+        else:
+            continue
+        _collect_loop2_paths_from_trace_items(items, result)
+    return result
 
+
+def _collect_loop2_paths_from_trace_items(items: Any, result: dict[str, set[str]]) -> None:
     for req_id, raw_paths in items:
         paths = {_normalize_rel_path(path) for path in _as_list(raw_paths)}
         loop2_paths = {
@@ -571,8 +580,7 @@ def _collect_requirement_bindings(project: Path) -> dict[str, set[str]]:
             or path.startswith("output/reports/loop2/")
         }
         if loop2_paths:
-            result[str(req_id)] = loop2_paths
-    return result
+            result.setdefault(str(req_id), set()).update(loop2_paths)
 
 
 def _collect_loop2_artifacts(project: Path, req_bindings: dict[str, set[str]]) -> set[str]:
@@ -585,22 +593,20 @@ def _collect_loop2_artifacts(project: Path, req_bindings: dict[str, set[str]]) -
         if not root.is_dir():
             continue
         for path in root.rglob("*"):
-            if path.is_file() and path.suffix.lower() in {".sv", ".svh", ".do", ".md", ".log", ".txt"}:
+            if path.is_file() and path.suffix.lower() in {".sv", ".svh", ".do", ".md", ".json"}:
                 paths.add(_normalize_rel_path(path.relative_to(project)))
     return paths
 
 
 def _collect_evidence(project: Path) -> list[dict[str, str]]:
     evidence: list[dict[str, str]] = []
-    log_path = project / "output" / "reports" / "loop2" / "modelsim_loop2.log"
-    rel_log = "output/reports/loop2/modelsim_loop2.log"
+    log_path = project / "work" / "loop2_uvm" / "current" / "log" / "modelsim.log"
+    rel_log = "work/loop2_uvm/current/log/modelsim.log"
     if log_path.is_file():
         text = log_path.read_text(encoding="utf-8", errors="ignore")
         markers = [
-            ("uvm_error_zero", "UVM_ERROR :    0", "PASS", "0"),
-            ("uvm_fatal_zero", "UVM_FATAL :    0", "PASS", "0"),
-            ("scoreboard_pass", "SCOREBOARD_PASS", "PASS", _extract_value(text, r"SCOREBOARD_PASS checks=([0-9]+)")),
-            ("coverage_reported", "COVERAGE", "PASS", _extract_value(text, r"legal_scenario_cg=([0-9.]+)")),
+            ("uvm_summary", "HDLFLOW|UVM_SUMMARY", "PASS", _extract_value(text, r"HDLFLOW\|UVM_SUMMARY\|.*total_checks=([0-9]+)")),
+            ("uvm_structured_check", "HDLFLOW|UVM_CHECK", "PASS", str(text.count("HDLFLOW|UVM_CHECK"))),
         ]
         for evidence_type, marker, status, value in markers:
             if marker in text:
@@ -614,22 +620,28 @@ def _collect_evidence(project: Path) -> list[dict[str, str]]:
                     }
                 )
 
-    coverage_path = project / "output" / "reports" / "loop2" / "modelsim_code_coverage.txt"
-    if coverage_path.is_file():
-        evidence.append(
-            {
-                "evidence_type": "code_coverage_file",
-                "path": _normalize_rel_path(coverage_path.relative_to(project)),
-                "marker": "coverage report exists",
-                "status": "PASS",
-                "value": str(coverage_path.stat().st_size),
-            }
-        )
+    report_json = project / "output" / "reports" / "loop2" / "loop2_report.json"
+    if report_json.is_file():
+        try:
+            payload = json.loads(report_json.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+        if isinstance(payload, dict):
+            summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+            evidence.append(
+                {
+                    "evidence_type": "loop2_report_json",
+                    "path": _normalize_rel_path(report_json.relative_to(project)),
+                    "marker": str(payload.get("result", "")),
+                    "status": str(payload.get("result", "")),
+                    "value": str(summary.get("total_checks", "")),
+                }
+            )
 
     for report_name in [
-        "loop2_uvm_regression_report.md",
-        "coverage_index.md",
-        "loop2_exit_report.md",
+        "loop2_report.md",
+        "loop2_report.json",
+        "loop2_report_manifest.json",
     ]:
         report_path = project / "output" / "reports" / "loop2" / report_name
         if report_path.is_file():

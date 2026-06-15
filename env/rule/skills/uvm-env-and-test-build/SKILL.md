@@ -55,10 +55,10 @@ directory is reserved for Verilog-2001 directed Loop1 testbenches.
    - scoreboard/reference model
    - protocol agent files
 9. If register modeling is needed, consume outputs from `$register-spec-and-ral` or align manually with `register_map.yaml`.
-10. Update `work/docparse/trace_matrix/req_to_test.yaml`.
-11. Run or hand off to `$modelsim-run-triage-debug`, then update regression, exit, coverage, and binding database evidence together. The binding database is an intermediate trace artifact, not the Loop2 completion result.
-12. Treat Loop2 final reports as current-run artifacts. Every full functional regression run must overwrite `loop2_uvm_regression_report.md`, `coverage_index.md`, and `loop2_exit_report.md` from the latest simulator log and coverage output; never append a new run into stale reports.
-13. Emit structured `HDLFLOW_TEST_CASE` log markers from sequences, tests, monitors, or scoreboards for every checked test item. Each marker must include `id`, `stimulus`, `expected`, `actual`, `result`, `transactions`, and `stimuli` fields so `loop2-refresh-reports` can generate the final report directly from the real log.
+10. Update `work/loop2_uvm/trace_matrix/req_to_uvm.yaml`, `work/loop2_uvm/trace_matrix/req_to_assertion.yaml`, and `work/loop2_uvm/trace_matrix/req_to_coverage.yaml` after the UVM, assertion, and coverage artifacts exist.
+11. Run or hand off to `$modelsim-run-triage-debug`, then update the unified Loop2 report, current run manifest, and binding database evidence together. The binding database is an intermediate trace artifact, not the Loop2 completion result.
+12. Treat Loop2 final reports as current-run artifacts. Every full functional regression run must overwrite `work/loop2_uvm/current/log/modelsim.log`, `output/reports/loop2/loop2_report.md`, `output/reports/loop2/loop2_report.json`, and `output/reports/loop2/loop2_report_manifest.json`; never append a new run into stale reports.
+13. Emit structured `HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|...` log events from sequences, tests, monitors, or scoreboards for every checked test item. Each event must include `test_id`, `txn_id`, `sent`, `expected`, `actual`, and `result` fields. Each signoff run must also emit one `HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|...` event so `loop2-refresh-reports` can generate the final report directly from the real log.
 
 ## UVM Test And Coverage Strategy
 
@@ -93,7 +93,7 @@ When building UVM tests and covergroups:
 - Do not claim authoritative UVM signoff from a handful of hand-written transactions. Use sequencer/driver-generated transactions, monitor-observed transactions, scoreboard matching, and functional coverage tied to the transaction stream.
 - Every generated test should have a clear intent and a checker path.
 - Every generated test should produce structured log evidence with visible test-case boundaries and input/expected/actual/result fields.
-- Use baseline/precheck runs only as entry checks. After the full functional regression passes, final Loop2 deliverables keep regression, coverage, exit, and binding evidence only; do not keep a baseline functional-test report as signoff evidence.
+- Use baseline/precheck runs only as entry checks. After the full functional regression passes, final Loop2 deliverables keep the unified report, current run manifest, and binding evidence only; do not keep a baseline functional-test report as signoff evidence.
 - Start with deterministic functional scenarios before broad randomization.
 - Keep configuration, virtual interface hookup, and scoreboard assumptions explicit.
 - If the issue belongs to RTL or the spec itself, record the mismatch and route it back instead of masking it in UVM.
@@ -112,9 +112,9 @@ This skill is complete when:
 - checked transaction count meets `uvm_policy.min_checked_transactions`
 - scenario test count meets `uvm_policy.min_scenario_tests`
 - stress transactions include at least `uvm_policy.min_stress_stimuli_per_transaction` stimuli
-- regression, exit, coverage, and binding database evidence are all updated from the same Loop2 pass
+- unified report, current run manifest, and binding database evidence are all updated from the same Loop2 pass
 - final report files were overwritten by the latest full functional regression run
-- final report files contain per-test sections generated from `HDLFLOW_TEST_CASE` markers in the real simulator log
+- final report files contain per-test sections generated from `HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|...` events in the real simulator log
 - known monitor or checker assumptions are documented
 - functional coverage bins and crosses are tied to legal verification intent, with impossible combinations ignored or documented
 

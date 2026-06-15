@@ -1,12 +1,16 @@
-"""Report writers for configuration-level runs."""
+"""Unified report generation helpers."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
 
-from .layout import project_memory_path
-from .pipeline import PipelineNode
+from ..layout import project_memory_path
+from ..pipeline import PipelineNode
+
+from .loop1_report import generate_loop1_report
+from .loop2_report import generate_loop2_report
+from .parser_hdlflow_events import parse_hdlflow_events, parse_loop1_events, parse_loop2_events
 
 
 def write_config_run_report(
@@ -35,3 +39,13 @@ def write_config_run_report(
         lines.append("- all configuration checks passed")
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return report_path
+
+
+__all__ = [
+    "generate_loop1_report",
+    "generate_loop2_report",
+    "parse_hdlflow_events",
+    "parse_loop1_events",
+    "parse_loop2_events",
+    "write_config_run_report",
+]

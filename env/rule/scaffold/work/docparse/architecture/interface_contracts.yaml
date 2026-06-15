@@ -3,7 +3,20 @@ project: change_me
 status: DRAFT
 owner_role: arch
 source_refs: []
-interfaces: []
+interfaces:
+  -
+    id: ""
+    name: ""
+    producer_module: ""
+    consumer_module: ""
+    clock_domain: ""
+    reset_domain: ""
+    pins: []
+    signals: []
+    protocol: ""
+    contract: []
+    latency: ""
+    req_ids: []
 ports: []
 protocols: []
 latency_contracts: []

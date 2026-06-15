@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from ..project import require_project_instance
+from ..requirements_frontend import DOC_PROJECTION_REL
 from .collect import resolve_project_or_workspace_path, sha256_file
 from .constants import DOC_DEFINITIONS, DOCSET_MANIFEST_REL, DOCS_BY_TYPE, DocDefinition
 from .schemas import DOCSET_SCHEMA_VERSION, DOCUMENT_MANIFEST_SCHEMA_VERSION
@@ -23,6 +24,7 @@ def build_document_manifest(
 ) -> dict[str, Any]:
     project = require_project_instance(project_path)
     template_path = resolve_project_or_workspace_path(project, definition.template_rel)
+    projection_path = project / DOC_PROJECTION_REL
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     doc_text = doc_path.read_text(encoding="utf-8")
     return {
@@ -38,6 +40,8 @@ def build_document_manifest(
         "doc_sha256": sha256_file(doc_path),
         "snapshot_sha256": sha256_file(snapshot_path),
         "template_sha256": sha256_file(template_path) if template_path.exists() else "MISSING",
+        "projection_path": DOC_PROJECTION_REL,
+        "projection_sha256": sha256_file(projection_path) if projection_path.exists() else "MISSING",
         "markers": [definition.marker_start, definition.marker_end],
         "source_hashes": snapshot.get("sources", []),
         "validation": {

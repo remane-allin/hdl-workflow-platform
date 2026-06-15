@@ -1,7 +1,13 @@
 {
   "project": "change_me",
+  "req_to_design_intent": "pending",
+  "req_to_test_intent": "pending",
   "req_to_rtl": "pending",
-  "req_to_test": "pending",
+  "req_to_directed_tb": "pending",
+  "req_to_uvm": "pending",
+  "req_to_assertion": "pending",
+  "req_to_coverage": "pending",
+  "req_to_fpga_evidence": "pending",
   "bug_to_fix": "pending",
   "gaps": []
 }

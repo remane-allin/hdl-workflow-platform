@@ -12,10 +12,11 @@ set env(PYTHONPATH) [file join $workspace_root env core]
 set output_dir [file join $project_root output]
 set uvm_dir [file join $output_dir uvm]
 set runtime_dir [file join $project_root work/loop2_uvm _runtime]
+set current_dir [file join $project_root work/loop2_uvm current]
+set log_dir [file join $current_dir log]
 set work_lib [file join $runtime_dir work]
-set report_dir [file join $output_dir reports loop2]
-file mkdir $report_dir
-transcript file [file join $report_dir modelsim_loop2.log]
+file mkdir $log_dir
+transcript file [file join $log_dir modelsim.log]
 transcript on
 
 if {![info exists enable_code_coverage]} {
@@ -124,8 +125,7 @@ eval vsim $vsim_args
 run -all
 
 if {$enable_code_coverage} {
-    coverage report -details -file [file join $runtime_dir loop2_coverage.txt]
-    file copy -force [file join $runtime_dir loop2_coverage.txt] [file join $report_dir modelsim_code_coverage.txt]
+    coverage report -details -file [file join $log_dir coverage_raw.txt]
 }
 
 quit -sim

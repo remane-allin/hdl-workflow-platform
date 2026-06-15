@@ -4,8 +4,11 @@ import json
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 from contextlib import closing
 from pathlib import Path
 
@@ -55,8 +58,6 @@ from hdlflow.requirements_frontend import (
     required_frontend_paths,
 )
 from hdlflow.loop2_bindings import write_loop2_database_preflight
-from hdlflow.loop1_reports import _extract_cases as _extract_loop1_cases, _format_run_report as _format_loop1_run_report
-from hdlflow.loop2_reports import _extract_test_cases as _extract_loop2_cases, _format_regression_report as _format_loop2_regression_report
 from hdlflow.memory import (
     _is_active_gate,
     append_plan_note,
@@ -65,6 +66,12 @@ from hdlflow.memory import (
     start_active_plan,
     update_active_plan_step,
 )
+from hdlflow.plan_checks import check_plan
+from hdlflow.report_checks import check_reports
+from hdlflow.reports.constants import BLOCKED_BANNER, FAIL_BANNER, LOOP1_REPORT, LOOP2_REPORT, PASS_BANNER
+from hdlflow.reports.loop1_report import generate_loop1_report
+from hdlflow.reports.parser_hdlflow_events import parse_loop1_events, parse_loop2_events
+from hdlflow.reports.render_report import build_report_payload, render_report_markdown
 from hdlflow.ralph_loop import ralph_check, ralph_status, ralph_step
 from hdlflow.release import release_preflight
 from hdlflow.repair import apply_repair_ticket, diagnose_repairs
@@ -78,7 +85,7 @@ from hdlflow.scaffold import PROJECT_CREATE_ENTRYPOINT_ENV, create_project
 from hdlflow.simple_yaml import parse_yaml
 from hdlflow.state_sync import sync_project_state
 from hdlflow.validate import REQUIRED_PATHS, validate_project
-from hdlflow.waveform import check_loop1_waveform, check_loop1_waveform_report
+from hdlflow.waveform_gate import check_loop1_waveform_gate_report, run_loop1_waveform_gate
 
 
 class SimpleYamlTests(unittest.TestCase):
@@ -214,42 +221,67 @@ class Loop2RiskGateTests(unittest.TestCase):
 
     def test_structured_loop1_log_markers_generate_sectioned_report(self):
         log = (
-            'HDLFLOW_TEST_CASE id=opcode_00 stimulus="spi_cmd_00" '
-            'expected="status_clear" actual="status_clear" result=PASS transactions=1 stimuli=2'
+            "HDLFLOW|TEST_BEGIN|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=opcode_00|scope=spi\n"
+            "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=opcode_00|txn_id=txn_0001|sent=spi_cmd_00|expected=status_clear|actual=status_clear|latency_cycles=3|result=PASS\n"
+            "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS\n"
         )
-        cases = _extract_loop1_cases(log)
+        parsed = parse_loop1_events(log)
+        payload = build_report_payload(LOOP1_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP1_REPORT, payload)
 
-        report = _format_loop1_run_report("demo", "2026-05-21T00:00:00", "PASS", cases, 0)
+        self.assertEqual(parsed["transactions"][0]["test_id"], "opcode_00")
+        self.assertIn("## 2. Main Results", report)
+        self.assertIn("| opcode_00 | txn_0001 | spi_cmd_00 | status_clear | status_clear | 3 | PASS |", report)
+        self.assertIn(PASS_BANNER, report)
+        self.assertNotIn("## Evidence", report)
 
-        self.assertEqual(cases[0]["item"], "opcode_00")
-        self.assertIn("========== LOOP1_TEST_ITEM_001 START ==========", report)
-        self.assertIn("- stimulus_sent: spi_cmd_00", report)
-        self.assertIn("- expected_result: status_clear", report)
+    def test_loop1_missing_summary_blocks_report(self):
+        parsed = parse_loop1_events(
+            "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=opcode_00|txn_id=txn_0001|sent=spi_cmd_00|expected=status_clear|actual=status_clear|latency_cycles=3|result=PASS"
+        )
+        payload = build_report_payload(LOOP1_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP1_REPORT, payload)
+
+        self.assertEqual(parsed["result"], "BLOCKED")
+        self.assertIn("missing_structured_summary", parsed["parser_errors"])
+        self.assertIn(BLOCKED_BANNER, report)
+
+    def test_loop1_missing_check_field_blocks_report(self):
+        parsed = parse_loop1_events(
+            "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=opcode_00|txn_id=txn_0001|sent=spi_cmd_00|expected=status_clear|latency_cycles=3|result=PASS\n"
+            "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS"
+        )
+
+        self.assertEqual(parsed["result"], "BLOCKED")
+        self.assertTrue(any("missing field" in item for item in parsed["parser_errors"]))
 
     def test_structured_loop2_log_markers_generate_sectioned_report(self):
         log = (
-            'HDLFLOW_TEST_CASE id=stress_fifo stimulus="burst_write_and_read" '
-            'expected="scoreboard_match" actual="scoreboard_match" result=PASS transactions=64 stimuli=8'
+            "HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=stress_fifo|txn_id=txn_0064|sent=burst_write_and_read|expected=scoreboard_match|actual=scoreboard_match|latency_cycles=8|result=PASS\n"
+            "HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=0|uvm_fatal=0|total_checks=64|failed_checks=0|coverage=91.5|result=PASS\n"
         )
-        cases = _extract_loop2_cases(log)
-        metrics = {
-            "test_name": "demo_full_test",
-            "transactions_total": 64,
-            "scoreboard_matches": 64,
-            "uvm_error_count": 0,
-            "uvm_fatal_count": 0,
-            "uvm_warning_count": 0,
-            "scoreboard_pass": True,
-            "assertions_pass": True,
-            "test_cases": cases,
-        }
+        parsed = parse_loop2_events(log)
+        payload = build_report_payload(LOOP2_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP2_REPORT, payload)
 
-        report = _format_loop2_regression_report("demo", "2026-05-21T00:00:00", "PASS", metrics)
+        self.assertEqual(parsed["transactions"][0]["test_id"], "stress_fifo")
+        self.assertEqual(parsed["summary"]["total_checks"], 64)
+        self.assertIn("## 2. Main Results", report)
+        self.assertIn("| stress_fifo | txn_0064 | burst_write_and_read | scoreboard_match | scoreboard_match | 8 | PASS |", report)
+        self.assertIn(PASS_BANNER, report)
+        self.assertNotIn("## Evidence", report)
 
-        self.assertEqual(cases[0]["item"], "stress_fifo")
-        self.assertIn("========== LOOP2_TEST_ITEM_001 START ==========", report)
-        self.assertIn("- transactions: 64", report)
-        self.assertIn("- stimuli: 8", report)
+    def test_loop2_failed_check_sets_fail_banner(self):
+        parsed = parse_loop2_events(
+            "HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=stress_fifo|txn_id=txn_0064|sent=burst_write_and_read|expected=scoreboard_match|actual=mismatch|result=FAIL|reason=scoreboard_mismatch\n"
+            "HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=0|uvm_fatal=0|total_checks=64|failed_checks=1|coverage=91.5|result=FAIL\n"
+        )
+        payload = build_report_payload(LOOP2_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP2_REPORT, payload)
+
+        self.assertEqual(parsed["result"], "FAIL")
+        self.assertIn(FAIL_BANNER, report)
+        self.assertIn("scoreboard_mismatch", report)
 
     def test_loop1_full_function_matrix_uses_source_bound_opcodes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -362,53 +394,75 @@ class Loop2RiskGateTests(unittest.TestCase):
             self.assertIn("PS_PL_DDR_PATH_PASS", missing.detail)
             self.assertEqual(present.status, "PASS")
 
-    def test_loop1_waveform_check_passes_marked_top_level_vcd_window(self):
+    def test_loop1_waveform_query_gate_writes_only_new_reports(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
-            _write_loop1_waveform_evidence(project)
+            _write_loop1_semantic_waveform_evidence(project)
 
-            result = check_loop1_waveform(project)
+            with _fake_pywellen_installed():
+                result = run_loop1_waveform_gate(project)
 
             self.assertTrue(result.ok, result.errors)
-            self.assertEqual(result.window_count, 1)
-            self.assertEqual(check_loop1_waveform_report(project), [])
-            hierarchy = json.loads(result.hierarchy_json_path.read_text(encoding="utf-8"))
-            self.assertEqual(hierarchy["vcd"], "output/sim/loop1/wave/loop1_tb_top.vcd")
-            self.assertTrue(any(item["scope"] == "loop1_tb.dut.u_rx" for item in hierarchy["scopes"]))
-            self.assertGreaterEqual(hierarchy["scope_count"], 2)
+            self.assertEqual(check_loop1_waveform_gate_report(project), [])
+            payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["backend"], "pywellen")
+            self.assertEqual(payload["window_count"], 1)
+            self.assertGreaterEqual(payload["signal_count"], 4)
+            self.assertTrue((project / "output/reports/loop1/waveform_query_report.md").is_file())
+            self.assertTrue((project / "output/reports/loop1/waveform_gate.json").is_file())
+            self.assertTrue((project / "output/reports/loop1/query_transcript.json").is_file())
 
-    def test_loop1_waveform_check_uses_output_wave_deliverables_only(self):
+    def test_loop1_waveform_query_gate_uses_output_wave_deliverables_only(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
-            _write_loop1_waveform_evidence(project, wave_rel="work/loop1_rtl_tb/_runtime/wave")
+            _write_loop1_semantic_waveform_evidence(project, wave_rel="work/loop1_rtl_tb/_runtime/wave")
 
-            result = check_loop1_waveform(project)
+            with _fake_pywellen_installed():
+                result = run_loop1_waveform_gate(project, vcd_path=project / "work/loop1_rtl_tb/_runtime/wave/top_ports.vcd")
 
             self.assertFalse(result.ok)
-            self.assertTrue(any("missing Loop1 VCD waveform under output/sim/loop1/wave" in item for item in result.errors))
+            self.assertTrue(any("output/sim/loop1/wave" in item for item in result.errors))
 
-    def test_loop1_waveform_check_rejects_unknowns_inside_window(self):
+    def test_loop1_waveform_query_gate_rejects_unknowns_inside_window(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
-            _write_loop1_waveform_evidence(project, unknown=True)
+            _write_loop1_semantic_waveform_evidence(project, unknown=True)
 
-            result = check_loop1_waveform(project)
+            with _fake_pywellen_installed():
+                result = run_loop1_waveform_gate(project)
 
             self.assertFalse(result.ok)
-            self.assertTrue(any("unknown X/Z" in item for item in result.errors))
-            self.assertTrue(any("unknown X/Z" in item for item in check_loop1_waveform_report(project)))
+            payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+            details = "\n".join(str(item.get("detail", "")) for item in payload["checks"])
+            self.assertIn("X/Z", details)
 
-    def test_loop1_waveform_report_gate_requires_windows_and_signals(self):
+    def test_loop1_waveform_query_gate_report_required(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
 
-            errors = check_loop1_waveform_report(project)
+            errors = check_loop1_waveform_gate_report(project)
 
-            self.assertTrue(any("missing Loop1 waveform check report" in item for item in errors))
+            self.assertTrue(any("missing Loop1 waveform semantic gate report" in item for item in errors))
+
+    def test_loop1_waveform_query_gate_passes_manifest_top_ports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_loop1_semantic_waveform_evidence(project)
+
+            with _fake_pywellen_installed():
+                result = run_loop1_waveform_gate(project)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(check_loop1_waveform_gate_report(project), [])
+            payload = json.loads(result.json_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["result"], "PASS")
+            self.assertEqual(payload["manifest"], "work/loop1_rtl_tb/config/top_wave_manifest.yaml")
+            self.assertTrue((project / "output/reports/loop1/query_transcript.json").is_file())
 
     def test_unclassified_coverage_triage_blocks_loop2_closure(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1287,6 +1341,36 @@ class DocparsePolicyTests(unittest.TestCase):
 
 
 class PlatformTemplateContractTests(unittest.TestCase):
+    def test_platform_text_avoids_ambiguous_quick_check_label(self):
+        root = Path(__file__).resolve().parents[3]
+        forbidden = "smo" + "ke"
+        scanned_suffixes = {
+            ".do",
+            ".json",
+            ".md",
+            ".py",
+            ".sv",
+            ".svh",
+            ".tcl",
+            ".template",
+            ".txt",
+            ".yaml",
+            ".yml",
+        }
+        roots = [root / "README.md", root / "env"]
+        failures: list[str] = []
+        for scan_root in roots:
+            paths = [scan_root] if scan_root.is_file() else scan_root.rglob("*")
+            for path in paths:
+                if not path.is_file() or path.suffix.lower() not in scanned_suffixes:
+                    continue
+                if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
+                    continue
+                text = path.read_text(encoding="utf-8", errors="ignore").lower()
+                if forbidden in text:
+                    failures.append(str(path.relative_to(root)).replace("\\", "/"))
+        self.assertEqual([], failures)
+
     def test_project_creation_engine_blocks_direct_cli_entry(self):
         old_value = os.environ.get(PROJECT_CREATE_ENTRYPOINT_ENV)
         os.environ.pop(PROJECT_CREATE_ENTRYPOINT_ENV, None)
@@ -1388,15 +1472,18 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "review_no_open_defects",
             "arbtr_confirms_compliance",
             "output/tb/full_function_test_plan.md",
-            "HDLFLOW_TEST_CASE",
+            "HDLFLOW|CHECK",
+            "HDLFLOW|SUMMARY",
             "HDLFLOW_WAVE_BEGIN",
             "waveform_windows",
             "waveform_comparison",
             "Loop1 waveform secondary-check planning",
-            "loop1-waveform-check",
+            "loop1-waveform-gate",
             "output/sim/loop1/wave",
             "HDLFLOW_WAVE_GROUP",
-            "waveform_hierarchy.json",
+            "waveform_query_report.md",
+            "waveform_gate.json",
+            "query_transcript.json",
             "Do not place all behavior in one file-level FSM.",
             "min_scenario_tests: 5",
             "min_stress_stimuli_per_transaction: 2",
@@ -1440,7 +1527,9 @@ class PlatformTemplateContractTests(unittest.TestCase):
         coverage_waiver = json.loads((root / "env" / "rule" / "scaffold" / "work" / "gates" / "coverage_waiver.json").read_text(encoding="utf-8"))
 
         self.assertNotIn("regression_pass_any", template_config)
-        self.assertIn("regression_structured_result", template_config)
+        self.assertNotIn("regression_structured_result", template_config)
+        self.assertIn("report_json: output/reports/loop2/loop2_report.json", template_config)
+        self.assertIn("structured_summary:", template_config)
         self.assertIn("required_opcodes_explicit: false", template_config)
         self.assertIn("required_opcodes: []", template_config)
         self.assertIn("serial_validation: output/reports/loop3/serial/latest_serial_validation_report.md", template_config)
@@ -1450,13 +1539,13 @@ class PlatformTemplateContractTests(unittest.TestCase):
         self.assertIn("loop3_exit: output/reports/loop3/loop3_exit_report.md", template_config)
         self.assertEqual(coverage_waiver["schema_version"], 2)
 
-    def test_loop1_modelsim_template_runs_refresh_and_waveform_checks_from_env_core(self):
+    def test_loop1_modelsim_template_runs_refresh_and_waveform_gate_from_env_core(self):
         root = Path(__file__).resolve().parents[3]
         rtl_functional = (root / "env" / "rule" / "scaffold" / "work" / "loop1_rtl_tb" / "sim" / "rtl_functional.do").read_text(encoding="utf-8")
         loop2_entry = (root / "env" / "rule" / "scaffold" / "work" / "loop2_uvm" / "sim" / "uvm_full_functional.do").read_text(encoding="utf-8")
 
         self.assertIn("loop1-refresh-reports", rtl_functional)
-        self.assertIn("loop1-waveform-check", rtl_functional)
+        self.assertIn("loop1-waveform-gate", rtl_functional)
         self.assertIn("set wave_dir [file join $project_root output sim loop1 wave]", rtl_functional)
         self.assertIn("HDLFLOW_WAVE_GROUP", rtl_functional)
         self.assertIn("loop1_wave_extra_groups", rtl_functional)
@@ -1597,10 +1686,13 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "work/docparse/structured_spec/register_map.yaml",
             "work/docparse/structured_spec/test_intent.yaml",
             "work/docparse/structured_spec/timing_rules.yaml",
+            "work/docparse/doc_projection.yaml",
+            "work/docparse/trace_matrix/req_to_design_intent.yaml",
+            "work/docparse/trace_matrix/req_to_test_intent.yaml",
         ]:
             self.assertIn(rel, paths)
 
-    def test_module_plan_contract_requires_lld_ready_fields(self):
+    def test_module_plan_contract_requires_structural_fields_without_blocking_unknown_values(self):
         errors: list[str] = []
 
         _check_module_plan_contract(
@@ -1630,10 +1722,10 @@ class PlatformTemplateContractTests(unittest.TestCase):
             errors,
         )
 
-        self.assertTrue(any(".clock_domain must be non-empty" in item for item in errors))
-        self.assertTrue(any(".reset_domain must be non-empty" in item for item in errors))
-        self.assertTrue(any(".interfaces.inputs must be non-empty" in item for item in errors))
-        self.assertTrue(any(".verification_refs must include" in item for item in errors))
+        self.assertFalse(any(".clock_domain must be non-empty" in item for item in errors))
+        self.assertFalse(any(".reset_domain must be non-empty" in item for item in errors))
+        self.assertTrue(any(".status must be present" in item for item in errors))
+        self.assertTrue(any(".interfaces must be a mapping" in item for item in errors))
 
     def test_module_plan_contract_accepts_complete_lld_module(self):
         errors: list[str] = []
@@ -1657,6 +1749,9 @@ class PlatformTemplateContractTests(unittest.TestCase):
                         "name": "demo_top",
                         "id": "MOD-001",
                         "type": "top",
+                        "status": "ready",
+                        "confidence": "high",
+                        "known_unknowns": [],
                         "source_file": "demo_top.v",
                         "responsibility": "Instantiate child modules and expose top ports",
                         "clock_domain": "clk",
@@ -1670,17 +1765,28 @@ class PlatformTemplateContractTests(unittest.TestCase):
                             "memories": [],
                             "counters": [],
                             "arbiters": [],
+                            "error_flags": [],
                         },
-                        "interfaces": {"inputs": ["clk"], "outputs": ["valid_o"]},
+                        "interfaces": {"inputs": ["clk"], "outputs": ["valid_o"], "internal": ["demo_bus"]},
+                        "dataflow": {
+                            "consumes": ["clk"],
+                            "produces": ["valid_o"],
+                            "transforms": ["hierarchy_only_wiring"],
+                        },
                         "req_ids": ["REQ-DEMO-001"],
-                        "verification_refs": {"tests": ["TC-DEMO-001"]},
+                        "design_feature_ids": [],
+                        "verification_refs": {"tests": ["TC-DEMO-001"], "assertions": [], "coverage": []},
                         "forbidden_responsibilities": ["protocol_decode"],
                     },
                     {
                         "name": "demo_leaf",
                         "id": "MOD-002",
                         "type": "leaf",
+                        "status": "ready",
+                        "confidence": "high",
+                        "known_unknowns": [],
                         "source_file": "demo_leaf.v",
+                        "parent": "demo_top",
                         "responsibility": "Own valid_o register",
                         "clock_domain": "clk",
                         "reset_domain": "rst_n",
@@ -1692,10 +1798,17 @@ class PlatformTemplateContractTests(unittest.TestCase):
                             "memories": [],
                             "counters": [],
                             "arbiters": [],
+                            "error_flags": [],
                         },
-                        "interfaces": {"inputs": ["clk", "rst_n"], "outputs": ["valid_o"]},
+                        "interfaces": {"inputs": ["clk", "rst_n"], "outputs": ["valid_o"], "internal": ["demo_bus"]},
+                        "dataflow": {
+                            "consumes": ["clk", "rst_n"],
+                            "produces": ["valid_o"],
+                            "transforms": ["registered_valid_flag"],
+                        },
+                        "req_ids": [],
                         "design_feature_ids": ["DF-DEMO-LEAF"],
-                        "verification_refs": {"assertions": ["SVA-DEMO-LEAF"]},
+                        "verification_refs": {"tests": [], "assertions": ["SVA-DEMO-LEAF"], "coverage": []},
                         "forbidden_responsibilities": ["unowned_register_update"],
                     },
                 ],
@@ -1704,6 +1817,51 @@ class PlatformTemplateContractTests(unittest.TestCase):
         )
 
         self.assertEqual(errors, [])
+
+    def test_plan_check_grades_docparse_unknowns_before_lld_errors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp) / "workspace"
+            _create_minimal_workspace_for_frontdoor(workspace)
+            project = workspace / "prj" / "demo"
+            _create_minimal_project(project)
+            (project / "input" / "spec").mkdir(parents=True)
+            (project / "input" / "spec" / "source.yaml").write_text("source: demo\n", encoding="utf-8")
+            initialize_requirements_frontend(project, status="DRAFT")
+
+            docparse = check_plan(project, maturity="docparse")
+            lld = check_plan(project, maturity="lld")
+
+            self.assertTrue(docparse.ok)
+            self.assertTrue(any(issue.severity == "warning" for issue in docparse.issues))
+            self.assertFalse(lld.ok)
+            self.assertTrue(any("source_file is unresolved" in issue.message for issue in lld.issues))
+            self.assertTrue((project / "output/reports/docparse/plan_report.md").is_file())
+
+    def test_report_check_uses_json_manifest_and_rejects_markdown_evidence_section(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            log_path = project / "work/loop1_rtl_tb/current/log/modelsim.log"
+            log_path.parent.mkdir(parents=True)
+            log_path.write_text(
+                "\n".join(
+                    [
+                        "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=case0|txn_id=txn0|sent=aa|expected=55|actual=55|latency_cycles=2|result=PASS",
+                        "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            generate_loop1_report(project)
+
+            result = check_reports(project, stage="loop1")
+
+            self.assertTrue(result.ok)
+            report_md = project / "output/reports/loop1/loop1_report.md"
+            report_md.write_text(report_md.read_text(encoding="utf-8") + "\n## Evidence\nmanual note\n", encoding="utf-8")
+            result = check_reports(project, stage="loop1")
+            self.assertFalse(result.ok)
+            self.assertTrue(any("Evidence section" in issue.message for issue in result.issues))
 
     def test_frontdoor_init_creates_document_analysis_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3905,7 +4063,7 @@ class DesignDocTests(unittest.TestCase):
                         "      - valid_o",
                         "    time_window: case start to scoreboard pass",
                         "    pass_criteria: no X/Z, clock activity, and valid_o toggles",
-                        "    evidence: output/reports/loop1/waveform_check.json",
+                        "    evidence: output/reports/loop1/waveform_gate.json",
                         "",
                     ]
                 ),
@@ -3920,7 +4078,7 @@ class DesignDocTests(unittest.TestCase):
             self.assertIn("REQ-WAVE-001", text)
             self.assertIn("valid_o", text)
             self.assertIn("HDLFLOW_WAVE_BEGIN", text)
-            self.assertIn("waveform_check.json", text)
+            self.assertIn("waveform_gate.json", text)
 
 
 class StateSyncTests(unittest.TestCase):
@@ -3950,7 +4108,10 @@ class StateSyncTests(unittest.TestCase):
             _write_valid_state_manifest(project, "work/loop2_uvm")
             report_dir = project / "output" / "reports" / "loop2"
             report_dir.mkdir(parents=True)
-            (report_dir / "coverage_index.md").write_text("legal_scenario_cg=100.0\nAggregate | 83.2%\n", encoding="utf-8")
+            (report_dir / "loop2_report.json").write_text(
+                json.dumps({"schema": "hdlflow_loop2_report_v1", "result": "PASS", "summary": {"coverage": "100.0"}}),
+                encoding="utf-8",
+            )
 
             result = sync_project_state(project)
 
@@ -4096,14 +4257,61 @@ class WorkflowOptimizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
-            trace = project / "work/docparse/trace_matrix/req_to_rtl.yaml"
+            trace = project / "work/docparse/trace_matrix/req_to_design_intent.yaml"
             trace.parent.mkdir(parents=True)
             trace.write_text("mappings: []\n", encoding="utf-8")
 
-            result = schema_check(project, file_rel="work/docparse/trace_matrix/req_to_rtl.yaml")
+            result = schema_check(project, file_rel="work/docparse/trace_matrix/req_to_design_intent.yaml")
 
             self.assertFalse(result.ok)
             self.assertTrue(any("links" in issue.message for issue in result.issues))
+
+    def test_schema_check_accepts_structured_review_findings_and_list_evidence_refs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            analysis = project / "work/docparse/structured_spec/document_analysis.yaml"
+            analysis.parent.mkdir(parents=True, exist_ok=True)
+            analysis.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "project: demo",
+                        "status: READY",
+                        "source_documents:",
+                        "  - source_ref: input/spec/source.yaml",
+                        "    parser_output: mineru_high_precision_markdown",
+                        "    document_type: datasheet",
+                        "analysis_units:",
+                        "  - unit_id: AU-001",
+                        "    source_ref: input/spec/source.yaml",
+                        "    section: Interface",
+                        "    summary: Source-backed interface requirement.",
+                        "    evidence_refs:",
+                        "      - input/spec/source.yaml",
+                        "    extracted_requirements:",
+                        "      - REQ-001",
+                        "evidence_map:",
+                        "  - requirement_id: REQ-001",
+                        "    evidence_refs:",
+                        "      - AU-001",
+                        "question_review:",
+                        "  status: REVIEWED",
+                        "  reviewed_by: test",
+                        "  review_evidence: work/docparse/frontdoor/open_questions.md",
+                        "  unresolved_count: 0",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            _write_structured_review_findings(project, severity="medium", status="verified")
+
+            analysis_result = schema_check(project, file_rel="work/docparse/structured_spec/document_analysis.yaml")
+            review_result = schema_check(project, file_rel="work/docparse/review/role_findings.yaml")
+
+            self.assertTrue(analysis_result.ok)
+            self.assertTrue(review_result.ok)
 
     def test_exploration_sandbox_stays_out_of_formal_design_reports(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -4360,11 +4568,13 @@ def _write_docset_source_inputs(project: Path) -> Path:
     structured = project / "work/docparse/structured_spec"
     architecture = project / "work/docparse/architecture"
     verification = project / "work/docparse/verification"
+    docparse = project / "work/docparse"
     rtl_dir = project / "output/rtl"
     frontdoor.mkdir(parents=True, exist_ok=True)
     structured.mkdir(parents=True, exist_ok=True)
     architecture.mkdir(parents=True, exist_ok=True)
     verification.mkdir(parents=True, exist_ok=True)
+    docparse.mkdir(parents=True, exist_ok=True)
     rtl_dir.mkdir(parents=True, exist_ok=True)
     srs = frontdoor / "srs.yaml"
     srs.write_text(
@@ -4386,7 +4596,7 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "criteria:",
                 "  - id: AC-UNIT-001",
                 "    description: Loop1 directed test passes",
-                "    evidence: output/reports/loop1/modelsim_loop1.log",
+                "    evidence: output/reports/loop1/loop1_report.json",
                 "",
             ]
         ),
@@ -4410,7 +4620,7 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "waveform_secondary_checks:",
                 "  - id: REQ-WAVE-001",
                 "    description: valid_o toggles during directed command",
-                "    evidence: output/reports/loop1/waveform_check.json",
+                "    evidence: output/reports/loop1/waveform_gate.json",
                 "",
             ]
         ),
@@ -4434,6 +4644,7 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "    id: MOD-001",
                 "    type: top",
                 "    source_file: demo_top.v",
+                "    parent: \"\"",
                 "    responsibility: Owns top-level pass-through behavior",
                 "    clock_domain: clk",
                 "    reset_domain: rst_n",
@@ -4453,11 +4664,22 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "        - clk",
                 "      outputs:",
                 "        - valid_o",
+                "      internal:",
+                "        - demo_child_bus",
+                "    dataflow:",
+                "      consumes:",
+                "        - clk",
+                "      produces:",
+                "        - valid_o",
+                "      transforms:",
+                "        - top-level pass-through behavior",
                 "    req_ids:",
                 "      - REQ-UNIT-001",
                 "    verification_refs:",
                 "      tests:",
                 "        - TC-001",
+                "      assertions: []",
+                "      coverage: []",
                 "    forbidden_responsibilities:",
                 "      - protocol_decode",
                 "    logic:",
@@ -4468,6 +4690,7 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "    id: MOD-002",
                 "    type: leaf",
                 "    source_file: demo_leaf.v",
+                "    parent: demo_top",
                 "    responsibility: Own valid_o register",
                 "    clock_domain: clk",
                 "    reset_domain: rst_n",
@@ -4489,9 +4712,20 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "        - rst_n",
                 "      outputs:",
                 "        - valid_o",
+                "      internal:",
+                "        - demo_child_bus",
+                "    dataflow:",
+                "      consumes:",
+                "        - clk",
+                "        - rst_n",
+                "      produces:",
+                "        - valid_o",
+                "      transforms:",
+                "        - registered valid_o behavior",
                 "    design_feature_ids:",
                 "      - DF-DEMO-LEAF",
                 "    verification_refs:",
+                "      tests: []",
                 "      assertions:",
                 "        - SVA-DEMO-LEAF",
                 "      coverage:",
@@ -4521,6 +4755,54 @@ def _write_docset_source_inputs(project: Path) -> Path:
                 "      - IDLE -> ACTIVE on command_valid",
                 "      - ACTIVE -> IDLE after valid_o pulse",
                 "    illegal_state_behavior: recover to IDLE and suppress valid_o",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (docparse / "doc_projection.yaml").write_text(
+        "\n".join(
+            [
+                "schema_version: 1",
+                "project: demo",
+                "status: DRAFT",
+                "documents:",
+                "  application_guide:",
+                "    output: output/docs/application/application_guide.md",
+                "    sources:",
+                "      - id: requirements",
+                "        path: work/docparse/frontdoor/srs.yaml",
+                "        required: true",
+                "      - id: acceptance",
+                "        path: work/docparse/frontdoor/acceptance_criteria.yaml",
+                "        required: true",
+                "      - id: interface_spec",
+                "        path: work/docparse/structured_spec/interface_spec.yaml",
+                "        required: true",
+                "  microarchitecture_spec:",
+                "    output: output/docs/design/microarchitecture_spec.md",
+                "    sources:",
+                "      - id: module_plan",
+                "        path: work/docparse/architecture/module_plan.yaml",
+                "        required: true",
+                "      - id: state_machines",
+                "        path: work/docparse/architecture/state_machines.yaml",
+                "        required: true",
+                "  verification_plan:",
+                "    output: output/docs/test/verification_plan.md",
+                "    sources:",
+                "      - id: test_intent",
+                "        path: work/docparse/structured_spec/test_intent.yaml",
+                "        required: true",
+                "      - id: verification_plan",
+                "        path: work/docparse/verification/verification_plan.yaml",
+                "        required: true",
+                "  delivery_package:",
+                "    output: output/docs/delivery/delivery_package.md",
+                "    sources:",
+                "      - id: requirements",
+                "        path: work/docparse/frontdoor/srs.yaml",
+                "        required: true",
                 "",
             ]
         ),
@@ -4854,15 +5136,18 @@ def _create_minimal_project(project: Path) -> None:
 
 def _write_loop1_waveform_evidence(project: Path, *, unknown: bool = False, wave_rel: str = "output/sim/loop1/wave") -> None:
     report_dir = project / "output" / "reports" / "loop1"
+    log_dir = project / "work" / "loop1_rtl_tb" / "current" / "log"
     wave_dir = project / wave_rel
     report_dir.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
     wave_dir.mkdir(parents=True, exist_ok=True)
-    (report_dir / "modelsim_loop1.log").write_text(
+    (log_dir / "modelsim.log").write_text(
         "\n".join(
             [
                 "Loop1 running TB top: loop1_tb",
                 "HDLFLOW_WAVE_BEGIN id=case0 time=10",
-                "HDLFLOW_TEST_CASE id=case0 stimulus=demo expected=pass actual=pass result=PASS transactions=1 stimuli=1",
+                "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=case0|txn_id=txn_0001|sent=demo|expected=pass|actual=pass|latency_cycles=1|result=PASS",
+                "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS",
                 "HDLFLOW_WAVE_END id=case0 time=40",
                 "",
             ]
@@ -4915,6 +5200,193 @@ def _write_loop1_waveform_evidence(project: Path, *, unknown: bool = False, wave
         ),
         encoding="utf-8",
     )
+
+
+def _write_loop1_semantic_waveform_evidence(
+    project: Path,
+    *,
+    unknown: bool = False,
+    wave_rel: str = "output/sim/loop1/wave",
+) -> None:
+    report_dir = project / "output" / "reports" / "loop1"
+    log_dir = project / "work" / "loop1_rtl_tb" / "current" / "log"
+    config_dir = project / "work" / "loop1_rtl_tb" / "config"
+    wave_dir = project / wave_rel
+    report_dir.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    config_dir.mkdir(parents=True, exist_ok=True)
+    wave_dir.mkdir(parents=True, exist_ok=True)
+    (report_dir / "loop1_report.json").write_text(json.dumps({"result": "PASS"}) + "\n", encoding="utf-8")
+    (log_dir / "modelsim.log").write_text(
+        "\n".join(
+            [
+                "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=baseline|txn_id=txn0|sent=start|expected=done|actual=done|latency_cycles=3|result=PASS",
+                "HDLFLOW_WAVE_BEGIN id=baseline time=10",
+                "HDLFLOW_WAVE_END id=baseline time=90",
+                "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|result=PASS",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (config_dir / "top_wave_manifest.yaml").write_text(
+        "\n".join(
+            [
+                "schema_version: 1",
+                "dut_scope: /loop1_tb/dut",
+                "waveform_format: vcd",
+                "dump_policy: top_ports_windowed",
+                "max_dump_duration: 1000",
+                "max_file_size_mb: 5",
+                "clock:",
+                "  name: clk",
+                "  required: true",
+                "reset:",
+                "  name: rst_n",
+                "  required: true",
+                "ports:",
+                "  -",
+                "    name: clk",
+                "    direction: input",
+                "    width: 1",
+                "    role: clock",
+                "  -",
+                "    name: rst_n",
+                "    direction: input",
+                "    width: 1",
+                "    role: reset",
+                "  -",
+                "    name: start",
+                "    direction: input",
+                "    width: 1",
+                "  -",
+                "    name: done",
+                "    direction: output",
+                "    width: 1",
+                "windows:",
+                "  -",
+                "    name: baseline",
+                "    signals:",
+                "      - clk",
+                "      - rst_n",
+                "      - start",
+                "      - done",
+                "    checks:",
+                "      - required_ports_present",
+                "      - no_xz",
+                "      - clock_edges_present",
+                "      - input_event_exists",
+                "      - output_response_exists",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (wave_dir / "top_ports.wlf").write_bytes(b"dummy wlf\n")
+    (wave_dir / "top_ports.vcd").write_text(
+        "\n".join(
+            [
+                "$date 2026-06-15 $end",
+                "$timescale 1ns $end",
+                "$scope module loop1_tb $end",
+                "$scope module dut $end",
+                "$var wire 1 ! clk $end",
+                '$var wire 1 " rst_n $end',
+                "$var wire 1 # start $end",
+                "$var wire 1 $ done $end",
+                "$upscope $end",
+                "$upscope $end",
+                "$enddefinitions $end",
+                "#0",
+                "0!",
+                '0"',
+                "0#",
+                "0$",
+                "#10",
+                '1"',
+                "#20",
+                "1!",
+                "#30",
+                "1#",
+                "#40",
+                "0!",
+                "#50",
+                "x$" if unknown else "1$",
+                "#60",
+                "1!",
+                "#80",
+                "0#",
+                "#90",
+                "0!",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+class _FakePywellenSignal:
+    def __init__(self, events: list[tuple[int, object]]):
+        self._events = events
+
+    def __iter__(self):
+        return iter(self._events)
+
+    def __len__(self) -> int:
+        return len(self._events)
+
+    def __getitem__(self, index):
+        return self._events[index]
+
+
+class _FakePywellenVar:
+    def __init__(self, full_name: str, size: int, var_type: str, events: list[tuple[int, object]]):
+        self.full_name = full_name
+        self.name = full_name.rsplit(".", 1)[-1]
+        self.size = size
+        self.bitwidth = size
+        self.length = size
+        self.var_type = var_type
+        self.type = var_type
+        self.tv = _FakePywellenSignal(events)
+        self.signal = self.tv
+
+
+class _FakePywellenWaveform:
+    def __init__(self, path: str, *args, **kwargs):
+        self.path = path
+        self.file_format = "VCD"
+        self._vars = _fake_pywellen_vars_for(Path(path))
+
+    def all_vars(self):
+        return list(self._vars)
+
+
+def _fake_pywellen_vars_for(path: Path) -> list[_FakePywellenVar]:
+    if path.name == "top_ports.vcd":
+        text = path.read_text(encoding="utf-8", errors="ignore") if path.is_file() else ""
+        done_value = "x" if "x$" in text else 1
+        return [
+            _FakePywellenVar("loop1_tb.dut.clk", 1, "Wire", [(0, 0), (20, 1), (40, 0), (60, 1), (90, 0)]),
+            _FakePywellenVar("loop1_tb.dut.rst_n", 1, "Wire", [(0, 0), (10, 1)]),
+            _FakePywellenVar("loop1_tb.dut.start", 1, "Wire", [(0, 0), (30, 1), (80, 0)]),
+            _FakePywellenVar("loop1_tb.dut.done", 1, "Wire", [(0, 0), (50, done_value)]),
+        ]
+
+    text = path.read_text(encoding="utf-8", errors="ignore") if path.is_file() else ""
+    valid_value = "x" if "x#" in text else 1
+    return [
+        _FakePywellenVar("loop1_tb.dut.clk", 1, "Wire", [(0, 0), (10, 1), (20, 0), (40, 1)]),
+        _FakePywellenVar("loop1_tb.dut.rst_n", 1, "Wire", [(0, 0), (15, 1)]),
+        _FakePywellenVar("loop1_tb.dut.valid", 1, "Wire", [(0, 0), (25, valid_value), (35, 0)]),
+        _FakePywellenVar("loop1_tb.dut.data [7:0]", 8, "Wire", [(0, 0), (30, 0b10101010)]),
+        _FakePywellenVar("loop1_tb.dut.u_rx.rx_valid", 1, "Wire", [(0, 0), (25, 1), (35, 0)]),
+    ]
+
+
+def _fake_pywellen_installed():
+    module = types.SimpleNamespace(Waveform=_FakePywellenWaveform)
+    return mock.patch.dict(sys.modules, {"pywellen": module})
 
 
 def _create_minimal_uvm_layout(project: Path) -> None:

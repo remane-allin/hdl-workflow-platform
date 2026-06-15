@@ -138,9 +138,13 @@ python -m hdlflow.cli plan --project prj\<project_name>
 python -m hdlflow.cli run-config --workspace . --project prj\<project_name>
 python -m hdlflow.cli requirements-frontdoor-init --project prj\<project_name> --status DRAFT
 python -m hdlflow.cli requirements-frontdoor-check --project prj\<project_name> --allow-draft
+python -m hdlflow.cli plan-check --project prj\<project_name> --maturity docparse
 python -m hdlflow.cli review-check --project prj\<project_name> --level develop
+python -m hdlflow.cli generate-docs --project prj\<project_name>
+python -m hdlflow.cli check-docset --project prj\<project_name>
 python -m hdlflow.cli ralph-status --project prj\<project_name>
 python -m hdlflow.cli run-gate --project prj\<project_name> --node loop1 --level develop
+python -m hdlflow.cli report-check --project prj\<project_name> --stage loop1
 python -m hdlflow.cli ralph-check --project prj\<project_name>
 python -m hdlflow.cli final-audit --project prj\<project_name>
 ```

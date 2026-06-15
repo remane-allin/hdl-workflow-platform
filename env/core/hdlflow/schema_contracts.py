@@ -18,10 +18,8 @@ from .simple_yaml import load_yaml
 
 
 TRACE_MATRIX_RELS = [
-    "work/docparse/trace_matrix/req_to_arch.yaml",
-    "work/docparse/trace_matrix/req_to_rtl.yaml",
-    "work/docparse/trace_matrix/req_to_test.yaml",
-    "work/docparse/trace_matrix/req_to_proto.yaml",
+    "work/docparse/trace_matrix/req_to_design_intent.yaml",
+    "work/docparse/trace_matrix/req_to_test_intent.yaml",
 ]
 
 SCHEMA_REPORT_REL = "output/reports/schema/schema_check.md"
@@ -103,6 +101,19 @@ def _check_trace_matrix(rel: str, data: dict[str, Any]) -> list[SchemaIssue]:
     issues: list[SchemaIssue] = []
     if "mappings" in data and "links" not in data:
         issues.append(SchemaIssue(rel, "error", "trace matrices use `links`, not `mappings`"))
+    normalized = rel.replace("\\", "/")
+    if normalized.endswith("req_to_design_intent.yaml"):
+        _require_fields(issues, rel, "trace", data, ["stage", "target"])
+        if data.get("stage") != "docparse":
+            issues.append(SchemaIssue(rel, "error", "stage must be docparse"))
+        if data.get("target") != "design_intent":
+            issues.append(SchemaIssue(rel, "error", "target must be design_intent"))
+    if normalized.endswith("req_to_test_intent.yaml"):
+        _require_fields(issues, rel, "trace", data, ["stage", "target"])
+        if data.get("stage") != "docparse":
+            issues.append(SchemaIssue(rel, "error", "stage must be docparse"))
+        if data.get("target") != "test_intent":
+            issues.append(SchemaIssue(rel, "error", "target must be test_intent"))
     links = data.get("links")
     if not isinstance(links, list):
         issues.append(SchemaIssue(rel, "error", "missing required list: links"))
@@ -113,21 +124,37 @@ def _check_trace_matrix(rel: str, data: dict[str, Any]) -> list[SchemaIssue]:
             continue
         if not any(key in item for key in ("requirement_id", "source", "from")):
             issues.append(SchemaIssue(rel, "warning", f"links[{index}] should identify a requirement/source"))
-        if not any(key in item for key in ("target", "artifact", "to")):
+        if not any(key in item for key in ("target", "artifact", "to", "design_intent", "test_intent")):
             issues.append(SchemaIssue(rel, "warning", f"links[{index}] should identify a target artifact"))
     return issues
 
 
 def _check_role_findings(rel: str, data: dict[str, Any]) -> list[SchemaIssue]:
     issues: list[SchemaIssue] = []
-    for role, findings in data.items():
-        if role in {"schema_version", "project", "status", "generated_at"}:
-            continue
+    roles = data.get("roles")
+    if isinstance(roles, dict):
+        role_items = roles.items()
+    else:
+        metadata_keys = {
+            "schema_version",
+            "project",
+            "status",
+            "generated_at",
+            "owner_role",
+            "source_refs",
+            "review_policy",
+            "cross_role_conflicts",
+            "assumptions",
+        }
+        role_items = ((role, findings) for role, findings in data.items() if role not in metadata_keys)
+
+    for role, role_payload in role_items:
+        findings = role_payload.get("findings", []) if isinstance(role_payload, dict) else role_payload
         for index, item in enumerate(_list(findings), 1):
             if not isinstance(item, dict):
                 issues.append(SchemaIssue(rel, "error", f"{role}[{index}] must be a mapping"))
                 continue
-            missing = [field for field in REQUIRED_FINDING_FIELDS if field not in item or item.get(field) in {None, ""}]
+            missing = [field for field in REQUIRED_FINDING_FIELDS if _missing_field(item, field)]
             if missing:
                 issues.append(SchemaIssue(rel, "error", f"{role}[{index}] missing field(s): {', '.join(missing)}"))
     return issues
@@ -137,9 +164,16 @@ def _require_fields(issues: list[SchemaIssue], rel: str, label: str, item: Any, 
     if not isinstance(item, dict):
         issues.append(SchemaIssue(rel, "error", f"{label} must be a mapping"))
         return
-    missing = [field for field in fields if field not in item or item.get(field) in {None, ""}]
+    missing = [field for field in fields if _missing_field(item, field)]
     if missing:
         issues.append(SchemaIssue(rel, "error", f"{label} missing field(s): {', '.join(missing)}"))
+
+
+def _missing_field(item: dict[str, Any], field: str) -> bool:
+    if field not in item:
+        return True
+    value = item.get(field)
+    return value is None or value == ""
 
 
 def _list(value: Any) -> list[Any]:

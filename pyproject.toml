@@ -3,7 +3,9 @@ name = "hdl-workflow-platform"
 version = "0.1.0"
 description = "Local HDL workflow platform for RTL, UVM, and FPGA prototype projects."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pywellen==0.25.5; python_version < '3.14' or platform_system != 'Windows'",
+]
 
 [build-system]
 requires = ["setuptools>=68"]

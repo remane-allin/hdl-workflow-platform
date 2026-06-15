@@ -63,6 +63,7 @@ from .memory import (
     update_active_plan_step,
 )
 from .pipeline import build_pipeline, format_pipeline
+from .plan_checks import check_plan
 from .prototype import write_prototype_preflight
 from .prototype import (
     generate_ps_pl_bd_tcl,
@@ -72,6 +73,7 @@ from .prototype import (
     validate_prototype_plan,
 )
 from .reports import write_config_run_report
+from .report_checks import check_reports
 from .requirements_frontend import check_requirements_frontend, initialize_requirements_frontend
 from .ralph_loop import ralph_check, ralph_status, ralph_step
 from .release import release_preflight
@@ -83,7 +85,7 @@ from .scaffold import create_project
 from .schema_contracts import schema_check
 from .state_sync import sync_project_state
 from .validate import validate_project
-from .waveform import check_loop1_waveform
+from .waveform_gate import run_loop1_waveform_gate
 from .workflow_advisor import advise_next_action
 
 
@@ -173,6 +175,14 @@ def build_parser() -> argparse.ArgumentParser:
     schema_check_parser = subparsers.add_parser("schema-check", help="Run friendly strong-shape YAML checks before formal gates.")
     schema_check_parser.add_argument("--project", required=True, help="Project path.")
     schema_check_parser.add_argument("--file", help="Project-relative YAML file to check. Defaults to known workflow schemas.")
+
+    plan_check_parser = subparsers.add_parser("plan-check", help="Check DocParse architecture planning maturity and write plan_report.md.")
+    plan_check_parser.add_argument("--project", required=True, help="Project path.")
+    plan_check_parser.add_argument("--maturity", choices=["docparse", "loop1", "lld"], default="docparse")
+
+    report_check_parser = subparsers.add_parser("report-check", help="Check generated report JSON, manifests, and Markdown shape.")
+    report_check_parser.add_argument("--project", required=True, help="Project path.")
+    report_check_parser.add_argument("--stage", choices=["loop1", "loop2", "all"], default="all")
 
     repair_diagnose_parser = subparsers.add_parser("repair-diagnose", help="Open repair tickets for common workflow drift.")
     repair_diagnose_parser.add_argument("--project", required=True, help="Project path.")
@@ -432,21 +442,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     loop1_report_parser = subparsers.add_parser(
         "loop1-refresh-reports",
-        help="Overwrite Loop1 reports from the latest directed RTL/TB simulation log.",
+        help="Overwrite the unified Loop1 report from the current structured RTL/TB log.",
     )
     loop1_report_parser.add_argument("--project", required=True, help="Project path.")
 
     loop1_waveform_parser = subparsers.add_parser(
-        "loop1-waveform-check",
-        help="Validate Loop1 top-level waveform windows from the latest VCD dump.",
+        "loop1-waveform-gate",
+        help="Run the Loop1 controlled top-port waveform query gate.",
     )
     loop1_waveform_parser.add_argument("--project", required=True, help="Project path.")
-    loop1_waveform_parser.add_argument("--vcd", help="Optional VCD path. Defaults to the latest Loop1 runtime VCD.")
-    loop1_waveform_parser.add_argument("--log", help="Optional ModelSim log path. Defaults to output/reports/loop1/modelsim_loop1.log.")
+    loop1_waveform_parser.add_argument("--vcd", help="Optional VCD path. Defaults to the latest Loop1 waveform VCD.")
+    loop1_waveform_parser.add_argument("--log", help="Optional ModelSim log path. Defaults to work/loop1_rtl_tb/current/log/modelsim.log.")
+    loop1_waveform_parser.add_argument("--manifest", help="Optional top waveform manifest path.")
 
     loop2_report_parser = subparsers.add_parser(
         "loop2-refresh-reports",
-        help="Overwrite Loop2 final reports from the latest full functional regression log and coverage.",
+        help="Overwrite the unified Loop2 report from the current structured UVM log.",
     )
     loop2_report_parser.add_argument("--project", required=True, help="Project path.")
 
@@ -715,6 +726,20 @@ def main(argv: list[str] | None = None) -> int:
             for issue in result.issues:
                 print(f"{issue.severity}: {issue.path} - {issue.message}")
             print("schema check: PASS" if result.ok else "schema check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "plan-check":
+            result = check_plan(Path(args.project), maturity=args.maturity)
+            print(f"report: {result.report_path}")
+            for issue in result.issues:
+                print(f"{issue.severity}: {issue.path} - {issue.message}")
+            print("plan check: PASS" if result.ok else "plan check: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "report-check":
+            result = check_reports(Path(args.project), stage=args.stage)
+            print(f"report: {result.report_path}")
+            for issue in result.issues:
+                print(f"{issue.severity}: {issue.stage} - {issue.message}")
+            print("report check: PASS" if result.ok else "report check: FAIL")
             return 0 if result.ok else 1
         if args.command == "repair-diagnose":
             result = diagnose_repairs(Path(args.project), write_tickets=not args.no_tickets)
@@ -1249,28 +1274,29 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"report: {report_path}")
             print(f"result: {result.result}")
             print(f"directed_test_count: {result.test_count}")
-            print(f"errors: {result.error_count}")
+            print(f"parser_errors: {result.error_count}")
             return 0 if result.result == "PASS" else 1
-        if args.command == "loop1-waveform-check":
-            guard = require_stage_ready(Path(args.project), "loop1", "loop1-waveform-check")
+        if args.command == "loop1-waveform-gate":
+            guard = require_stage_ready(Path(args.project), "loop1", "loop1-waveform-gate")
             if not guard.ok:
                 print(f"error: {guard.reason}")
                 return 1
-            result = check_loop1_waveform(
+            gate_result = run_loop1_waveform_gate(
                 Path(args.project),
                 vcd_path=Path(args.vcd) if args.vcd else None,
                 log_path=Path(args.log) if args.log else None,
+                manifest_path=Path(args.manifest) if args.manifest else None,
             )
-            print(f"report: {result.report_path}")
-            print(f"json: {result.json_path}")
-            print(f"result: {'PASS' if result.ok else 'FAIL'}")
-            print(f"windows: {result.window_count}")
-            print(f"signals: {result.signal_count}")
-            for item in result.errors[:20]:
+            print(f"waveform_query_report: {gate_result.report_path}")
+            print(f"waveform_gate_json: {gate_result.json_path}")
+            print(f"query_transcript: {gate_result.transcript_path}")
+            print(f"result: {'PASS' if gate_result.ok else 'FAIL'}")
+            print(f"checks: {gate_result.check_count}")
+            for item in gate_result.errors[:20]:
                 print(f"error: {item}")
-            for item in result.warnings[:20]:
+            for item in gate_result.warnings[:20]:
                 print(f"warning: {item}")
-            return 0 if result.ok else 1
+            return 0 if gate_result.ok else 1
         if args.command == "loop2-refresh-reports":
             guard = require_stage_ready(Path(args.project), "loop2", "loop2-refresh-reports")
             if not guard.ok:

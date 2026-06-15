@@ -261,8 +261,8 @@ def _loop_state(project: Path, current_loop: str, overall_status: str, stamp: st
 
 def _update_loop_states(project: Path, loop_dir: Path, passed: list[str], statuses: dict[str, str], stamp: str) -> list[Path]:
     specs = {
-        "loop1": ("work/loop1_rtl_tb", "output/reports/loop1/loop1_exit_report.md"),
-        "loop2": ("work/loop2_uvm", "output/reports/loop2/loop2_exit_report.md"),
+        "loop1": ("work/loop1_rtl_tb", "output/reports/loop1/loop1_report.md"),
+        "loop2": ("work/loop2_uvm", "output/reports/loop2/loop2_report.md"),
         "loop3": ("work/loop3_fpga_proto", "output/reports/loop3/loop3_exit_report.md"),
     }
     updated: list[Path] = []
@@ -285,10 +285,11 @@ def _update_loop_states(project: Path, loop_dir: Path, passed: list[str], status
             data["latest_vivado_report"] = vivado_report if (project / vivado_report).exists() else (timing_report if (project / timing_report).exists() else "")
             data["latest_board_log"] = board_report if (project / board_report).exists() else (board_log if (project / board_log).exists() else "")
         elif report.exists():
-            key = "latest_regression_log" if loop == "loop2" else "latest_report"
-            data[key] = report_rel
+            data["latest_report"] = report_rel
             if loop == "loop1":
-                data["latest_log"] = data.get("latest_log", "")
+                data["latest_log"] = "work/loop1_rtl_tb/current/log/modelsim.log"
+            if loop == "loop2":
+                data["latest_log"] = "work/loop2_uvm/current/log/modelsim.log"
         data.setdefault("iteration", 0)
         if node in passed:
             data["open_blockers"] = []
@@ -370,8 +371,14 @@ def _trace_status(project: Path, path: Path) -> dict[str, Any]:
     data = _read_json(path, {"project": project.name, "gaps": []})
     data["project"] = project.name
     for key, rel in {
-        "req_to_rtl": "work/docparse/trace_matrix/req_to_rtl.yaml",
-        "req_to_test": "work/docparse/trace_matrix/req_to_test.yaml",
+        "req_to_design_intent": "work/docparse/trace_matrix/req_to_design_intent.yaml",
+        "req_to_test_intent": "work/docparse/trace_matrix/req_to_test_intent.yaml",
+        "req_to_rtl": "work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml",
+        "req_to_directed_tb": "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
+        "req_to_uvm": "work/loop2_uvm/trace_matrix/req_to_uvm.yaml",
+        "req_to_assertion": "work/loop2_uvm/trace_matrix/req_to_assertion.yaml",
+        "req_to_coverage": "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
+        "req_to_fpga_evidence": "work/loop3_fpga_proto/trace_matrix/req_to_fpga_evidence.yaml",
         "bug_to_fix": "work/docparse/trace_matrix/bug_to_fix.yaml",
     }.items():
         data[key] = "ready" if (project / rel).exists() else "pending"
@@ -385,15 +392,16 @@ def _coverage_status(project: Path, path: Path, passed: list[str], statuses: dic
     loop1 = data.get("loop1", {}) if isinstance(data.get("loop1"), dict) else {}
     loop1["status"] = "passed" if "work/loop1_rtl_tb" in passed else loop1.get("status", "pending")
     data["loop1"] = loop1
-    coverage_text = _read_text(project / "output" / "reports" / "loop2" / "coverage_index.md")
-    code = _metric(coverage_text, r"Aggregate \|\s*([0-9.]+)%")
-    functional = _metric(coverage_text, r"legal_scenario_cg=([0-9.]+)")
+    loop2_report = _read_json(project / "output" / "reports" / "loop2" / "loop2_report.json", {})
+    summary = loop2_report.get("summary", {}) if isinstance(loop2_report.get("summary"), dict) else {}
+    code = _metric(str(summary.get("code_coverage", "")), r"([0-9.]+)")
+    functional = _metric(str(summary.get("coverage", "")), r"([0-9.]+)")
     loop2_status = "failed" if statuses.get("work/loop2_uvm") == "fail" else ("passed" if "work/loop2_uvm" in passed else "pending")
     data["loop2"] = {
         "status": loop2_status,
         "code": code,
         "functional": functional,
-        "requirement": "trace_ready" if (project / "work/docparse" / "trace_matrix" / "req_to_test.yaml").exists() else None,
+        "requirement": "trace_ready" if (project / "work/docparse" / "trace_matrix" / "req_to_test_intent.yaml").exists() else None,
     }
     data.setdefault("waivers", [])
     return data

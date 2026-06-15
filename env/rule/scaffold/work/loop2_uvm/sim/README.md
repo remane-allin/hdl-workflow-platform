@@ -14,14 +14,17 @@ do regression.do
 `uvm_full_functional.do` is the Loop2 entry check. It verifies that the project
 UVM framework compiles and can run the configured test, but it is not final
 Loop2 signoff evidence. The final handoff evidence comes from `regression.do`
-and the Loop2 reports.
+and the unified Loop2 report.
 
-Every `regression.do` run overwrites the current Loop2 final reports from the
-latest `modelsim_loop2.log` and coverage data:
+Every full functional run overwrites the current run area and report artifacts:
 
-- `output/reports/loop2/loop2_uvm_regression_report.md`
-- `output/reports/loop2/coverage_index.md`
-- `output/reports/loop2/loop2_exit_report.md`
+- `work/loop2_uvm/current/log/modelsim.log`
+- `work/loop2_uvm/current/log/coverage_raw.txt`
+- `work/loop2_uvm/current/cmd/command.json`
+- `work/loop2_uvm/current/manifest.json`
+- `output/reports/loop2/loop2_report.md`
+- `output/reports/loop2/loop2_report.json`
+- `output/reports/loop2/loop2_report_manifest.json`
 
 `uvm_full_functional.do` expects generated UVM files under `output/uvm`:
 

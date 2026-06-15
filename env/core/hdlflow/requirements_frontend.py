@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .layout import find_workspace_root
+from .plan_checks import check_plan
 from .project import require_project_instance
 from .review import (
     BLOCKING_SEVERITIES_BY_LEVEL,
@@ -32,6 +33,19 @@ ACCEPTANCE_REL = f"{FRONTDOOR_REL}/acceptance_criteria.yaml"
 FORBIDDEN_DESIGNS_REL = f"{FRONTDOOR_REL}/forbidden_designs.yaml"
 OPEN_QUESTIONS_REL = f"{FRONTDOOR_REL}/open_questions.md"
 DOCUMENT_ANALYSIS_REL = "work/docparse/structured_spec/document_analysis.yaml"
+DOC_PROJECTION_REL = "work/docparse/doc_projection.yaml"
+DOCPARSE_TRACE_RELS = [
+    "work/docparse/trace_matrix/req_to_design_intent.yaml",
+    "work/docparse/trace_matrix/req_to_test_intent.yaml",
+]
+LOOP_TRACE_RELS = [
+    "work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml",
+    "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
+    "work/loop2_uvm/trace_matrix/req_to_uvm.yaml",
+    "work/loop2_uvm/trace_matrix/req_to_assertion.yaml",
+    "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
+    "work/loop3_fpga_proto/trace_matrix/req_to_fpga_evidence.yaml",
+]
 FSM_NO_MONOLITHIC_OWNERSHIP_RULE = (
     "Do not use one large FSM in a single file to own all command decode, field updates, FIFO operations, "
     "register behavior, datapath mutation, and control sequencing. Split these into owned stages, fields, "
@@ -69,6 +83,8 @@ ROLE_CONTRACTS = [
             "work/docparse/architecture/dataflow.yaml",
             "work/docparse/architecture/state_machines.yaml",
             "work/docparse/architecture/timing_model.yaml",
+            "work/docparse/doc_projection.yaml",
+            "work/docparse/trace_matrix/req_to_design_intent.yaml",
         ],
     },
     {
@@ -79,7 +95,8 @@ ROLE_CONTRACTS = [
             "output/rtl/",
             "output/tb/",
             "output/tb/full_function_test_plan.md",
-            "work/docparse/trace_matrix/req_to_rtl.yaml",
+            "work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml",
+            "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
         ],
     },
     {
@@ -94,6 +111,11 @@ ROLE_CONTRACTS = [
             "output/reports/loop1/",
             "output/reports/loop2/",
             "output/reports/loop3/",
+            "work/docparse/trace_matrix/req_to_test_intent.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_uvm.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_assertion.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
+            "work/loop3_fpga_proto/trace_matrix/req_to_fpga_evidence.yaml",
         ],
     },
     {
@@ -147,10 +169,8 @@ REQUIRED_FRONTEND_ARTIFACTS = [
     "work/docparse/review/decision_log.yaml",
     "work/docparse/review/arbitration_log.yaml",
     "work/docparse/review/multi_agent_review.md",
-    "work/docparse/trace_matrix/req_to_arch.yaml",
-    "work/docparse/trace_matrix/req_to_rtl.yaml",
-    "work/docparse/trace_matrix/req_to_test.yaml",
-    "work/docparse/trace_matrix/req_to_proto.yaml",
+    DOC_PROJECTION_REL,
+    *DOCPARSE_TRACE_RELS,
 ]
 
 QUESTION_REVIEW_READY_STATUSES = {"REVIEWED", "USER_REVIEWED", "APPROVED"}
@@ -278,8 +298,12 @@ def check_requirements_frontend(project_path: Path, *, require_ready: bool = Tru
     _check_decision_log(project, errors, warnings, require_ready=require_ready)
     _check_cross_loop_trace(project, errors, require_ready=require_ready)
     _check_rtl_planning_rules(project, errors, warnings, require_ready=require_ready)
+    _check_architecture_cross_file_contracts(project, errors, require_ready=require_ready)
+    _check_doc_projection_contract(project, errors, require_ready=require_ready)
     _check_requirement_question_review(project, errors, warnings, require_ready=require_ready)
     _check_external_document_parse_policy(project, errors, warnings, require_ready=require_ready)
+    plan_result = check_plan(project, maturity="loop1" if require_ready else "docparse")
+    warnings.extend(f"plan-check: {issue.severity}: {issue.path}: {issue.message}" for issue in plan_result.issues[:20])
 
     report_path = _write_frontend_report(
         project,
@@ -308,6 +332,50 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
         "status": status,
         "generated_at": now,
         "source_refs": source_refs,
+    }
+    module_item_template = {
+        "id": "",
+        "name": "",
+        "type": "leaf",
+        "status": "draft",
+        "confidence": "low",
+        "known_unknowns": [],
+        "open_questions": [],
+        "source_file": "",
+        "parent": "",
+        "children": [],
+        "responsibility": "",
+        "boundary_rationale": "",
+        "clock_domain": "",
+        "reset_domain": "",
+        "owns": {
+            "registers": [],
+            "register_fields": [],
+            "fsms": [],
+            "fifos": [],
+            "memories": [],
+            "counters": [],
+            "arbiters": [],
+            "error_flags": [],
+        },
+        "interfaces": {
+            "inputs": [],
+            "outputs": [],
+            "internal": [],
+        },
+        "dataflow": {
+            "consumes": [],
+            "produces": [],
+            "transforms": [],
+        },
+        "req_ids": [],
+        "design_feature_ids": [],
+        "verification_refs": {
+            "tests": [],
+            "assertions": [],
+            "coverage": [],
+        },
+        "forbidden_responsibilities": [],
     }
 
     return {
@@ -405,7 +473,7 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                     "standalone_else",
                     "explicit_final_else",
                     "explicit_cdc_plan",
-                    "req_to_rtl_trace_required",
+                    "staged_trace_contract_required",
                 ],
                 "module_plan_requirements": [
                     "module hierarchy",
@@ -477,7 +545,41 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                     ],
                     "naming_rule": "Protocol-facing modules use official or industry names such as spi_slave_if, axi_lite_if, arinc429_tx, or arinc429_rx.",
                 },
-                "modules": [],
+                "module_item_contract": {
+                    "required_fields": [
+                        "id",
+                        "name",
+                        "type",
+                        "status",
+                        "confidence",
+                        "known_unknowns",
+                        "source_file",
+                        "parent",
+                        "responsibility",
+                        "clock_domain",
+                        "reset_domain",
+                        "owns",
+                        "interfaces",
+                        "dataflow",
+                        "req_ids or design_feature_ids",
+                        "verification_refs",
+                        "forbidden_responsibilities",
+                    ],
+                    "allowed_types": ["top", "composite", "leaf"],
+                    "ownership_lists": [
+                        "registers",
+                        "register_fields",
+                        "fsms",
+                        "fifos",
+                        "memories",
+                        "counters",
+                        "arbiters",
+                        "error_flags",
+                    ],
+                    "interface_lists": ["inputs", "outputs", "internal"],
+                    "dataflow_lists": ["consumes", "produces", "transforms"],
+                },
+                "modules": [module_item_template],
                 "clock_reset": [],
                 "throughput_plan": [],
                 "composition": [],
@@ -491,7 +593,22 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
             {
                 **base,
                 "owner_role": "arch",
-                "interfaces": [],
+                "interfaces": [
+                    {
+                        "id": "",
+                        "name": "",
+                        "producer_module": "",
+                        "consumer_module": "",
+                        "clock_domain": "",
+                        "reset_domain": "",
+                        "pins": [],
+                        "signals": [],
+                        "protocol": "",
+                        "contract": [],
+                        "latency": "",
+                        "req_ids": [],
+                    }
+                ],
                 "ports": [],
                 "protocols": [],
                 "latency_contracts": [],
@@ -502,7 +619,19 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
             {
                 **base,
                 "owner_role": "arch",
-                "flows": [],
+                "flows": [
+                    {
+                        "id": "",
+                        "name": "",
+                        "producer_module": "",
+                        "consumer_module": "",
+                        "path": [],
+                        "payload": "",
+                        "control": "",
+                        "latency": "",
+                        "req_ids": [],
+                    }
+                ],
                 "control_paths": [],
                 "datapaths": [],
                 "backpressure": [],
@@ -547,10 +676,26 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
             {
                 **base,
                 "owner_role": "arch",
-                "clock_domains": [],
+                "clock_domains": [
+                    {
+                        "name": "",
+                        "source": "",
+                    }
+                ],
                 "resets": [],
                 "latency_requirements": [],
-                "cdc_requirements": [],
+                "cdc_requirements": [
+                    {
+                        "id": "",
+                        "interface": "",
+                        "producer_module": "",
+                        "consumer_module": "",
+                        "from_clock_domain": "",
+                        "to_clock_domain": "",
+                        "synchronizer": "",
+                        "req_ids": [],
+                    }
+                ],
                 "timing_constraints": [],
                 "assumptions": [],
             }
@@ -795,10 +940,23 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "assumptions": [],
             }
         ),
-        "work/docparse/trace_matrix/req_to_arch.yaml": _trace_yaml(project_name, status, source_refs, "architecture"),
-        "work/docparse/trace_matrix/req_to_rtl.yaml": _trace_yaml(project_name, status, source_refs, "rtl"),
-        "work/docparse/trace_matrix/req_to_test.yaml": _trace_yaml(project_name, status, source_refs, "test"),
-        "work/docparse/trace_matrix/req_to_proto.yaml": _trace_yaml(project_name, status, source_refs, "prototype"),
+        DOC_PROJECTION_REL: _doc_projection_yaml(project_name, status, source_refs),
+        "work/docparse/trace_matrix/req_to_design_intent.yaml": _trace_yaml(
+            project_name,
+            status,
+            source_refs,
+            "docparse",
+            "design_intent",
+            "arch",
+        ),
+        "work/docparse/trace_matrix/req_to_test_intent.yaml": _trace_yaml(
+            project_name,
+            status,
+            source_refs,
+            "docparse",
+            "test_intent",
+            "sim",
+        ),
     }
 
 
@@ -855,12 +1013,12 @@ def _check_ready_payload(rel: str, data: dict[str, Any], errors: list[str]) -> N
         _check_document_analysis_payload(data, errors)
     if rel.endswith("register_map.yaml") and not _has_any_ready_payload(data, ["registers", "opcodes", "commands"]):
         errors.append(f"{rel} registers, opcodes, or commands must be non-empty for READY")
-    if rel.endswith("test_intent.yaml") and not _has_any_ready_payload(
+    if rel.endswith("structured_spec/test_intent.yaml") and not _has_any_ready_payload(
         data,
         ["functional_tests", "baseline_entry_checks", "full_function_matrix", "corner_cases", "coverage_targets"],
     ):
         errors.append(f"{rel} functional test intent must be non-empty for READY")
-    if rel.endswith("test_intent.yaml") and not _non_empty_list(data.get("waveform_windows")):
+    if rel.endswith("structured_spec/test_intent.yaml") and not _non_empty_list(data.get("waveform_windows")):
         errors.append(f"{rel} waveform_windows must be non-empty for READY")
     if rel.endswith("timing_rules.yaml") and not _has_any_ready_payload(
         data,
@@ -881,9 +1039,13 @@ def _check_ready_payload(rel: str, data: dict[str, Any], errors: list[str]) -> N
         "prototype_plan.yaml": "resource_estimate",
         "clock_plan.yaml": "clocks",
         "pin_resource_intent.yaml": "external_ports",
+        "doc_projection.yaml": "documents",
     }
     key = required_by_name.get(Path(rel).name)
-    if key and not _non_empty_list(data.get(key)):
+    if key == "documents":
+        if not isinstance(data.get(key), dict) or not data.get(key):
+            errors.append(f"{rel} {key} must be non-empty for READY")
+    elif key and not _non_empty_list(data.get(key)):
         errors.append(f"{rel} {key} must be non-empty for READY")
     if rel.endswith("verification_plan.yaml"):
         for coverage_key in [
@@ -932,19 +1094,23 @@ def _check_decision_log(project: Path, errors: list[str], warnings: list[str], *
 
 
 def _check_cross_loop_trace(project: Path, errors: list[str], *, require_ready: bool) -> None:
-    for rel in [
-        "work/docparse/trace_matrix/req_to_arch.yaml",
-        "work/docparse/trace_matrix/req_to_rtl.yaml",
-        "work/docparse/trace_matrix/req_to_test.yaml",
-        "work/docparse/trace_matrix/req_to_proto.yaml",
-    ]:
+    expected_targets = {
+        "work/docparse/trace_matrix/req_to_design_intent.yaml": "design_intent",
+        "work/docparse/trace_matrix/req_to_test_intent.yaml": "test_intent",
+    }
+    for rel in DOCPARSE_TRACE_RELS:
         data = _load_structured(project / rel)
         if data is None:
             continue
+        if str(data.get("stage") or "") != "docparse":
+            errors.append(f"{rel} stage must be docparse")
+        expected_target = expected_targets.get(rel)
+        if expected_target and str(data.get("target") or "") != expected_target:
+            errors.append(f"{rel} target must be {expected_target}")
         if "links" not in data:
             errors.append(f"{rel} must contain links")
-        elif not isinstance(data.get("links"), (dict, list)):
-            errors.append(f"{rel} links must be a mapping or a list")
+        elif not isinstance(data.get("links"), list):
+            errors.append(f"{rel} links must be a list")
         elif require_ready and not data.get("links"):
             errors.append(f"{rel} links must be non-empty for READY")
 
@@ -986,7 +1152,7 @@ def _check_rtl_planning_rules(project: Path, errors: list[str], warnings: list[s
         "standalone_else",
         "explicit_final_else",
         "explicit_cdc_plan",
-        "req_to_rtl_trace_required",
+        "staged_trace_contract_required",
     }
     hard_rules = {str(item) for item in rules.get("hard_rules", []) if str(item)}
     missing = sorted(required_rules - hard_rules)
@@ -1055,7 +1221,8 @@ def _check_rtl_planning_rules(project: Path, errors: list[str], warnings: list[s
 
 def _check_module_plan_contract(rel: str, data: dict[str, Any], errors: list[str]) -> None:
     top = data.get("top_level") if isinstance(data.get("top_level"), dict) else {}
-    if not str(top.get("name") or "").strip():
+    top_name = str(top.get("name") or "").strip()
+    if not top_name:
         errors.append(f"{rel} top_level.name must be non-empty for READY")
     top_forbidden = _string_set(top.get("forbidden_responsibilities"))
     for item in ["protocol_decode", "register_field_update", "datapath_mutation", "fifo_storage", "monolithic_fsm"]:
@@ -1076,7 +1243,12 @@ def _check_module_plan_contract(rel: str, data: dict[str, Any], errors: list[str
         "memories": {},
         "counters": {},
         "arbiters": {},
+        "error_flags": {},
     }
+    required_owns = list(ownership.keys())
+    required_interfaces = ["inputs", "outputs", "internal"]
+    required_dataflow = ["consumes", "produces", "transforms"]
+    module_children: dict[str, list[str]] = {}
     for index, module in enumerate(modules, start=1):
         label = f"{rel} modules[{index}]"
         if not isinstance(module, dict):
@@ -1089,38 +1261,74 @@ def _check_module_plan_contract(rel: str, data: dict[str, Any], errors: list[str
             if name in module_names:
                 errors.append(f"{rel} duplicate module name: {name}")
             module_names.add(name)
-        for key in ["id", "type", "responsibility", "clock_domain", "reset_domain"]:
+        for key in ["id", "type", "responsibility"]:
+            if key == "parent" and name == top_name:
+                continue
             if not str(module.get(key) or "").strip():
                 errors.append(f"{label}.{key} must be non-empty")
-        if not str(module.get("source_file") or module.get("file") or "").strip():
-            errors.append(f"{label}.source_file must be non-empty")
+        for key in ["source_file", "parent", "clock_domain", "reset_domain", "status", "confidence", "known_unknowns"]:
+            if key not in module and not (key == "parent" and name == top_name):
+                errors.append(f"{label}.{key} must be present")
 
         owns = module.get("owns")
         if not isinstance(owns, dict):
             errors.append(f"{label}.owns must be a mapping")
             owns = {}
+        for key in required_owns:
+            if key not in owns:
+                errors.append(f"{label}.owns.{key} must be present")
+            elif not isinstance(owns.get(key), list):
+                errors.append(f"{label}.owns.{key} must be a list")
         interfaces = module.get("interfaces")
         if not isinstance(interfaces, dict):
             errors.append(f"{label}.interfaces must be a mapping")
             interfaces = {}
-        if not _non_empty_list(interfaces.get("inputs")):
-            errors.append(f"{label}.interfaces.inputs must be non-empty")
-        if not _non_empty_list(interfaces.get("outputs")):
-            errors.append(f"{label}.interfaces.outputs must be non-empty")
-        if not (_non_empty_list(module.get("req_ids")) or _non_empty_list(module.get("design_feature_ids"))):
-            errors.append(f"{label} must bind req_ids or design_feature_ids")
+        for key in required_interfaces:
+            if key not in interfaces:
+                errors.append(f"{label}.interfaces.{key} must be present")
+            elif not isinstance(interfaces.get(key), list):
+                errors.append(f"{label}.interfaces.{key} must be a list")
+        dataflow = module.get("dataflow")
+        if not isinstance(dataflow, dict):
+            errors.append(f"{label}.dataflow must be a mapping")
+            dataflow = {}
+        for key in required_dataflow:
+            if key not in dataflow:
+                errors.append(f"{label}.dataflow.{key} must be present")
+            elif not isinstance(dataflow.get(key), list):
+                errors.append(f"{label}.dataflow.{key} must be a list")
+        if "req_ids" not in module:
+            errors.append(f"{label}.req_ids must be present")
+        elif not isinstance(module.get("req_ids"), list):
+            errors.append(f"{label}.req_ids must be a list")
+        if "design_feature_ids" not in module:
+            errors.append(f"{label}.design_feature_ids must be present")
+        elif not isinstance(module.get("design_feature_ids"), list):
+            errors.append(f"{label}.design_feature_ids must be a list")
         verification = module.get("verification_refs")
-        if not isinstance(verification, dict) or not any(_non_empty_list(verification.get(key)) for key in ["tests", "assertions", "coverage"]):
-            errors.append(f"{label}.verification_refs must include tests, assertions, or coverage")
-        if not _non_empty_list(module.get("forbidden_responsibilities")):
-            errors.append(f"{label}.forbidden_responsibilities must be non-empty")
+        if not isinstance(verification, dict):
+            errors.append(f"{label}.verification_refs must be a mapping")
+            verification = {}
+        for key in ["tests", "assertions", "coverage"]:
+            if key not in verification:
+                errors.append(f"{label}.verification_refs.{key} must be present")
+            elif not isinstance(verification.get(key), list):
+                errors.append(f"{label}.verification_refs.{key} must be a list")
+        if "forbidden_responsibilities" not in module:
+            errors.append(f"{label}.forbidden_responsibilities must be present")
+        elif not isinstance(module.get("forbidden_responsibilities"), list):
+            errors.append(f"{label}.forbidden_responsibilities must be a list")
 
         module_type = str(module.get("type") or "").lower()
+        if module_type not in {"top", "composite", "leaf"}:
+            errors.append(f"{label}.type must be one of top, composite, leaf")
         children = module.get("children")
+        if children is not None and not isinstance(children, list):
+            errors.append(f"{label}.children must be a list")
+            children = []
+        module_children[name] = [str(child).strip() for child in children or [] if str(child).strip()]
         if module_type == "leaf" and _non_empty_list(children):
             errors.append(f"{label} leaf module must not declare children")
-        if module_type in {"composite", "top"} and not _non_empty_list(children):
-            errors.append(f"{label} composite/top module must declare children")
 
         for ownership_key, seen in ownership.items():
             values = owns.get(ownership_key)
@@ -1135,6 +1343,230 @@ def _check_module_plan_contract(rel: str, data: dict[str, Any], errors: list[str
                     errors.append(f"{rel} {ownership_key}.{owned} owned by both {previous} and {name}")
                 else:
                     seen[owned] = name
+
+    if top_name and top_name not in module_names:
+        errors.append(f"{rel} top_level.name must match a module name")
+    for index, module in enumerate(modules, start=1):
+        if not isinstance(module, dict):
+            continue
+        label = f"{rel} modules[{index}]"
+        name = str(module.get("name") or "").strip()
+        parent = str(module.get("parent") or "").strip()
+        if name and name != top_name and parent and parent not in module_names:
+            errors.append(f"{label}.parent references unknown module {parent}")
+        for child in module_children.get(name, []):
+            if child not in module_names:
+                errors.append(f"{label}.children references unknown module {child}")
+
+
+def _check_architecture_cross_file_contracts(project: Path, errors: list[str], *, require_ready: bool) -> None:
+    if not require_ready:
+        return
+    module_plan_rel = "work/docparse/architecture/module_plan.yaml"
+    module_plan = _load_structured(project / module_plan_rel)
+    if module_plan is None:
+        return
+    modules = module_plan.get("modules")
+    if not isinstance(modules, list):
+        return
+
+    module_names: set[str] = set()
+    module_clocks: dict[str, str] = {}
+    module_fsms: dict[str, set[str]] = {}
+    for module in modules:
+        if not isinstance(module, dict):
+            continue
+        name = str(module.get("name") or "").strip()
+        if not name:
+            continue
+        module_names.add(name)
+        module_clocks[name] = str(module.get("clock_domain") or "").strip()
+        owns = module.get("owns") if isinstance(module.get("owns"), dict) else {}
+        module_fsms[name] = _string_set(owns.get("fsms"))
+
+    interface_names = _check_interface_contract_refs(project, errors, module_names)
+    _check_dataflow_refs(project, errors, module_names)
+    _check_state_machine_refs(project, errors, module_names, module_fsms)
+    _check_timing_refs(project, errors, module_names, module_clocks, interface_names)
+
+
+def _check_interface_contract_refs(project: Path, errors: list[str], module_names: set[str]) -> set[str]:
+    rel = "work/docparse/architecture/interface_contracts.yaml"
+    data = _load_structured(project / rel)
+    interface_names: set[str] = set()
+    if data is None:
+        return interface_names
+    interfaces = data.get("interfaces")
+    if not isinstance(interfaces, list):
+        return interface_names
+    for index, item in enumerate(interfaces, start=1):
+        label = f"{rel} interfaces[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        name = str(item.get("name") or item.get("id") or "").strip()
+        if not name:
+            errors.append(f"{label}.name must be non-empty")
+        else:
+            interface_names.add(name)
+        for key in ["producer_module", "consumer_module"]:
+            value = str(item.get(key) or "").strip()
+            if not value:
+                errors.append(f"{label}.{key} must be non-empty")
+            elif value not in module_names:
+                errors.append(f"{label}.{key} references unknown module {value}")
+        if not str(item.get("clock_domain") or "").strip():
+            errors.append(f"{label}.clock_domain must be non-empty")
+    return interface_names
+
+
+def _check_dataflow_refs(project: Path, errors: list[str], module_names: set[str]) -> None:
+    rel = "work/docparse/architecture/dataflow.yaml"
+    data = _load_structured(project / rel)
+    if data is None:
+        return
+    flows = data.get("flows")
+    if not isinstance(flows, list):
+        return
+    for index, item in enumerate(flows, start=1):
+        label = f"{rel} flows[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        if not str(item.get("name") or item.get("id") or "").strip():
+            errors.append(f"{label}.name must be non-empty")
+        for key in ["producer_module", "consumer_module"]:
+            value = str(item.get(key) or "").strip()
+            if not value:
+                errors.append(f"{label}.{key} must be non-empty")
+            elif value not in module_names:
+                errors.append(f"{label}.{key} references unknown module {value}")
+
+
+def _check_state_machine_refs(
+    project: Path,
+    errors: list[str],
+    module_names: set[str],
+    module_fsms: dict[str, set[str]],
+) -> None:
+    rel = "work/docparse/architecture/state_machines.yaml"
+    data = _load_structured(project / rel)
+    if data is None:
+        return
+    fsms = data.get("state_machines")
+    if not isinstance(fsms, list):
+        return
+    for index, item in enumerate(fsms, start=1):
+        label = f"{rel} state_machines[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        name = str(item.get("name") or item.get("id") or "").strip()
+        owner = str(item.get("owning_module") or "").strip()
+        if not owner:
+            errors.append(f"{label}.owning_module must be non-empty")
+        elif owner not in module_names:
+            errors.append(f"{label}.owning_module references unknown module {owner}")
+        elif name and name not in module_fsms.get(owner, set()):
+            errors.append(f"{label}.name must be listed in module_plan owns.fsms for {owner}")
+
+
+def _check_timing_refs(
+    project: Path,
+    errors: list[str],
+    module_names: set[str],
+    module_clocks: dict[str, str],
+    interface_names: set[str],
+) -> None:
+    rel = "work/docparse/architecture/timing_model.yaml"
+    data = _load_structured(project / rel)
+    if data is None:
+        return
+    clock_domains = data.get("clock_domains")
+    if not isinstance(clock_domains, list):
+        return
+    clock_names = {
+        str(item.get("name") or "").strip()
+        for item in clock_domains
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    }
+    for module, clock in sorted(module_clocks.items()):
+        if clock and clock not in clock_names:
+            errors.append(f"{rel} clock_domains must cover module {module} clock_domain {clock}")
+    cdc_requirements = data.get("cdc_requirements")
+    if not isinstance(cdc_requirements, list):
+        return
+    for index, item in enumerate(cdc_requirements, start=1):
+        label = f"{rel} cdc_requirements[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        interface = str(item.get("interface") or "").strip()
+        if not interface:
+            errors.append(f"{label}.interface must be non-empty")
+        elif interface not in interface_names:
+            errors.append(f"{label}.interface references unknown interface {interface}")
+        producer = str(item.get("producer_module") or "").strip()
+        consumer = str(item.get("consumer_module") or "").strip()
+        for key, value in [("producer_module", producer), ("consumer_module", consumer)]:
+            if not value:
+                errors.append(f"{label}.{key} must be non-empty")
+            elif value not in module_names:
+                errors.append(f"{label}.{key} references unknown module {value}")
+        from_clock = str(item.get("from_clock_domain") or "").strip()
+        to_clock = str(item.get("to_clock_domain") or "").strip()
+        for key, value in [("from_clock_domain", from_clock), ("to_clock_domain", to_clock)]:
+            if not value:
+                errors.append(f"{label}.{key} must be non-empty")
+            elif value not in clock_names:
+                errors.append(f"{label}.{key} references unknown clock domain {value}")
+        if from_clock and to_clock and from_clock == to_clock:
+            errors.append(f"{label} must cross two different clock domains")
+        if producer in module_clocks and from_clock and module_clocks[producer] != from_clock:
+            errors.append(f"{label}.from_clock_domain must match {producer} clock_domain {module_clocks[producer]}")
+        if consumer in module_clocks and to_clock and module_clocks[consumer] != to_clock:
+            errors.append(f"{label}.to_clock_domain must match {consumer} clock_domain {module_clocks[consumer]}")
+
+
+def _check_doc_projection_contract(project: Path, errors: list[str], *, require_ready: bool) -> None:
+    if not require_ready:
+        return
+    rel = DOC_PROJECTION_REL
+    data = _load_structured(project / rel)
+    if data is None:
+        return
+    documents = data.get("documents")
+    if not isinstance(documents, dict) or not documents:
+        errors.append(f"{rel} documents must be a non-empty mapping")
+        return
+    for doc_name, spec in documents.items():
+        label = f"{rel} documents.{doc_name}"
+        if not isinstance(spec, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        if not str(spec.get("output") or "").strip():
+            errors.append(f"{label}.output must be non-empty")
+        sources = spec.get("sources")
+        if not isinstance(sources, list) or not sources:
+            errors.append(f"{label}.sources must be a non-empty list")
+            continue
+        seen_ids: set[str] = set()
+        for index, source in enumerate(sources, start=1):
+            source_label = f"{label}.sources[{index}]"
+            if not isinstance(source, dict):
+                errors.append(f"{source_label} must be a mapping")
+                continue
+            source_id = str(source.get("id") or "").strip()
+            source_path = str(source.get("path") or "").strip()
+            if not source_id:
+                errors.append(f"{source_label}.id must be non-empty")
+            elif source_id in seen_ids:
+                errors.append(f"{source_label}.id duplicates {source_id}")
+            seen_ids.add(source_id)
+            if not source_path:
+                errors.append(f"{source_label}.path must be non-empty")
+            elif source.get("required", True) is not False and not (project / source_path).exists():
+                errors.append(f"{source_label}.path missing required source {source_path}")
 
 
 def _policy_true(value: Any) -> bool:
@@ -1506,16 +1938,82 @@ def _yaml_list(items: list[str], indent: int) -> str:
     return "\n".join(f"{pad}- {item}" for item in items)
 
 
-def _trace_yaml(project_name: str, status: str, source_refs: list[str], target: str) -> str:
+def _doc_projection_yaml(project_name: str, status: str, source_refs: list[str]) -> str:
+    base_source = {
+        "required": True,
+        "source_refs": source_refs,
+    }
     return _yaml_doc(
         {
             "schema_version": FRONTEND_VERSION,
             "project": project_name,
             "status": status,
-            "owner_role": "spec",
+            "owner_role": "arch",
+            "source_refs": source_refs,
+            "documents": {
+                "application_guide": {
+                    "output": "output/docs/application/application_guide.md",
+                    "sources": [
+                        {"id": "requirements", "path": SRS_REL, **base_source},
+                        {"id": "acceptance", "path": ACCEPTANCE_REL, **base_source},
+                        {"id": "interface_spec", "path": "work/docparse/structured_spec/interface_spec.yaml", **base_source},
+                        {"id": "register_map", "path": "work/docparse/structured_spec/register_map.yaml", **base_source},
+                    ],
+                },
+                "microarchitecture_spec": {
+                    "output": "output/docs/design/microarchitecture_spec.md",
+                    "sources": [
+                        {"id": "module_plan", "path": "work/docparse/architecture/module_plan.yaml", **base_source},
+                        {"id": "interface_contracts", "path": "work/docparse/architecture/interface_contracts.yaml", **base_source},
+                        {"id": "dataflow", "path": "work/docparse/architecture/dataflow.yaml", **base_source},
+                        {"id": "state_machines", "path": "work/docparse/architecture/state_machines.yaml", **base_source},
+                        {"id": "timing_model", "path": "work/docparse/architecture/timing_model.yaml", **base_source},
+                        {"id": "trace_req_to_design_intent", "path": "work/docparse/trace_matrix/req_to_design_intent.yaml", **base_source},
+                    ],
+                },
+                "verification_plan": {
+                    "output": "output/docs/test/verification_plan.md",
+                    "sources": [
+                        {"id": "test_intent", "path": "work/docparse/structured_spec/test_intent.yaml", **base_source},
+                        {"id": "verification_plan", "path": "work/docparse/verification/verification_plan.yaml", **base_source},
+                        {"id": "assertion_plan", "path": "work/docparse/verification/assertion_plan.yaml", **base_source},
+                        {"id": "coverage_plan", "path": "work/docparse/verification/coverage_plan.yaml", **base_source},
+                        {"id": "trace_req_to_test_intent", "path": "work/docparse/trace_matrix/req_to_test_intent.yaml", **base_source},
+                    ],
+                },
+                "delivery_package": {
+                    "output": "output/docs/delivery/delivery_package.md",
+                    "sources": [
+                        {"id": "prototype_plan", "path": "work/docparse/prototype/prototype_plan.yaml", **base_source},
+                        {"id": "review_findings", "path": "work/docparse/review/role_findings.yaml", **base_source},
+                        {"id": "gate_status", "path": "work/gates/gate_status.json", "required": False},
+                        {"id": "output_manifest", "path": "output/manifest.yaml", "required": False},
+                    ],
+                },
+            },
+            "assumptions": [],
+        }
+    )
+
+
+def _trace_yaml(
+    project_name: str,
+    status: str,
+    source_refs: list[str],
+    stage: str,
+    target: str,
+    owner_role: str,
+) -> str:
+    return _yaml_doc(
+        {
+            "schema_version": FRONTEND_VERSION,
+            "project": project_name,
+            "status": status,
+            "owner_role": owner_role,
+            "stage": stage,
             "target": target,
             "source_refs": source_refs,
-            "links": {},
+            "links": [],
             "unmapped_requirements": [],
             "assumptions": [],
         }

@@ -20,4 +20,4 @@ closure_policy:
   compile_only_closes_loop2: false
   requires_scoreboard_checks: true
   requires_functional_coverage: true
-  requires_req_to_test_trace: true
+  requires_loop2_trace_matrix: true

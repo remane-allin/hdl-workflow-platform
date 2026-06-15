@@ -26,13 +26,16 @@ if {![info exists loop1_wave_extra_groups]} {
 if {![info exists loop1_wave_dut_recursive]} {
     set loop1_wave_dut_recursive 0
 }
-set report_dir [file join $project_root output reports loop1]
+set current_dir [file join $project_root work/loop1_rtl_tb current]
+set log_dir [file join $current_dir log]
 set runtime_dir [file join $project_root work/loop1_rtl_tb _runtime]
 set wave_dir [file join $project_root output sim loop1 wave]
-file mkdir $report_dir
+set top_wave_manifest [file join $project_root work/loop1_rtl_tb config top_wave_manifest.yaml]
+file mkdir $log_dir
 file mkdir $wave_dir
-transcript file [file join $report_dir modelsim_loop1.log]
+transcript file [file join $log_dir modelsim.log]
 transcript on
+puts "HDLFLOW_WAVE_MANIFEST path=$top_wave_manifest"
 
 proc hdlflow_try_vcd_add {signal_path} {
     if {[catch {vcd add $signal_path} err]} {
@@ -107,7 +110,7 @@ if {[catch {eval exec $refresh_cmd} refresh_out]} {
     quit -code 1
 }
 puts $refresh_out
-set waveform_cmd [list python -m hdlflow.cli loop1-waveform-check --project $project_root]
+set waveform_cmd [list python -m hdlflow.cli loop1-waveform-gate --project $project_root --manifest $top_wave_manifest]
 if {[catch {eval exec $waveform_cmd} waveform_out]} {
     puts $waveform_out
     quit -code 1

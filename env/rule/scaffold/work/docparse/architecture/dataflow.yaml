@@ -3,7 +3,17 @@ project: change_me
 status: DRAFT
 owner_role: arch
 source_refs: []
-flows: []
+flows:
+  -
+    id: ""
+    name: ""
+    producer_module: ""
+    consumer_module: ""
+    path: []
+    payload: ""
+    control: ""
+    latency: ""
+    req_ids: []
 control_paths: []
 datapaths: []
 backpressure: []

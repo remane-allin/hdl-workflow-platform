@@ -31,15 +31,14 @@ set loop1_wave_extra_signals [list /my_top_tb/u_dut/internal_state]
 do rtl_functional.do
 ```
 
-The generated VCD preserves module scopes. `loop1-waveform-check` converts that
-scope tree into `output/reports/loop1/waveform_hierarchy.json` and
-`waveform_hierarchy.md`, so AI analysis can choose a hierarchy group before
-querying detailed signal activity.
+The generated VCD is parsed through the recommended `pywellen` backend by the
+manifest-driven top-port query gate.
 
 After `loop1-refresh-reports`, the script runs
-`python -m hdlflow.cli loop1-waveform-check --project <project>`. Loop1 cannot
-exit unless `output/reports/loop1/waveform_check.json` and the hierarchy index
-are valid.
+`python -m hdlflow.cli loop1-waveform-gate --project <project> --manifest
+work/loop1_rtl_tb/config/top_wave_manifest.yaml`. Loop1 develop/release cannot
+exit unless `waveform_query_report.md`, `waveform_gate.json`, and
+`query_transcript.json` are valid.
 
 Waveform analysis must use the VCD/WLF files in `output/sim/loop1/wave/`
 directly. Do not make secondary analysis copies under `work/_runtime`.

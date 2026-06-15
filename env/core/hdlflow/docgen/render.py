@@ -404,10 +404,11 @@ def _state_machine_table(state_machines: Any) -> str:
 def _trace_table(data: dict[str, Any]) -> str:
     rows = []
     target_keys = {
-        "trace_req_to_arch": ("architecture", "Architecture"),
-        "trace_req_to_rtl": ("planned_rtl", "RTL"),
-        "trace_req_to_test": ("tests", "Test"),
-        "trace_req_to_proto": ("prototype_checks", "Prototype"),
+        "trace_req_to_design_intent": ("design_intent", "Design Intent"),
+        "trace_req_to_test_intent": ("test_intent", "Test Intent"),
+        "trace_req_to_rtl": ("planned_rtl", "Loop1 RTL"),
+        "trace_req_to_test": ("tests", "Loop1 Directed TB"),
+        "trace_req_to_proto": ("prototype_checks", "Loop3 Prototype"),
     }
     for key, (target_key, label) in target_keys.items():
         for item in _named_list(data.get(key), "links"):
@@ -463,7 +464,7 @@ def _waveform_table(data: dict[str, Any]) -> str:
         if isinstance(item, dict):
             rows.append(
                 (
-                    _first_present(item, "id", "name", "description", default="waveform_check"),
+                    _first_present(item, "id", "name", "description", default="waveform_query"),
                     _first_present(item, "evidence", "signals", "pass_criteria", "description", default="covered by waveform intent"),
                 )
             )

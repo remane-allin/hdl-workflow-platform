@@ -20,15 +20,27 @@ from .loop1_reports import refresh_loop1_reports
 from .loop2_reports import refresh_loop2_reports
 from .prototype import refresh_loop3_reports
 from .project import require_project_instance
+from .reports.constants import (
+    COMMAND_SCHEMA,
+    LOOP1_REPORT,
+    LOOP2_REPORT,
+    REPORT_MANIFEST_SCHEMA,
+    REPORT_SCHEMA,
+    RUN_MANIFEST_SCHEMA,
+    StageReportDefinition,
+)
+from .reports.manifest import sha256_file
 from .requirements_frontend import DOCUMENT_ANALYSIS_REL, FRONTDOOR_REL, SPEC_INPUT_REL, check_requirements_frontend, required_frontend_paths
 from .review import check_review_findings
 from .rtl_skill_audit import run_rtl_skill_audit
 from .simple_yaml import load_yaml
-from .waveform import (
-    LOOP1_WAVEFORM_HIERARCHY_JSON_REL,
-    LOOP1_WAVEFORM_JSON_REL,
-    LOOP1_WAVE_DIR_REL,
-    check_loop1_waveform_report,
+from .waveform import LOOP1_WAVE_DIR_REL
+from .waveform_gate import (
+    QUERY_TRANSCRIPT_JSON_REL,
+    TOP_WAVE_MANIFEST_REL,
+    WAVEFORM_GATE_JSON_REL,
+    WAVEFORM_QUERY_REPORT_REL,
+    check_loop1_waveform_gate_report,
 )
 
 
@@ -80,11 +92,23 @@ PROTECTED_GATE_FILES = [
     "env/core/hdlflow/loop1_reports.py",
     "env/core/hdlflow/loop2_reports.py",
     "env/core/hdlflow/memory.py",
+    "env/core/hdlflow/plan_checks.py",
     "env/core/hdlflow/ralph_loop.py",
+    "env/core/hdlflow/report_checks.py",
+    "env/core/hdlflow/reports/__init__.py",
+    "env/core/hdlflow/reports/constants.py",
+    "env/core/hdlflow/reports/loop1_report.py",
+    "env/core/hdlflow/reports/loop2_report.py",
+    "env/core/hdlflow/reports/manifest.py",
+    "env/core/hdlflow/reports/parser_hdlflow_events.py",
+    "env/core/hdlflow/reports/render_report.py",
     "env/core/hdlflow/requirements_frontend.py",
     "env/core/hdlflow/review.py",
     "env/core/hdlflow/state_sync.py",
     "env/core/hdlflow/waveform.py",
+    "env/core/hdlflow/waveform_backend.py",
+    "env/core/hdlflow/waveform_gate.py",
+    "env/core/hdlflow/waveform_query.py",
     "env/rule/global/gates/gate_levels.yaml",
     "env/rule/global/gates/global_gate_rules.yaml",
     "env/rule/global/reports/report_policy.yaml",
@@ -223,7 +247,7 @@ def run_gate(project_path: Path, node: str, level: str = "develop", change_id: s
     elif normalized_node == "work/docparse":
         checks.extend(_check_docparse(project))
     elif normalized_node == "work/loop1_rtl_tb":
-        checks.extend(_check_loop1(project))
+        checks.extend(_check_loop1(project, level))
     elif normalized_node == "work/loop2_uvm":
         checks.extend(_check_loop2(project, level))
     elif normalized_node == "work/loop3_fpga_proto":
@@ -475,8 +499,8 @@ def _check_docparse(project: Path) -> list[GateCheck]:
         "work/docparse/req_decompose/module_plan.md",
         "work/docparse/req_decompose/path_partition.md",
         "work/docparse/req_decompose/decomposition_notes.md",
-        "work/docparse/trace_matrix/req_to_rtl.yaml",
-        "work/docparse/trace_matrix/req_to_test.yaml",
+        "work/docparse/trace_matrix/req_to_design_intent.yaml",
+        "work/docparse/trace_matrix/req_to_test_intent.yaml",
     ]
     checks.extend(_path_checks(project, [*required, *required_frontend_paths()]))
     result = check_requirements_frontend(project, require_ready=True)
@@ -575,8 +599,7 @@ def _check_review_findings_gate(project: Path, level: str) -> list[GateCheck]:
     return checks
 
 
-def _check_loop1(project: Path) -> list[GateCheck]:
-    evidence = _node_evidence(project, "work/loop1_rtl_tb")
+def _check_loop1(project: Path, level: str) -> list[GateCheck]:
     checks = _check_prerequisite_gate(project, "work/docparse", "DocParse must pass before Loop1 starts")
     checks.extend(_check_skill_policy(project, "work/loop1_rtl_tb"))
     checks.extend(_check_source_policy(project, "work/loop1_rtl_tb"))
@@ -584,37 +607,40 @@ def _check_loop1(project: Path) -> list[GateCheck]:
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_comment_headers(project))
     checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
-    run_report_rel = _evidence_str(evidence, "reports", "run", "output/reports/loop1/loop1_rtl_tb_run_report.md")
-    exit_report_rel = _evidence_str(evidence, "reports", "exit", "output/reports/loop1/loop1_exit_report.md")
-    waveform_report_rel = _evidence_str(evidence, "reports", "waveform", LOOP1_WAVEFORM_JSON_REL)
-    checks.extend(_path_checks(
-        project,
-        [
-            run_report_rel,
-            exit_report_rel,
-            waveform_report_rel,
-            LOOP1_WAVEFORM_HIERARCHY_JSON_REL,
-            LOOP1_WAVE_DIR_REL,
-            "work/docparse/trace_matrix/req_to_test.yaml",
-            "output/tb/full_function_test_plan.md",
-        ],
-    ))
-    checks.extend(_check_skill_policy_freshness(project, "work/loop1_rtl_tb", _files(project, [run_report_rel, exit_report_rel, waveform_report_rel])))
+    report_checks, report_payload = _check_stage_report_contract(project, LOOP1_REPORT)
+    checks.extend(report_checks)
+    required_paths = [
+        LOOP1_WAVE_DIR_REL,
+        "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
+        "output/tb/full_function_test_plan.md",
+    ]
+    if level != "debug":
+        required_paths.extend(
+            [
+                TOP_WAVE_MANIFEST_REL,
+                WAVEFORM_QUERY_REPORT_REL,
+                WAVEFORM_GATE_JSON_REL,
+                QUERY_TRANSCRIPT_JSON_REL,
+            ]
+        )
+    checks.extend(_path_checks(project, required_paths))
+    freshness_rels = _stage_report_required_rels(LOOP1_REPORT)
+    if level != "debug":
+        freshness_rels.extend([WAVEFORM_GATE_JSON_REL, WAVEFORM_QUERY_REPORT_REL, QUERY_TRANSCRIPT_JSON_REL])
+    checks.extend(_check_skill_policy_freshness(project, "work/loop1_rtl_tb", _files(project, freshness_rels)))
     checks.append(_check_rtl_skill_audit_freshness(project))
-    run_report = _read(_project_path(project, run_report_rel))
-    exit_report = _read(_project_path(project, exit_report_rel))
-    checks.append(_contains_any("loop1_directed_pass", run_report, _evidence_list(evidence, "required_markers", "directed_pass_any", ["PASS"])))
-    checks.append(_contains_any("loop1_zero_errors", run_report + "\n" + exit_report, _evidence_list(evidence, "required_markers", "zero_errors_any", ["Errors: 0"])))
-    checks.append(_loop1_baseline_gate_check(run_report))
-    checks.append(_loop1_full_function_matrix_check(project, run_report))
-    checks.append(_check_loop1_waveform_report(project, waveform_report_rel))
+    checks.append(_check_report_pass("loop1_report_pass", report_payload))
+    checks.append(_check_report_parser_clean("loop1_report_parser_clean", report_payload))
+    checks.append(_check_report_transactions("loop1_transaction_contract", report_payload))
+    checks.append(_loop1_baseline_gate_check(report_payload))
+    checks.append(_loop1_full_function_matrix_check(project, report_payload))
+    checks.append(_check_loop1_waveform_gate_report(project, WAVEFORM_GATE_JSON_REL, level))
     checks.append(_check_bug_tracking(project, "work/loop1_rtl_tb/bug_tracking"))
     checks.append(_check_forbidden_formal_text(project))
     return checks
 
 
 def _check_loop2(project: Path, level: str) -> list[GateCheck]:
-    evidence = _node_evidence(project, "work/loop2_uvm")
     checks = _check_prerequisite_gate(project, "work/loop1_rtl_tb", "Loop1 must pass before Loop2 starts")
     checks.extend(_check_skill_policy(project, "work/loop2_uvm"))
     checks.extend(_check_source_policy(project, "work/loop2_uvm"))
@@ -624,42 +650,32 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_rtl_skill_audit_freshness(project))
     checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     checks.extend(_check_loop2_uvm_policy(project))
-    regression_rel = _evidence_str(evidence, "reports", "regression", "output/reports/loop2/loop2_uvm_regression_report.md")
-    exit_rel = _evidence_str(evidence, "reports", "exit", "output/reports/loop2/loop2_exit_report.md")
-    coverage_rel = _evidence_str(evidence, "reports", "coverage", "output/reports/loop2/coverage_index.md")
-    database_rel = _evidence_str(evidence, "artifacts", "binding_database", "work/loop2_uvm/_runtime/loop2_bindings.sqlite")
+    report_checks, report_payload = _check_stage_report_contract(project, LOOP2_REPORT)
+    checks.extend(report_checks)
+    database_rel = "work/loop2_uvm/_runtime/loop2_bindings.sqlite"
     checks.extend(_path_checks(
         project,
         [
-            regression_rel,
-            exit_rel,
-            coverage_rel,
             database_rel,
-            "work/docparse/trace_matrix/req_to_test.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_uvm.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_assertion.yaml",
+            "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
         ],
     ))
-    checks.extend(_check_skill_policy_freshness(project, "work/loop2_uvm", _files(project, [regression_rel, exit_rel, coverage_rel, database_rel])))
-    regression = _read(_project_path(project, regression_rel))
-    exit_report = _read(_project_path(project, exit_rel))
-    coverage = _read(_project_path(project, coverage_rel))
-    log_rel = _evidence_str(evidence, "reports", "modelsim_log", "output/reports/loop2/modelsim_loop2.log")
-    log_text = _read(_project_path(project, log_rel))
-    text = regression + "\n" + exit_report + "\n" + log_text
-    checks.append(_structured_result_pass_check("loop2_regression_pass", regression + "\n" + exit_report))
-    checks.append(_contains_any("loop2_scoreboard_pass", text, _evidence_list(evidence, "required_markers", "scoreboard_pass_any", ["SCOREBOARD_PASS", "Scoreboard | PASS", "scoreboard | PASS"])))
-    checks.append(_zero_count_check("loop2_zero_uvm_error", text, _evidence_str(evidence, "count_labels", "uvm_error", "UVM_ERROR")))
-    checks.append(_zero_count_check("loop2_zero_uvm_fatal", text, _evidence_str(evidence, "count_labels", "uvm_fatal", "UVM_FATAL")))
-    checks.append(_contains_any("loop2_assertion_no_failure", exit_report, _evidence_list(evidence, "required_markers", "assertion_pass_any", ["Assertions | PASS"])))
-    checks.append(_coverage_check("loop2_functional_coverage", coverage, _evidence_str(evidence, "coverage_patterns", "functional", r"legal_scenario_cg=([0-9.]+)"), _threshold(project, level, "functional")))
-    checks.append(_coverage_check("loop2_code_statement_coverage", coverage, _evidence_str(evidence, "coverage_patterns", "code_statement", r"Aggregate \|\s*([0-9.]+)%"), _threshold(project, level, "code")))
-    checks.append(_loop2_transaction_count_check(project, text + "\n" + coverage, evidence))
+    checks.extend(_check_skill_policy_freshness(project, "work/loop2_uvm", _files(project, _stage_report_required_rels(LOOP2_REPORT) + [database_rel])))
+    checks.append(_check_report_pass("loop2_report_pass", report_payload))
+    checks.append(_check_report_parser_clean("loop2_report_parser_clean", report_payload))
+    checks.append(_check_report_transactions("loop2_transaction_contract", report_payload))
+    checks.append(_check_loop2_zero_counts(report_payload))
+    checks.append(_loop2_coverage_summary_check(project, report_payload, level))
+    checks.append(_loop2_transaction_count_check(project, report_payload))
     checks.append(_loop2_scenario_count_check(project))
     checks.append(_loop2_stress_transaction_check(project))
-    checks.append(_loop2_coverage_triage_check(project, coverage))
+    checks.append(_loop2_coverage_triage_check(project, _read(project / LOOP2_REPORT.report_md)))
     checks.append(_loop2_bound_assertion_check(project))
     checks.append(_loop2_functional_coverage_sampling_check(project))
     checks.append(_loop2_stimulus_breadth_check(project, level))
-    checks.append(_loop2_configured_scenario_evidence_check(project, text))
+    checks.append(_loop2_configured_scenario_evidence_check(project, _report_payload_evidence_text(report_payload)))
     checks.append(_check_bug_tracking(project, "work/loop2_uvm/bug_tracking"))
     checks.append(_check_forbidden_formal_text(project))
     return checks
@@ -848,21 +864,26 @@ def _loop3_serial_failure_lines(serial_text: str) -> list[str]:
     return lines
 
 
-def _loop1_baseline_gate_check(run_report: str) -> GateCheck:
-    required = ["LOOP1_DIRECTED_PASS", "runtime_errors: 0"]
-    missing = [marker for marker in required if marker not in run_report]
-    if missing:
-        return GateCheck("loop1_baseline_function_gate", "FAIL", "missing baseline directed-run marker(s): " + ", ".join(missing))
-    return GateCheck("loop1_baseline_function_gate", "PASS", "baseline directed run passed with zero runtime errors")
+def _loop1_baseline_gate_check(report_payload: dict[str, Any]) -> GateCheck:
+    if not isinstance(report_payload, dict) or not report_payload:
+        return GateCheck("loop1_baseline_function_gate", "FAIL", "missing Loop1 report.json payload")
+    if str(report_payload.get("result", "")).upper() != "PASS":
+        return GateCheck("loop1_baseline_function_gate", "FAIL", f"Loop1 result is {report_payload.get('result')}")
+    if _summary_int(report_payload, "failed_tests") != 0 or _summary_int(report_payload, "failed_checks") != 0:
+        return GateCheck("loop1_baseline_function_gate", "FAIL", "Loop1 summary contains failed tests or checks")
+    if _summary_int(report_payload, "total_checks") <= 0:
+        return GateCheck("loop1_baseline_function_gate", "FAIL", "Loop1 summary has no checked transaction")
+    return GateCheck("loop1_baseline_function_gate", "PASS", "Loop1 structured summary passed with zero failed checks")
 
 
-def _loop1_full_function_matrix_check(project: Path, run_report: str) -> GateCheck:
+def _loop1_full_function_matrix_check(project: Path, report_payload: dict[str, Any]) -> GateCheck:
+    report_text = _report_payload_evidence_text(report_payload)
     policy = _node_config(project, "work/loop1_rtl_tb").get("directed_test_policy", {})
     opcodes = _docparse_required_opcode_tokens(project)
     missing_opcodes = []
     for opcode in opcodes:
         opcode = opcode.lower().replace("h", "").zfill(2)
-        if not _run_report_has_noncompat_opcode_evidence(run_report, opcode):
+        if not _run_report_has_noncompat_opcode_evidence(report_text, opcode):
             missing_opcodes.append(opcode.upper() + "h")
 
     required_boundaries = [
@@ -874,7 +895,7 @@ def _loop1_full_function_matrix_check(project: Path, run_report: str) -> GateChe
     ]
     configured_boundaries = policy.get("required_boundary_markers") if isinstance(policy, dict) else None
     boundaries = [str(item) for item in configured_boundaries] if isinstance(configured_boundaries, list) else required_boundaries
-    missing_boundaries = [marker for marker in boundaries if not re.search(re.escape(marker), run_report, flags=re.IGNORECASE)]
+    missing_boundaries = [marker for marker in boundaries if not re.search(re.escape(marker), report_text, flags=re.IGNORECASE)]
 
     missing = [*missing_opcodes, *missing_boundaries]
     if missing:
@@ -896,11 +917,13 @@ def _run_report_has_noncompat_opcode_evidence(run_report: str, opcode: str) -> b
     return False
 
 
-def _check_loop1_waveform_report(project: Path, report_rel: str) -> GateCheck:
-    errors = check_loop1_waveform_report(project, report_rel)
+def _check_loop1_waveform_gate_report(project: Path, report_rel: str, level: str) -> GateCheck:
+    errors = check_loop1_waveform_gate_report(project, report_rel)
+    if errors and level == "debug":
+        return GateCheck("loop1_waveform_query_gate", "PASS", "debug warning: " + "; ".join(errors[:8]))
     if errors:
-        return GateCheck("loop1_waveform_check", "FAIL", "; ".join(errors[:8]))
-    return GateCheck("loop1_waveform_check", "PASS", f"{report_rel} result PASS")
+        return GateCheck("loop1_waveform_query_gate", "FAIL", "; ".join(errors[:8]))
+    return GateCheck("loop1_waveform_query_gate", "PASS", f"{report_rel} result PASS")
 
 
 def _loop2_configured_scenario_evidence_check(project: Path, text: str) -> GateCheck:
@@ -1161,6 +1184,221 @@ def _path_checks(project: Path, rel_paths: list[str]) -> list[GateCheck]:
         detail = "exists" if path.exists() else "missing"
         checks.append(GateCheck(f"path:{rel}", status, detail))
     return checks
+
+
+def _stage_report_required_rels(definition: StageReportDefinition) -> list[str]:
+    return [
+        definition.command_json,
+        definition.command_md,
+        definition.log_rel,
+        definition.current_manifest,
+        definition.report_md,
+        definition.report_json,
+        definition.report_manifest,
+    ]
+
+
+def _check_stage_report_contract(project: Path, definition: StageReportDefinition) -> tuple[list[GateCheck], dict[str, Any]]:
+    checks = _path_checks(project, _stage_report_required_rels(definition))
+    payload = _load_json_mapping(project / definition.report_json)
+    checks.append(_stage_report_json_check(definition, payload))
+    checks.append(_stage_report_markdown_shape_check(project, definition))
+    checks.extend(_stage_report_manifest_checks(project, definition))
+    checks.append(_stage_report_no_raw_logs_check(project, definition))
+    checks.append(_stage_report_no_default_runs_check(project, definition))
+    return checks, payload
+
+
+def _stage_report_json_check(definition: StageReportDefinition, payload: dict[str, Any]) -> GateCheck:
+    if not payload:
+        return GateCheck(f"{definition.report_type}_report_json", "FAIL", f"{definition.report_json} is missing or invalid JSON")
+    schema = payload.get("schema")
+    if schema != definition.report_json_schema:
+        return GateCheck(
+            f"{definition.report_type}_report_json",
+            "FAIL",
+            f"schema must be {definition.report_json_schema}, got {schema}",
+        )
+    result = str(payload.get("result", "")).upper()
+    if result not in {"PASS", "FAIL", "BLOCKED"}:
+        return GateCheck(f"{definition.report_type}_report_json", "FAIL", f"result must be PASS, FAIL, or BLOCKED, got {result}")
+    if payload.get("source") != {"cmd": definition.command_json, "manifest": definition.current_manifest}:
+        return GateCheck(f"{definition.report_type}_report_json", "FAIL", "source must point to current command and run manifest")
+    return GateCheck(f"{definition.report_type}_report_json", "PASS", f"{schema} result={result}")
+
+
+def _stage_report_markdown_shape_check(project: Path, definition: StageReportDefinition) -> GateCheck:
+    text = _read(project / definition.report_md)
+    if not text:
+        return GateCheck(f"{definition.report_type}_report_markdown_shape", "FAIL", f"{definition.report_md} is missing or empty")
+    required = [
+        f"report_schema: {REPORT_SCHEMA}",
+        "## 0. Result",
+        "## 1. Summary",
+        "## 2. Main Results",
+        "## 3. Failed Items",
+        "## 4. Notes",
+    ]
+    missing = [marker for marker in required if marker not in text]
+    if missing:
+        return GateCheck(f"{definition.report_type}_report_markdown_shape", "FAIL", "missing section(s): " + ", ".join(missing))
+    if re.search(r"(?im)^##\s+.*Evidence\b", text):
+        return GateCheck(f"{definition.report_type}_report_markdown_shape", "FAIL", "report body must not contain an Evidence section")
+    return GateCheck(f"{definition.report_type}_report_markdown_shape", "PASS", "unified report sections found and no Evidence section")
+
+
+def _stage_report_manifest_checks(project: Path, definition: StageReportDefinition) -> list[GateCheck]:
+    checks: list[GateCheck] = []
+    command = _load_json_mapping(project / definition.command_json)
+    current = _load_json_mapping(project / definition.current_manifest)
+    report_manifest = _load_json_mapping(project / definition.report_manifest)
+    checks.append(_json_schema_check(f"{definition.report_type}_command_schema", command, COMMAND_SCHEMA))
+    checks.append(_json_schema_check(f"{definition.report_type}_current_manifest_schema", current, RUN_MANIFEST_SCHEMA))
+    checks.append(_json_schema_check(f"{definition.report_type}_report_manifest_schema", report_manifest, REPORT_MANIFEST_SCHEMA))
+
+    if current:
+        entries = []
+        command_entry = current.get("command")
+        if isinstance(command_entry, dict):
+            entries.append(command_entry)
+        for key in ("logs", "generated_reports"):
+            items = current.get(key)
+            if isinstance(items, list):
+                entries.extend(item for item in items if isinstance(item, dict))
+        missing_hashes = [str(item.get("path", "")) for item in entries if item.get("sha256") in {None, "", "MISSING"}]
+        if missing_hashes:
+            checks.append(
+                GateCheck(
+                    f"{definition.report_type}_current_manifest_hashes",
+                    "FAIL",
+                    "manifest contains missing hash(es): " + ", ".join(missing_hashes[:6]),
+                )
+            )
+        else:
+            checks.append(GateCheck(f"{definition.report_type}_current_manifest_hashes", "PASS", f"{len(entries)} current artifact hash(es) recorded"))
+
+    if report_manifest:
+        expected_hashes = {
+            "report_sha256": project / definition.report_md,
+            "report_json_sha256": project / definition.report_json,
+            "source_manifest_sha256": project / definition.current_manifest,
+        }
+        drift = [
+            key
+            for key, path in expected_hashes.items()
+            if not path.is_file() or str(report_manifest.get(key)) != sha256_file(path)
+        ]
+        if drift:
+            checks.append(GateCheck(f"{definition.report_type}_report_manifest_hashes", "FAIL", "hash drift: " + ", ".join(drift)))
+        else:
+            checks.append(GateCheck(f"{definition.report_type}_report_manifest_hashes", "PASS", "report manifest hashes match current artifacts"))
+    return checks
+
+
+def _json_schema_check(name: str, payload: dict[str, Any], schema: str) -> GateCheck:
+    if not payload:
+        return GateCheck(name, "FAIL", "missing or invalid JSON")
+    actual = payload.get("schema")
+    if actual != schema:
+        return GateCheck(name, "FAIL", f"schema must be {schema}, got {actual}")
+    return GateCheck(name, "PASS", f"schema {schema}")
+
+
+def _stage_report_no_raw_logs_check(project: Path, definition: StageReportDefinition) -> GateCheck:
+    root = project / definition.output_dir
+    if not root.exists():
+        return GateCheck(f"{definition.report_type}_report_no_raw_logs", "FAIL", f"{definition.output_dir} is missing")
+    raw = [
+        _rel(project, path)
+        for path in root.rglob("*")
+        if path.is_file() and path.suffix.lower() in {".log", ".out", ".txt"}
+    ]
+    if raw:
+        return GateCheck(f"{definition.report_type}_report_no_raw_logs", "FAIL", "raw log artifact(s) under output/reports: " + ", ".join(raw[:6]))
+    return GateCheck(f"{definition.report_type}_report_no_raw_logs", "PASS", "output/reports contains report artifacts only")
+
+
+def _stage_report_no_default_runs_check(project: Path, definition: StageReportDefinition) -> GateCheck:
+    forbidden = [
+        project / definition.stage_dir / "runs",
+        project / definition.output_dir / "runs",
+    ]
+    existing = [_rel(project, path) for path in forbidden if path.exists()]
+    if existing:
+        return GateCheck(f"{definition.report_type}_report_no_timestamp_runs", "FAIL", "default timestamp run archive exists: " + ", ".join(existing))
+    return GateCheck(f"{definition.report_type}_report_no_timestamp_runs", "PASS", "no default timestamp run archive")
+
+
+def _load_json_mapping(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _check_report_pass(name: str, payload: dict[str, Any]) -> GateCheck:
+    result = str(payload.get("result", "MISSING")).upper() if payload else "MISSING"
+    if result == "PASS":
+        return GateCheck(name, "PASS", "structured report result PASS")
+    return GateCheck(name, "FAIL", f"structured report result must be PASS, got {result}")
+
+
+def _check_report_transactions(name: str, payload: dict[str, Any]) -> GateCheck:
+    transactions = payload.get("transactions") if isinstance(payload, dict) else None
+    if not isinstance(transactions, list) or not transactions:
+        return GateCheck(name, "FAIL", "report.json must contain at least one checked transaction")
+    required = ["test_id", "txn_id", "sent", "expected", "actual", "result"]
+    failures: list[str] = []
+    for index, item in enumerate(transactions, start=1):
+        if not isinstance(item, dict):
+            failures.append(f"transaction[{index}] is not an object")
+            continue
+        missing = [field for field in required if item.get(field) in {None, ""}]
+        if missing:
+            failures.append(f"transaction[{index}] missing " + ", ".join(missing))
+        if str(item.get("result", "")).upper() != "PASS":
+            failures.append(f"transaction[{index}] result={item.get('result')}")
+    if failures:
+        return GateCheck(name, "FAIL", "; ".join(failures[:6]))
+    return GateCheck(name, "PASS", f"{len(transactions)} structured transaction(s) checked")
+
+
+def _check_report_parser_clean(name: str, payload: dict[str, Any]) -> GateCheck:
+    parser_errors = payload.get("parser_errors") if isinstance(payload, dict) else None
+    if isinstance(parser_errors, list) and parser_errors:
+        return GateCheck(name, "FAIL", "parser error(s): " + "; ".join(str(item) for item in parser_errors[:6]))
+    return GateCheck(name, "PASS", "no structured parser errors")
+
+
+def _summary_int(payload: dict[str, Any], key: str) -> int:
+    summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+    try:
+        return int(summary.get(key, 0))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _summary_float(payload: dict[str, Any], key: str) -> float | None:
+    summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+    value = summary.get(key)
+    if value is None:
+        return None
+    match = re.search(r"([0-9]+(?:\.[0-9]+)?)", str(value))
+    if not match:
+        return None
+    return float(match.group(1))
+
+
+def _report_payload_evidence_text(payload: dict[str, Any]) -> str:
+    chunks: list[str] = []
+    if isinstance(payload, dict):
+        chunks.append(json.dumps(payload.get("summary", {}), ensure_ascii=False, sort_keys=True))
+        transactions = payload.get("transactions", [])
+        if isinstance(transactions, list):
+            for item in transactions:
+                chunks.append(json.dumps(item, ensure_ascii=False, sort_keys=True))
+    return "\n".join(chunks)
 
 
 def _check_prerequisite_gate(project: Path, node: str, detail: str) -> list[GateCheck]:
@@ -1670,7 +1908,32 @@ def _coverage_check(name: str, text: str, pattern: str, threshold: float | None)
     return GateCheck(name, "PASS", f"{value:.2f}% >= {threshold:.2f}%")
 
 
-def _loop2_transaction_count_check(project: Path, text: str, evidence: dict[str, Any]) -> GateCheck:
+def _check_loop2_zero_counts(report_payload: dict[str, Any]) -> GateCheck:
+    uvm_error = _summary_int(report_payload, "uvm_error")
+    uvm_fatal = _summary_int(report_payload, "uvm_fatal")
+    failed_checks = _summary_int(report_payload, "failed_checks")
+    if uvm_error or uvm_fatal or failed_checks:
+        return GateCheck(
+            "loop2_zero_error_counts",
+            "FAIL",
+            f"uvm_error={uvm_error}, uvm_fatal={uvm_fatal}, failed_checks={failed_checks}",
+        )
+    return GateCheck("loop2_zero_error_counts", "PASS", "uvm_error=0, uvm_fatal=0, failed_checks=0")
+
+
+def _loop2_coverage_summary_check(project: Path, report_payload: dict[str, Any], level: str) -> GateCheck:
+    threshold = _threshold(project, level, "functional")
+    value = _summary_float(report_payload, "coverage")
+    if value is None:
+        return GateCheck("loop2_functional_coverage", "FAIL", "coverage value missing from loop2_report.json summary")
+    if threshold is not None and value < threshold:
+        return GateCheck("loop2_functional_coverage", "FAIL", f"{value:.2f}% below threshold {threshold:.2f}%")
+    if threshold is None:
+        return GateCheck("loop2_functional_coverage", "PASS", f"{value:.2f}% reported; no threshold for this gate level")
+    return GateCheck("loop2_functional_coverage", "PASS", f"{value:.2f}% >= {threshold:.2f}%")
+
+
+def _loop2_transaction_count_check(project: Path, report_payload: dict[str, Any]) -> GateCheck:
     policy = _node_config(project, "work/loop2_uvm").get("uvm_policy", {})
     min_count = 64
     if isinstance(policy, dict):
@@ -1678,11 +1941,10 @@ def _loop2_transaction_count_check(project: Path, text: str, evidence: dict[str,
             min_count = int(policy.get("min_checked_transactions", min_count))
         except (TypeError, ValueError):
             return GateCheck("loop2_checked_transaction_count", "FAIL", "uvm_policy.min_checked_transactions must be an integer")
-    pattern = _evidence_str(evidence, "metric_patterns", "checked_transactions", r"transactions_total:\s*([0-9]+)")
-    match = re.search(pattern, text)
-    if not match:
-        return GateCheck("loop2_checked_transaction_count", "FAIL", f"transaction count marker not found: {pattern}")
-    count = int(match.group(1))
+    count = _summary_int(report_payload, "total_checks")
+    if count <= 0 and isinstance(report_payload, dict):
+        transactions = report_payload.get("transactions")
+        count = len(transactions) if isinstance(transactions, list) else 0
     if count < min_count:
         return GateCheck("loop2_checked_transaction_count", "FAIL", f"{count} checked transaction(s) below minimum {min_count}")
     return GateCheck("loop2_checked_transaction_count", "PASS", f"{count} checked transaction(s) >= {min_count}")
@@ -2309,17 +2571,13 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
         evidence_rels.extend(_docset_evidence_rels())
         return (_docparse_source_files(project), _files(project, evidence_rels))
     if node == "work/loop1_rtl_tb":
-        evidence = _node_evidence(project, node)
-        evidence_rels = _evidence_report_paths(
-            evidence,
-            [
-                "output/reports/loop1/loop1_rtl_tb_run_report.md",
-                "output/reports/loop1/loop1_exit_report.md",
-                LOOP1_WAVEFORM_JSON_REL,
-                LOOP1_WAVEFORM_HIERARCHY_JSON_REL,
-                "output/reports/loop1/rtl_skill_audit.md",
-            ],
-        )
+        evidence_rels = [
+            *_stage_report_required_rels(LOOP1_REPORT),
+            WAVEFORM_QUERY_REPORT_REL,
+            WAVEFORM_GATE_JSON_REL,
+            QUERY_TRANSCRIPT_JSON_REL,
+            "output/reports/loop1/rtl_skill_audit.md",
+        ]
         wave_files = _glob_project_files(project, f"{LOOP1_WAVE_DIR_REL}/*.vcd")
         wave_files.extend(_glob_project_files(project, f"{LOOP1_WAVE_DIR_REL}/*.wlf"))
         return (
@@ -2328,6 +2586,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
                 {
                     "output/rtl": {".v"},
                     "output/tb": {".v"},
+                    "work/loop1_rtl_tb/config": {".yaml", ".yml"},
                     "work/docparse/structured_spec": {".yaml", ".yml", ".json"},
                     "work/docparse/trace_matrix": {".yaml", ".yml", ".json"},
                 },
@@ -2335,7 +2594,6 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
             sorted(set(_files(project, evidence_rels) + wave_files)),
         )
     if node == "work/loop2_uvm":
-        evidence = _node_evidence(project, node)
         return (
             _source_files_by_suffix(
                 project,
@@ -2348,15 +2606,8 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
             ),
             _files(
                 project,
-                _evidence_report_paths(
-                    evidence,
-                    [
-                    "output/reports/loop2/loop2_uvm_regression_report.md",
-                    "output/reports/loop2/loop2_exit_report.md",
-                    "output/reports/loop2/coverage_index.md",
-                    ],
-                )
-                + [
+                [
+                    *_stage_report_required_rels(LOOP2_REPORT),
                     "work/loop2_uvm/_runtime/loop2_bindings.sqlite",
                 ],
             ),

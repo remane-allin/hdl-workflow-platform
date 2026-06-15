@@ -1,0 +1,95 @@
+schema_version: 1
+project: change_me
+status: DRAFT
+owner_role: arch
+source_refs: []
+documents:
+  application_guide:
+    output: output/docs/application/application_guide.md
+    sources:
+      -
+        id: requirements
+        path: work/docparse/frontdoor/srs.yaml
+        required: true
+      -
+        id: acceptance
+        path: work/docparse/frontdoor/acceptance_criteria.yaml
+        required: true
+      -
+        id: interface_spec
+        path: work/docparse/structured_spec/interface_spec.yaml
+        required: true
+      -
+        id: register_map
+        path: work/docparse/structured_spec/register_map.yaml
+        required: true
+  microarchitecture_spec:
+    output: output/docs/design/microarchitecture_spec.md
+    sources:
+      -
+        id: module_plan
+        path: work/docparse/architecture/module_plan.yaml
+        required: true
+      -
+        id: interface_contracts
+        path: work/docparse/architecture/interface_contracts.yaml
+        required: true
+      -
+        id: dataflow
+        path: work/docparse/architecture/dataflow.yaml
+        required: true
+      -
+        id: state_machines
+        path: work/docparse/architecture/state_machines.yaml
+        required: true
+      -
+        id: timing_model
+        path: work/docparse/architecture/timing_model.yaml
+        required: true
+      -
+        id: trace_req_to_design_intent
+        path: work/docparse/trace_matrix/req_to_design_intent.yaml
+        required: true
+  verification_plan:
+    output: output/docs/test/verification_plan.md
+    sources:
+      -
+        id: test_intent
+        path: work/docparse/structured_spec/test_intent.yaml
+        required: true
+      -
+        id: verification_plan
+        path: work/docparse/verification/verification_plan.yaml
+        required: true
+      -
+        id: assertion_plan
+        path: work/docparse/verification/assertion_plan.yaml
+        required: true
+      -
+        id: coverage_plan
+        path: work/docparse/verification/coverage_plan.yaml
+        required: true
+      -
+        id: trace_req_to_test_intent
+        path: work/docparse/trace_matrix/req_to_test_intent.yaml
+        required: true
+  delivery_package:
+    output: output/docs/delivery/delivery_package.md
+    sources:
+      -
+        id: prototype_plan
+        path: work/docparse/prototype/prototype_plan.yaml
+        required: true
+      -
+        id: review_findings
+        path: work/docparse/review/role_findings.yaml
+        required: true
+      -
+        id: gate_status
+        path: work/gates/gate_status.json
+        required: false
+      -
+        id: output_manifest
+        path: output/manifest.yaml
+        required: false
+assumptions: []

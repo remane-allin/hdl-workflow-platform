@@ -5,7 +5,7 @@ Navigation: [Report index](../README.md) | [Loop3 reports](README.md)
 - project:
 - generated_at:
 - status: PASS/FAIL/BLOCKED
-- loop2_exit_report: [../loop2/loop2_exit_report.md](../loop2/loop2_exit_report.md)
+- loop2_report: [../loop2/loop2_report.md](../loop2/loop2_report.md)
 - database_preflight: [preflight/database_preflight.md](preflight/database_preflight.md)
 - prototype_plan_check: [preflight/prototype_plan_check.md](preflight/prototype_plan_check.md)
 

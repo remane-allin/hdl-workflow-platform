@@ -22,7 +22,7 @@ Use this skill when the control plane is substantial enough that register discip
    - UVM RAL or mirrored register models
    - software-facing headers if the project later needs them
 4. If the project uses RgGen, prepare the normalized map in a generator-friendly form instead of inventing a one-off schema.
-5. Keep `work/docparse/trace_matrix/req_to_rtl.yaml` and `work/docparse/trace_matrix/req_to_test.yaml` aligned with register intent.
+5. Keep DocParse register intent aligned through `work/docparse/trace_matrix/req_to_design_intent.yaml` and `work/docparse/trace_matrix/req_to_test_intent.yaml`; implementation evidence moves to the Loop1/Loop2 trace files after RTL, directed TB, UVM, assertion, or coverage artifacts exist.
 
 ## Rules
 

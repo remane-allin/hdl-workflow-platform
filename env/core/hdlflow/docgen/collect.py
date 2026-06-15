@@ -10,34 +10,9 @@ from typing import Any
 
 from ..config import load_project
 from ..project import require_project_instance
-from ..requirements_frontend import ACCEPTANCE_REL, SRS_REL
+from ..requirements_frontend import DOC_PROJECTION_REL
 from ..simple_yaml import load_yaml
 
-
-SOURCE_ROOTS = (
-    "input/spec",
-    "work/docparse/frontdoor",
-    "work/docparse/structured_spec",
-    "work/docparse/req_decompose",
-    "work/docparse/architecture",
-    "work/docparse/verification",
-    "work/docparse/prototype",
-    "work/docparse/review",
-    "work/docparse/trace_matrix",
-    "work/loop3_fpga_proto/board_tests",
-    "work/loop3_fpga_proto/board_profiles",
-    "work/gates",
-    "work/change",
-    "output/rtl",
-    "output/tb",
-    "output/uvm",
-    "output/reports/loop1",
-    "output/reports/loop2",
-    "output/reports/loop3",
-    "output/fpga/vivado/constraints",
-    "output/fpga/vivado/scripts",
-    "output/fpga/vivado/reports",
-)
 
 SOURCE_SUFFIXES = {".yaml", ".yml", ".json", ".md", ".v", ".sv", ".svh", ".xdc", ".tcl", ".rpt", ".log"}
 
@@ -45,55 +20,58 @@ SOURCE_SUFFIXES = {".yaml", ".yml", ".json", ".md", ".v", ".sv", ".svh", ".xdc",
 def collect_project_data(project_path: Path) -> dict[str, Any]:
     project = require_project_instance(project_path)
     project_config = _load_project_config(project)
-    srs = _load_data(project, SRS_REL)
-    module_plan = _load_data(project, "work/docparse/architecture/module_plan.yaml")
+    doc_projection = _load_data(project, DOC_PROJECTION_REL)
+    projected = _load_projected_sources(project, doc_projection)
+    srs = projected.get("requirements", {})
+    module_plan = projected.get("module_plan", {})
     data = {
         "project_name": project.name,
         "ip_name": _ip_name(project, project_config, module_plan),
         "version": _version(project_config),
+        "doc_projection": doc_projection,
         "requirements": srs,
-        "acceptance": _load_data(project, ACCEPTANCE_REL),
-        "interface_spec": _load_data(project, "work/docparse/structured_spec/interface_spec.yaml"),
-        "interface_timing": _load_data(project, "work/docparse/structured_spec/interface_timing.yaml"),
-        "register_map": _load_data(project, "work/docparse/structured_spec/register_map.yaml"),
-        "test_intent": _load_data(project, "work/docparse/structured_spec/test_intent.yaml"),
-        "timing_rules": _load_data(project, "work/docparse/structured_spec/timing_rules.yaml"),
+        "acceptance": projected.get("acceptance", {}),
+        "interface_spec": projected.get("interface_spec", {}),
+        "interface_timing": projected.get("interface_timing", {}),
+        "register_map": projected.get("register_map", {}),
+        "test_intent": projected.get("test_intent", {}),
+        "timing_rules": projected.get("timing_rules", {}),
         "module_plan": module_plan,
-        "interface_contracts": _load_data(project, "work/docparse/architecture/interface_contracts.yaml"),
-        "dataflow": _load_data(project, "work/docparse/architecture/dataflow.yaml"),
-        "state_machines": _load_data(project, "work/docparse/architecture/state_machines.yaml"),
-        "timing_model": _load_data(project, "work/docparse/architecture/timing_model.yaml"),
-        "verification_plan": _load_data(project, "work/docparse/verification/verification_plan.yaml"),
-        "assertion_plan": _load_data(project, "work/docparse/verification/assertion_plan.yaml"),
-        "coverage_plan": _load_data(project, "work/docparse/verification/coverage_plan.yaml"),
-        "prototype_plan": _load_data(project, "work/docparse/prototype/prototype_plan.yaml"),
-        "loop3_plan": _load_data(project, "work/loop3_fpga_proto/board_tests/prototype_plan.yaml"),
-        "review_findings": _load_data(project, "work/docparse/review/role_findings.yaml"),
-        "trace_req_to_arch": _load_data(project, "work/docparse/trace_matrix/req_to_arch.yaml"),
-        "trace_req_to_rtl": _load_data(project, "work/docparse/trace_matrix/req_to_rtl.yaml"),
-        "trace_req_to_test": _load_data(project, "work/docparse/trace_matrix/req_to_test.yaml"),
-        "trace_req_to_proto": _load_data(project, "work/docparse/trace_matrix/req_to_proto.yaml"),
-        "gate_status": _load_data(project, "work/gates/gate_status.json"),
-        "output_manifest": _load_data(project, "output/manifest.yaml"),
+        "interface_contracts": projected.get("interface_contracts", {}),
+        "dataflow": projected.get("dataflow", {}),
+        "state_machines": projected.get("state_machines", {}),
+        "timing_model": projected.get("timing_model", {}),
+        "verification_plan": projected.get("verification_plan", {}),
+        "assertion_plan": projected.get("assertion_plan", {}),
+        "coverage_plan": projected.get("coverage_plan", {}),
+        "prototype_plan": projected.get("prototype_plan", {}),
+        "loop3_plan": projected.get("loop3_plan", {}),
+        "review_findings": projected.get("review_findings", {}),
+        "trace_req_to_design_intent": projected.get("trace_req_to_design_intent", {}),
+        "trace_req_to_test_intent": projected.get("trace_req_to_test_intent", {}),
+        "trace_req_to_rtl": projected.get("trace_req_to_rtl", {}),
+        "trace_req_to_test": projected.get("trace_req_to_directed_tb", {}),
+        "trace_req_to_proto": projected.get("trace_req_to_fpga_evidence", {}),
+        "gate_status": projected.get("gate_status", {}),
+        "output_manifest": projected.get("output_manifest", {}),
         "rtl_modules": _scan_rtl(project),
         "tb_files": _scan_files(project, "output/tb", (".v",)),
         "uvm_files": _scan_files(project, "output/uvm", (".sv", ".svh")),
         "fpga_files": _scan_files(project, "output/fpga/vivado", (".xdc", ".tcl", ".rpt", ".bit")),
         "loop_reports": _scan_files(project, "output/reports", (".md", ".json", ".log", ".rpt")),
     }
-    data["sources"] = source_hashes(project)
+    data["sources"] = source_hashes(project, projection=doc_projection)
     return data
 
 
-def source_hashes(project_path: Path) -> list[dict[str, str]]:
+def source_hashes(project_path: Path, *, projection: dict[str, Any]) -> list[dict[str, str]]:
     project = require_project_instance(project_path)
     paths: list[Path] = []
-    for rel in SOURCE_ROOTS:
-        root = project / rel
-        if root.is_file():
-            paths.append(root)
-        elif root.is_dir():
-            paths.extend(_safe_rglob(root))
+    paths.append(project / DOC_PROJECTION_REL)
+    for source in _projection_sources(projection):
+        rel = str(source.get("path") or "").strip()
+        if rel:
+            paths.append(project / rel)
     try:
         paths.append(load_project(project).config_path)
     except Exception:
@@ -126,6 +104,31 @@ def resolve_project_or_workspace_path(project_path: Path, rel: str) -> Path:
         if candidate.exists():
             return candidate
     return local
+
+
+def _projection_sources(projection: dict[str, Any]) -> list[dict[str, Any]]:
+    documents = projection.get("documents")
+    if not isinstance(documents, dict):
+        return []
+    sources: list[dict[str, Any]] = []
+    for spec in documents.values():
+        if not isinstance(spec, dict):
+            continue
+        for source in spec.get("sources", []):
+            if isinstance(source, dict):
+                sources.append(source)
+    return sources
+
+
+def _load_projected_sources(project: Path, projection: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    loaded: dict[str, dict[str, Any]] = {}
+    for source in _projection_sources(projection):
+        source_id = str(source.get("id") or "").strip()
+        source_path = str(source.get("path") or "").strip()
+        if not source_id or not source_path or source_id in loaded:
+            continue
+        loaded[source_id] = _load_data(project, source_path)
+    return loaded
 
 
 def _safe_rglob(root: Path) -> list[Path]:

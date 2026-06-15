@@ -50,13 +50,18 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
    - `work/docparse/verification/*.yaml`
    - `work/docparse/prototype/*.yaml`
    - `work/docparse/review/*.yaml`
-   - `work/docparse/trace_matrix/req_to_*.yaml`
+   - `work/docparse/doc_projection.yaml`
+   - `work/docparse/trace_matrix/req_to_design_intent.yaml`
+   - `work/docparse/trace_matrix/req_to_test_intent.yaml`
    Use platform-checker field names exactly:
    `document_analysis.yaml.source_documents[]` uses `source_ref`,
    `parser_output`, and `document_type`; `analysis_units[]` uses `unit_id`,
    `source_ref`, `section`, `summary`, plus `extracted_requirements` or
    `evidence_refs`. Open questions are mapping entries, not bare IDs. Trace
-   matrices use `links`, not `mappings`.
+   matrices use `links`, not `mappings`. DocParse trace records design and test
+   intent only; RTL, directed-TB, UVM, assertion, coverage, and FPGA evidence
+   traces are produced in their matching loop directories after implementation
+   or evidence exists.
    `work/docparse/structured_spec/test_intent.yaml` must include
    `waveform_windows`, and `work/docparse/verification/verification_plan.yaml`
    must include `waveform_comparison`. These are Sim Agent planning artifacts,
@@ -68,7 +73,8 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
 7. Run `python -m hdlflow.cli requirements-frontdoor-check --project <project>`.
 8. Run `python -m hdlflow.cli review-check --project <project> --level develop`; critical/high findings must be verified, closed, or waived before the DocParse gate can pass. `fixed` means the owning agent claims a fix exists; it is still blocking until Review marks the finding `verified`, `closed`, or `waived`.
 9. Run `python -m hdlflow.cli generate-docs --project <project>` only after steps 7 and 8 pass.
-10. Run `python -m hdlflow.cli run-gate --project <project> --node docparse --level develop`.
+10. Run `python -m hdlflow.cli check-docset --project <project>`.
+11. Run `python -m hdlflow.cli run-gate --project <project> --node docparse --level develop`.
 
 ## Reverse Iteration
 
@@ -182,14 +188,13 @@ rerun the two checks; do not hand-write files under `output/docs/` or
 The generated docset uses this canonical split:
 
 - `output/docs/application/application_guide.md`: user-visible integration, interfaces, register/config, operation sequence, and acceptance criteria.
-- `output/docs/design/microarchitecture_spec.md`: module topology, clocks/resets, dataflow, state/register details, and traceability.
+- `output/docs/design/microarchitecture_spec.md`: module topology, LLD ownership, clocks/resets, dataflow, state/register details, and interface timing.
 - `output/docs/test/verification_plan.md`: test matrix, coverage, assertions, Loop1 waveform secondary-check planning, and exit criteria.
 - `output/docs/delivery/delivery_package.md`: delivered document set, engineering artifacts, gate summary, verification evidence, and signoff checklist.
 
-When normalizing YAML for the generator, canonical fields are preferred, but the
-generator accepts common aliases so it does not drop valid front-door content:
-`text/title/description`, `direction/type`, `protocol/description`,
-`role/responsibility`, and `ports/signals`.
+Generated docs consume only sources declared in `work/docparse/doc_projection.yaml`.
+Use canonical field names from the scaffold templates; do not rely on aliases or
+fixed-path collection outside the projection.
 
 Any requirement or platform-controlled design change after a gate baseline must
 use `change-open`, `change-impact`, `change-approve`, the gate `--change-id`

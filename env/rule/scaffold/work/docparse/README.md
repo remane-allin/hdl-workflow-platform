@@ -10,7 +10,8 @@ feeds all three engineering evidence loops.
 - `structured_spec/` - compact machine-readable specs consumed by generators.
 - `req_decompose/` - decomposed features, tasks, and acceptance checks.
 - `review/` - Review Agent findings, Arbtr decisions, assumptions, disputes, and spec diffs.
-- `trace_matrix/` - requirement-to-architecture/RTL/test/prototype trace matrices.
+- `trace_matrix/` - DocParse requirement-to-design-intent and requirement-to-test-intent trace matrices.
+- `doc_projection.yaml` - declares which front-door sources generate each docset document.
 
 Document parsing evidence is accepted only when produced by the MinerU
 high-precision API path and stored under `parsed/mineru_extract/` with
@@ -28,8 +29,9 @@ Chat-only requirements do not use MinerU. Capture the request under
 names: `source_documents[].source_ref`, `parser_output`, `document_type`,
 `analysis_units[].unit_id`, `source_ref`, `section`, `summary`, and either
 `extracted_requirements` or `evidence_refs`. `open_questions` entries are
-mappings, not bare IDs. Requirement trace files under `trace_matrix/` use
-`links`, not `mappings`.
+mappings, not bare IDs. DocParse trace files under `trace_matrix/` use `links`,
+not `mappings`, and must not claim RTL, UVM, assertion, coverage, or FPGA
+evidence before the matching loop produces it.
 
 Run the front-door scaffold before broad RTL, UVM, or prototype work:
 
@@ -37,6 +39,8 @@ Run the front-door scaffold before broad RTL, UVM, or prototype work:
 python -m hdlflow.cli requirements-frontdoor-init --project <project> --status DRAFT
 python -m hdlflow.cli requirements-frontdoor-check --project <project>
 python -m hdlflow.cli review-check --project <project> --level develop
+python -m hdlflow.cli generate-docs --project <project>
+python -m hdlflow.cli check-docset --project <project>
 ```
 
 Loop1, Loop2, and Loop3 must share this same analysis output. Do not edit these

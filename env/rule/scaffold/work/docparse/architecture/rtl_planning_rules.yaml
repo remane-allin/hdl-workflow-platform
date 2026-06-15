@@ -28,7 +28,7 @@ hard_rules:
   - standalone_else
   - explicit_final_else
   - explicit_cdc_plan
-  - req_to_rtl_trace_required
+  - staged_trace_contract_required
 module_plan_requirements:
   - module hierarchy
   - parent/child module composition

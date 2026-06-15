@@ -28,13 +28,23 @@ class PROJECT_scoreboard extends uvm_component;
     if (fail_count == 0 && check_count > 0) begin
       `uvm_info("PROJECT_SCOREBOARD", $sformatf("PROJECT_SCOREBOARD_PASS checks=%0d failures=0", check_count), UVM_LOW)
       `uvm_info(
-        "HDLFLOW_TEST_CASE",
-        $sformatf("HDLFLOW_TEST_CASE id=scoreboard_summary stimulus=monitor_transactions expected=all_match actual=%0d_matches result=PASS transactions=%0d stimuli=%0d", check_count, check_count, check_count),
+        "HDLFLOW",
+        $sformatf("HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=scoreboard_summary|txn_id=scoreboard_%0d|sent=monitor_transactions|expected=all_match|actual=%0d_matches|latency_cycles=-|result=PASS", check_count, check_count),
+        UVM_LOW
+      )
+      `uvm_info(
+        "HDLFLOW",
+        $sformatf("HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=0|uvm_fatal=0|total_checks=%0d|failed_checks=0|coverage=not_reported|result=PASS", check_count),
         UVM_LOW
       )
     end
     else begin
       `uvm_error("PROJECT_SCOREBOARD", $sformatf("PROJECT_SCOREBOARD_FAIL checks=%0d failures=%0d", check_count, fail_count))
+      `uvm_info(
+        "HDLFLOW",
+        $sformatf("HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=1|uvm_fatal=0|total_checks=%0d|failed_checks=%0d|coverage=not_reported|result=FAIL", check_count, fail_count),
+        UVM_LOW
+      )
     end
   endfunction
 endclass
