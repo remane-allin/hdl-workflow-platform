@@ -21,13 +21,6 @@ This skill owns the transformation from:
 into:
 
 - `work/docparse/req_decompose/requirements.json`
-- `work/docparse/req_decompose/requirements.md`
-- `work/docparse/req_decompose/decomposition_notes.md`
-- `work/docparse/req_decompose/requirements.json`
-- `work/docparse/req_decompose/requirements.md`
-- `work/docparse/req_decompose/module_plan.md`
-- `work/docparse/req_decompose/path_partition.md`
-- `work/docparse/req_decompose/decomposition_notes.md`
 - `work/gates/feature_backlog.json`
 - `work/gates/scorecard.json`
 
@@ -63,9 +56,8 @@ Do not use this skill for detailed RTL coding, UVM coding, or direct ModelSim lo
    - score placeholders
 8. Write or update decomposition artifacts under `work/docparse/req_decompose/`. Do not put generated decomposition files under `input/spec/`; that folder is only for user-provided requirement sources.
 9. Translate the executable tasks into `work/gates/feature_backlog.json`.
-10. Regenerate `requirements.md` through the local tooling when appropriate.
-11. Refresh `work/gates/scorecard.json` after the requirement baseline changes.
-12. Do not generate sidecar analysis files such as `design_blueprint.md`, `*_scope.md`, or `*_implementation_analysis.md`; design intent belongs in front-door YAML and the generated docset.
+10. Refresh `work/gates/scorecard.json` after the requirement baseline changes.
+11. Do not generate sidecar analysis files such as `design_blueprint.md`, `*_scope.md`, or `*_implementation_analysis.md`; design intent belongs in front-door YAML and the generated docset.
 
 ## Decomposition Rules
 
@@ -76,7 +68,7 @@ Do not use this skill for detailed RTL coding, UVM coding, or direct ModelSim lo
 - Preserve each task's source evidence by carrying requirement IDs and
   `document_analysis.yaml` evidence references into decomposition notes or task
   acceptance checks.
-- If the source is ambiguous, record the ambiguity in `decomposition_notes.md` instead of inventing certainty.
+- If the source is ambiguous, record the ambiguity in the relevant front-door YAML instead of inventing certainty.
 - RTL-first projects should still include later verification tasks, but the first actionable tasks should usually target `rtl` and `tb` before `uvm`.
 - Every functional requirement that needs dynamic behavior evidence should carry a waveform planning hook: add or update `test_intent.yaml.waveform_windows` and `verification_plan.yaml.waveform_comparison` with observed top-level signals/scopes, trigger or time span, expected activity, and pass/fail criteria. If a requirement is not waveform-observable, record why in assumptions or decomposition notes.
 

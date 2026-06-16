@@ -281,8 +281,8 @@ def _check_tb_review_coverage(project: Path, review_text: str, errors: list[str]
     tb_files = sorted((project / "output" / "tb").glob("*.v"))
     if not tb_files:
         return
-    if "output/tb/full_function_test_plan.md" not in review_text:
-        errors.append("Review Agent must cite output/tb/full_function_test_plan.md when directed TB files exist")
+    if "output/docs/test/verification_plan.md" not in review_text:
+        errors.append("Review Agent must cite output/docs/test/verification_plan.md when directed TB files exist")
     if "modelsim-run-triage-debug" not in review_text and "rtl-architecture-and-gen" not in review_text:
         errors.append("Review Agent must cite modelsim-run-triage-debug or rtl-architecture-and-gen when reviewing directed TB files")
     missing = [path.name for path in tb_files if path.name.lower() not in review_text]

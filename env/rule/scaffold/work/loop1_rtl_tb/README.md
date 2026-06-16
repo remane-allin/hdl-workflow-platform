@@ -4,7 +4,7 @@ Owns RTL implementation and directed functional verification.
 
 - `output/rtl/` - canonical editable RTL source.
 - `output/tb/` - canonical editable directed self-checking testbenches.
-- `output/tb/full_function_test_plan.md` - TB-owned directed full-function test plan.
+- `output/docs/test/verification_plan.md` - generated directed full-function and waveform verification plan.
 - `config/top_wave_manifest.yaml` - DUT top-port waveform query manifest.
 - `sim/` - filelists, compile scripts, and regression scripts for Loop1.
 - `_runtime/` - disposable compile work libraries and temporary simulator outputs.

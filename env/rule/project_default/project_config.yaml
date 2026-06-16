@@ -233,7 +233,7 @@ nodes:
       directed_tb:
         language: Verilog-2001
         root: output/tb
-        required_plan: output/tb/full_function_test_plan.md
+        required_plan: output/docs/test/verification_plan.md
         allowed_extensions:
           - .v
         forbidden_extensions:
@@ -257,7 +257,7 @@ nodes:
             - "Directed Loop1 TB under `output/tb/` is also Verilog-2001 `.v` only."
             - "RTL `.v` files under `output/rtl/` must not contain Verilog `task` or `endtask` declarations."
             - "Directed TB `.v` files under `output/tb/` may use Verilog `task` helpers"
-            - "output/tb/full_function_test_plan.md"
+            - "output/docs/test/verification_plan.md"
             - "Directed Loop1 TB must print one structured `HDLFLOW|CHECK|...` event for every checked item"
             - "HDLFLOW_WAVE_BEGIN"
             - "loop1-waveform-gate"
@@ -581,7 +581,6 @@ nodes:
           path: env/rule/skills/requirements-frontdoor/SKILL.md
           required_markers:
             - "document_analysis.yaml"
-            - "work/docparse/frontdoor/open_questions.md"
             - "question_review"
             - "unresolved_count: 0"
             - "Sim Agent: owns simulation stimulus"

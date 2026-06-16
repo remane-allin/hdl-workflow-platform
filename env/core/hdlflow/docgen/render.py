@@ -92,19 +92,21 @@ def _uarch_doc(definition: DocDefinition, snapshot: dict[str, Any], data: dict[s
             _design_overview(data),
             "## 2. Logic Level Design",
             _lld_contract_table(data.get("module_plan")),
-            "## 3. Storage / FIFO / Counter Plan",
+            "## 3. Implementation Order / Granularity",
+            _implementation_order_table(data.get("module_plan")),
+            "## 4. Storage / FIFO / Counter Plan",
             _storage_counter_table(data.get("module_plan")),
-            "## 4. State Machines",
+            "## 5. State Machines",
             _state_machine_table(data.get("state_machines")),
-            "## 5. Module Topology",
+            "## 6. Module Topology",
             _modules_table(data.get("module_plan"), data.get("rtl_modules")),
-            "## 6. Interfaces",
+            "## 7. Interfaces",
             _interfaces_table(data),
-            "## 7. Clocks and Resets",
+            "## 8. Clocks and Resets",
             _generic_yaml_table(data.get("timing_model") or data.get("timing_rules")),
-            "## 8. Dataflow",
+            "## 9. Dataflow",
             _generic_yaml_table(data.get("dataflow")),
-            "## 9. State / Registers",
+            "## 10. State / Registers",
             _register_table(data.get("register_map")),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -130,7 +132,9 @@ def _verification_doc(definition: DocDefinition, snapshot: dict[str, Any], data:
             _generic_yaml_table(data.get("assertion_plan")),
             "## 5. Waveform Secondary Check Plan",
             _waveform_table(data),
-            "## 6. Exit Criteria",
+            "## 6. Directed TB Log / Waveform Artifact Contract",
+            _directed_tb_contract_table(data.get("verification_plan")),
+            "## 7. Exit Criteria",
             _items_table(_list_from(data.get("acceptance"), "criteria", "acceptance_criteria"), ("Criteria", "Evidence")),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -156,9 +160,11 @@ def _delivery_doc(definition: DocDefinition, snapshot: dict[str, Any], data: dic
             _generic_yaml_table(data.get("gate_status")),
             "## 5. Verification Evidence",
             _verification_evidence_table(data),
-            "## 6. Change Control Summary",
+            "## 6. Prototype / Board Validation Plan",
+            _prototype_validation_table(data.get("prototype_plan")),
+            "## 7. Change Control Summary",
             _generic_yaml_table(data.get("output_manifest")),
-            "## 7. Signoff Checklist",
+            "## 8. Signoff Checklist",
             _signoff_table(),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -344,6 +350,41 @@ def _lld_contract_table(module_plan: Any) -> str:
     )
 
 
+def _implementation_order_table(module_plan: Any) -> str:
+    rows = []
+    modules_by_name = {}
+    if isinstance(module_plan, dict):
+        for item in _named_list(module_plan, "modules"):
+            if isinstance(item, dict):
+                name = _first_present(item, "name", default="")
+                if name:
+                    modules_by_name[name] = item
+        for index, item in enumerate(_list_from(module_plan, "implementation_order"), start=1):
+            name = _compact(item)
+            module = modules_by_name.get(name, {})
+            detail = _first_present(module, "file", "source_file", "responsibility", default="implementation order item")
+            rows.append((str(index), name, detail))
+        policy = module_plan.get("module_granularity_policy")
+        if isinstance(policy, dict):
+            for key in ("planning_order", "file_boundary_rule", "split_when", "keep_inside_parent_when", "naming_rule"):
+                value = policy.get(key)
+                if value not in (None, "", [], {}):
+                    rows.append(("policy", key, _compact(value)))
+        for helper in _named_list(module_plan, "prototype_helpers"):
+            if isinstance(helper, dict):
+                rows.append(
+                    (
+                        "prototype_helper",
+                        _first_present(helper, "name", default="helper"),
+                        _first_present(helper, "role", "file", default="prototype helper"),
+                    )
+                )
+    return _table(
+        ("Order", "Item", "Detail"),
+        rows or [("no order", "not recorded", "implementation order not supplied")],
+    )
+
+
 def _ownership_summary(owns: Any) -> str:
     if not isinstance(owns, dict):
         return "ownership not specified"
@@ -483,6 +524,23 @@ def _waveform_table(data: dict[str, Any]) -> str:
     return _table(("Check", "Evidence"), rows or [("no waveform check", "not recorded")])
 
 
+def _directed_tb_contract_table(verification_plan: Any) -> str:
+    rows = []
+    for item in _list_from(verification_plan, "directed_tb_log_contract"):
+        rows.append(("log_contract", _compact(item)))
+    if isinstance(verification_plan, dict):
+        wave = verification_plan.get("directed_tb_waveform_contract")
+        if isinstance(wave, dict):
+            for key in ("waveform_manifest", "waveform_directory", "waveform_files", "markers", "reports", "policy"):
+                value = wave.get(key)
+                if value not in (None, "", [], {}):
+                    rows.append((key, _compact(value)))
+    return _table(
+        ("Contract Area", "Value"),
+        rows or [("no directed TB contract", "not recorded")],
+    )
+
+
 def _release_table(data: dict[str, Any]) -> str:
     gate = data.get("gate_status") if isinstance(data.get("gate_status"), dict) else {}
     return _table(
@@ -533,6 +591,34 @@ def _verification_evidence_table(data: dict[str, Any]) -> str:
             ("Loop3", gate.get("loop3_exit", "not recorded"), "pass"),
             ("Review Findings", "see work/docparse/review/role_findings.yaml", "no blockers"),
         ],
+    )
+
+
+def _prototype_validation_table(prototype_plan: Any) -> str:
+    rows = []
+    if isinstance(prototype_plan, dict):
+        for key in ("prototype_mode", "board", "tool_version", "ps7_preset_tcl"):
+            value = prototype_plan.get(key)
+            if value not in (None, "", [], {}):
+                rows.append((key, _compact(value), "prototype setting"))
+        clocking = prototype_plan.get("clocking")
+        if isinstance(clocking, dict):
+            for key, value in clocking.items():
+                rows.append(("clocking", key, _compact(value)))
+        for item in _named_list(prototype_plan, "resource_estimate"):
+            if isinstance(item, dict):
+                rows.append(("resource_estimate", _first_present(item, "resource", default="resource"), _first_present(item, "estimate", default="estimate not recorded")))
+            else:
+                rows.append(("resource_estimate", _compact(item), "estimate"))
+        for key in ("ps_pl_boundary", "validation_flow", "expected_board_checks", "risk_items", "board_waveform_checks"):
+            for item in _list_from(prototype_plan, key):
+                if isinstance(item, dict):
+                    rows.append((key, _first_present(item, "name", "type", default="item"), _first_present(item, "expected", "blocking", "description", default=_compact(item))))
+                else:
+                    rows.append((key, _compact(item), "planned item"))
+    return _table(
+        ("Area", "Item", "Detail"),
+        rows or [("no prototype plan", "not recorded", "not recorded")],
     )
 
 

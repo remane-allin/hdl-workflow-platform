@@ -28,10 +28,8 @@ READY_STATUS = "READY"
 SPEC_INPUT_REL = "input/spec"
 FRONTDOOR_REL = "work/docparse/frontdoor"
 SRS_REL = f"{FRONTDOOR_REL}/srs.yaml"
-SRS_MD_REL = f"{FRONTDOOR_REL}/srs.md"
 ACCEPTANCE_REL = f"{FRONTDOOR_REL}/acceptance_criteria.yaml"
 FORBIDDEN_DESIGNS_REL = f"{FRONTDOOR_REL}/forbidden_designs.yaml"
-OPEN_QUESTIONS_REL = f"{FRONTDOOR_REL}/open_questions.md"
 DOCUMENT_ANALYSIS_REL = "work/docparse/structured_spec/document_analysis.yaml"
 DOC_PROJECTION_REL = "work/docparse/doc_projection.yaml"
 DOCPARSE_TRACE_RELS = [
@@ -59,7 +57,6 @@ ROLE_CONTRACTS = [
         "owns": "requirements, protocol source text, metrics, executable chip spec, interface timing, and forbidden design list",
         "primary_outputs": [
             SRS_REL,
-            SRS_MD_REL,
             ACCEPTANCE_REL,
             FORBIDDEN_DESIGNS_REL,
             "work/docparse/structured_spec/interface_spec.yaml",
@@ -69,7 +66,6 @@ ROLE_CONTRACTS = [
             "work/docparse/structured_spec/test_intent.yaml",
             "work/docparse/structured_spec/timing_rules.yaml",
             "work/docparse/req_decompose/requirements.json",
-            "work/docparse/req_decompose/requirements.md",
         ],
     },
     {
@@ -77,7 +73,6 @@ ROLE_CONTRACTS = [
         "title": "Arch Agent",
         "owns": "module topology, bus architecture, hierarchy partition, throughput planning, interfaces, and dataflow",
         "primary_outputs": [
-            "work/docparse/architecture/add.md",
             "work/docparse/architecture/module_plan.yaml",
             "work/docparse/architecture/interface_contracts.yaml",
             "work/docparse/architecture/dataflow.yaml",
@@ -94,7 +89,6 @@ ROLE_CONTRACTS = [
         "primary_outputs": [
             "output/rtl/",
             "output/tb/",
-            "output/tb/full_function_test_plan.md",
             "work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml",
             "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
         ],
@@ -123,7 +117,6 @@ ROLE_CONTRACTS = [
         "title": "Review Agent",
         "owns": "defect list, risk level, correction advice, compliance review, and root-cause routing without editing spec, architecture, or RTL",
         "primary_outputs": [
-            "work/docparse/review/multi_agent_review.md",
             "work/docparse/review/role_findings.yaml",
             "output/reports/review/",
         ],
@@ -146,7 +139,6 @@ REQUIRED_FRONTEND_ARTIFACTS = [
     SRS_REL,
     ACCEPTANCE_REL,
     FORBIDDEN_DESIGNS_REL,
-    OPEN_QUESTIONS_REL,
     "work/docparse/structured_spec/interface_spec.yaml",
     DOCUMENT_ANALYSIS_REL,
     "work/docparse/structured_spec/register_map.yaml",
@@ -168,7 +160,6 @@ REQUIRED_FRONTEND_ARTIFACTS = [
     "work/docparse/review/role_findings.yaml",
     "work/docparse/review/decision_log.yaml",
     "work/docparse/review/arbitration_log.yaml",
-    "work/docparse/review/multi_agent_review.md",
     DOC_PROJECTION_REL,
     *DOCPARSE_TRACE_RELS,
 ]
@@ -399,26 +390,6 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "acceptance_summary": [],
             }
         ),
-        SRS_MD_REL: "\n".join(
-            [
-                "# Structured Requirements Specification",
-                "",
-                f"- project: {project_name}",
-                f"- status: {status}",
-                f"- source_refs: {refs_inline}",
-                "",
-                "## Scope",
-                "",
-                "## Functional Requirements",
-                "",
-                "## Non-Functional Requirements",
-                "",
-                "## Boundary Conditions",
-                "",
-                "## Open Questions",
-                "",
-            ]
-        ),
         ACCEPTANCE_REL: _yaml_doc(
             {
                 **base,
@@ -442,8 +413,6 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "rationale": [],
             }
         ),
-        OPEN_QUESTIONS_REL: _open_questions(project_name, status),
-        "work/docparse/architecture/add.md": _architecture_md(project_name, status, refs_inline),
         "work/docparse/architecture/rtl_planning_rules.yaml": _yaml_doc(
             {
                 **base,
@@ -719,7 +688,6 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "assumptions": [],
             }
         ),
-        "work/docparse/verification/verification_plan.md": _verification_md(project_name, status, refs_inline),
         "work/docparse/verification/assertion_plan.yaml": _yaml_doc(
             {
                 **base,
@@ -758,7 +726,6 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "assumptions": [],
             }
         ),
-        "work/docparse/prototype/prototype_plan.md": _prototype_md(project_name, status, refs_inline),
         "work/docparse/prototype/clock_plan.yaml": _yaml_doc(
             {
                 **base,
@@ -841,7 +808,6 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "assumptions": [],
             }
         ),
-        "work/docparse/review/multi_agent_review.md": _review_md(project_name, status, refs_yaml),
         "work/docparse/structured_spec/interface_spec.yaml": _yaml_doc(
             {
                 **base,
@@ -879,7 +845,7 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "question_review": {
                     "status": "UNREVIEWED",
                     "reviewed_by": "",
-                    "review_evidence": OPEN_QUESTIONS_REL,
+                    "review_evidence": DOCUMENT_ANALYSIS_REL,
                     "unresolved_count": None,
                     "notes": "Before READY, unresolved requirement questions must be shown to the user and closed or explicitly accepted.",
                 },
@@ -968,14 +934,9 @@ def _requirement_source_refs(project: Path) -> list[str]:
         ".gitkeep",
         "README.md",
         "srs.yaml",
-        "srs.md",
         "acceptance_criteria.yaml",
-        "open_questions.md",
         "forbidden_designs.yaml",
         "requirements.json",
-        "module_plan.md",
-        "path_partition.md",
-        "decomposition_notes.md",
     }
     refs = []
     for path in sorted(root.glob("*")):
@@ -1589,7 +1550,6 @@ def _check_requirement_question_review(
     require_ready: bool,
 ) -> None:
     analysis = _load_structured(project / DOCUMENT_ANALYSIS_REL)
-    questions_path = project / OPEN_QUESTIONS_REL
     if analysis is None:
         return
 
@@ -1621,12 +1581,6 @@ def _check_requirement_question_review(
             warnings.append("requirement open questions remain unresolved: " + ", ".join(unresolved[:8]))
         return
 
-    if not questions_path.is_file():
-        errors.append(f"{OPEN_QUESTIONS_REL} must exist and be shown to the user before READY")
-        questions_text = ""
-    else:
-        questions_text = questions_path.read_text(encoding="utf-8", errors="ignore")
-
     if not isinstance(review, dict):
         errors.append(f"{DOCUMENT_ANALYSIS_REL} question_review must be a mapping for READY")
         review = {}
@@ -1642,8 +1596,8 @@ def _check_requirement_question_review(
     if not reviewed_by:
         errors.append(f"{DOCUMENT_ANALYSIS_REL} question_review.reviewed_by must identify the user/reviewer for READY")
     evidence = str(review.get("review_evidence") or "").strip()
-    if evidence != OPEN_QUESTIONS_REL:
-        errors.append(f"{DOCUMENT_ANALYSIS_REL} question_review.review_evidence must be {OPEN_QUESTIONS_REL}")
+    if evidence != DOCUMENT_ANALYSIS_REL:
+        errors.append(f"{DOCUMENT_ANALYSIS_REL} question_review.review_evidence must be {DOCUMENT_ANALYSIS_REL}")
 
     unresolved_count = review.get("unresolved_count")
     if unresolved_count not in (0, "0"):
@@ -1653,12 +1607,6 @@ def _check_requirement_question_review(
             "unresolved requirement questions must be sent to the user and closed before READY: "
             + ", ".join(unresolved[:8])
         )
-
-    if questions_text:
-        if not re.search(r"(?mi)^\s*-\s*(?:question_)?review_status:\s*(REVIEWED|USER_REVIEWED|APPROVED)\s*$", questions_text):
-            errors.append(f"{OPEN_QUESTIONS_REL} review summary must contain '- question_review_status: REVIEWED'")
-        if not re.search(r"(?mi)^\s*-\s*unresolved_count:\s*0\s*$", questions_text):
-            errors.append(f"{OPEN_QUESTIONS_REL} review summary must contain '- unresolved_count: 0'")
 
 
 def _check_external_document_parse_policy(

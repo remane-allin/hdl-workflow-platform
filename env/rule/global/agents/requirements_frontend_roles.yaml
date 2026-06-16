@@ -9,19 +9,16 @@ roles:
     owns: requirements, protocol text, metrics, executable chip spec, interface timing, legal design boundary, forbidden design list
     outputs:
       - work/docparse/frontdoor/srs.yaml
-      - work/docparse/frontdoor/srs.md
       - work/docparse/frontdoor/acceptance_criteria.yaml
       - work/docparse/frontdoor/forbidden_designs.yaml
       - work/docparse/structured_spec/interface_spec.yaml
       - work/docparse/structured_spec/interface_timing.yaml
       - work/docparse/structured_spec/timing_rules.yaml
       - work/docparse/req_decompose/requirements.json
-      - work/docparse/req_decompose/requirements.md
   arch:
     title: Arch Agent
     owns: module topology, bus architecture, hierarchy partition, throughput plan, interface contracts, dataflow
     outputs:
-      - work/docparse/architecture/add.md
       - work/docparse/architecture/module_plan.yaml
       - work/docparse/architecture/interface_contracts.yaml
       - work/docparse/architecture/dataflow.yaml
@@ -33,7 +30,7 @@ roles:
     outputs:
       - output/rtl/
       - output/tb/
-      - output/tb/full_function_test_plan.md
+      - output/docs/test/verification_plan.md
   sim:
     title: Sim Agent
     owns: simulation stimulus, UVM, waveform comparison, logs, coverage, Loop1/Loop2/Loop3 validation evidence
@@ -50,7 +47,6 @@ roles:
     owns: structured defect list, severity, lifecycle status, risk, correction advice, compliance review, root-cause routing
     outputs:
       - work/docparse/review/role_findings.yaml
-      - work/docparse/review/multi_agent_review.md
       - output/reports/review/
   arbtr:
     title: Arbtr Agent

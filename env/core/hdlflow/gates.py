@@ -118,31 +118,16 @@ PROTECTED_GATE_FILES = [
 GENERATED_REQUIREMENT_FILES = {
     "README.md",
     "srs.yaml",
-    "srs.md",
     "acceptance_criteria.yaml",
     "forbidden_designs.yaml",
-    "open_questions.md",
     "requirements.json",
-    "requirements.md",
-    "module_plan.md",
-    "path_partition.md",
-    "decomposition_notes.md",
-    "design_blueprint.md",
 }
 
 DOC_PARSE_ALLOWED_MARKDOWN_RELS = {
     "work/docparse/README.md",
-    "work/docparse/architecture/add.md",
-    "work/docparse/verification/verification_plan.md",
-    "work/docparse/prototype/prototype_plan.md",
-    "work/docparse/req_decompose/requirements.md",
-    "work/docparse/req_decompose/module_plan.md",
-    "work/docparse/req_decompose/path_partition.md",
-    "work/docparse/req_decompose/decomposition_notes.md",
     "work/docparse/review/assumption_log.md",
     "work/docparse/review/docparse_operation_log.md",
     "work/docparse/review/README.md",
-    "work/docparse/review/multi_agent_review.md",
     "work/docparse/review/process_violation_record.md",
     "work/docparse/review/spec_diff.md",
     "work/docparse/review/violation_record.md",
@@ -150,12 +135,6 @@ DOC_PARSE_ALLOWED_MARKDOWN_RELS = {
 
 SPEC_REQUIREMENTS_ALLOWED_MARKDOWN = {
     f"{SPEC_INPUT_REL}/README.md",
-    f"{FRONTDOOR_REL}/srs.md",
-    f"{FRONTDOOR_REL}/open_questions.md",
-    "work/docparse/req_decompose/requirements.md",
-    "work/docparse/req_decompose/module_plan.md",
-    "work/docparse/req_decompose/path_partition.md",
-    "work/docparse/req_decompose/decomposition_notes.md",
 }
 
 DESIGN_REPORT_ALLOWED_MARKDOWN = {
@@ -495,10 +474,6 @@ def _check_docparse(project: Path) -> list[GateCheck]:
         "work/docparse/structured_spec/test_intent.yaml",
         "work/docparse/structured_spec/timing_rules.yaml",
         "work/docparse/req_decompose/requirements.json",
-        "work/docparse/req_decompose/requirements.md",
-        "work/docparse/req_decompose/module_plan.md",
-        "work/docparse/req_decompose/path_partition.md",
-        "work/docparse/req_decompose/decomposition_notes.md",
         "work/docparse/trace_matrix/req_to_design_intent.yaml",
         "work/docparse/trace_matrix/req_to_test_intent.yaml",
     ]
@@ -612,7 +587,6 @@ def _check_loop1(project: Path, level: str) -> list[GateCheck]:
     required_paths = [
         LOOP1_WAVE_DIR_REL,
         "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
-        "output/tb/full_function_test_plan.md",
     ]
     checks.extend(_path_checks(project, required_paths))
     freshness_rels = _stage_report_required_rels(LOOP1_REPORT)

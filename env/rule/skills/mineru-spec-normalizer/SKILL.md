@@ -107,7 +107,7 @@ open_questions: []
 question_review:
   status: REVIEWED
   reviewed_by: user-or-reviewer
-  review_evidence: work/docparse/frontdoor/open_questions.md
+  review_evidence: work/docparse/structured_spec/document_analysis.yaml
   unresolved_count: 0
 ```
 

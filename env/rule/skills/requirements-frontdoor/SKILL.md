@@ -37,7 +37,6 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
 3. Run `python -m hdlflow.cli requirements-frontdoor-init --project <project> --status DRAFT` if artifacts are missing.
 4. Fill or refresh:
    - `work/docparse/frontdoor/srs.yaml`
-   - `work/docparse/frontdoor/open_questions.md`
    - `work/docparse/frontdoor/forbidden_designs.yaml`
    - `work/docparse/structured_spec/document_analysis.yaml`
    - `work/docparse/structured_spec/interface_spec.yaml`
@@ -45,7 +44,7 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
    - `work/docparse/structured_spec/register_map.yaml`
    - `work/docparse/structured_spec/test_intent.yaml`
    - `work/docparse/structured_spec/timing_rules.yaml`
-   - `work/docparse/req_decompose/*.md` and `work/docparse/req_decompose/*.json`
+   - `work/docparse/req_decompose/*.json`
    - `work/docparse/architecture/*.yaml`
    - `work/docparse/verification/*.yaml`
    - `work/docparse/prototype/*.yaml`
@@ -68,7 +67,7 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
    not Loop1 afterthoughts: they define which requirement windows need WLF/VCD
    evidence, which top-level signals/scopes are observed first, the trigger or
    time span, expected activity, and pass/fail criteria.
-5. Before promoting artifacts to READY, Spec Agent must publish its unresolved doubts in `work/docparse/frontdoor/open_questions.md` and mirror them in `work/docparse/structured_spec/document_analysis.yaml.open_questions`. Send those questions to the user for review. Every question must be answered, accepted, waived, or marked not blocking, and `document_analysis.yaml.question_review` must record `status: REVIEWED`, `reviewed_by`, `review_evidence: work/docparse/frontdoor/open_questions.md`, and `unresolved_count: 0`. If there are no unresolved doubts, record that explicit zero-question review instead of leaving the field empty.
+5. Before promoting artifacts to READY, Spec Agent must record unresolved doubts in `work/docparse/structured_spec/document_analysis.yaml.open_questions`. Send those questions to the user for review. Every question must be answered, accepted, waived, or marked not blocking, and `document_analysis.yaml.question_review` must record `status: REVIEWED`, `reviewed_by`, `review_evidence: work/docparse/structured_spec/document_analysis.yaml`, and `unresolved_count: 0`. If there are no unresolved doubts, record that explicit zero-question review instead of leaving the field empty.
 6. Promote artifact `status` values to `READY` only after Spec, Arch, Sim planning, Review, and Arbtr handoff fields are consistent and requirement questions are reviewed.
 7. Run `python -m hdlflow.cli requirements-frontdoor-check --project <project>`.
 8. Run `python -m hdlflow.cli review-check --project <project> --level develop`; critical/high findings must be verified, closed, or waived before the DocParse gate can pass. `fixed` means the owning agent claims a fix exists; it is still blocking until Review marks the finding `verified`, `closed`, or `waived`.
@@ -97,7 +96,7 @@ When implementation artifacts exist, Review Agent must include structured
 formal-artifact review findings, even if the result is PASS. RTL review must
 cite `output/reports/loop1/rtl_skill_audit.md`, the `rtl-architecture-and-gen`
 skill or `verilog-rtl-style-guide`, and every RTL file name reviewed. Directed
-TB review must cite `output/tb/full_function_test_plan.md` and the owning
+TB review must cite `output/docs/test/verification_plan.md` and the owning
 Loop1/ModelSim skill evidence. UVM review must cite `uvm-env-and-test-build`
 and every UVM file name reviewed. Loop3 review must cite `prototype-preflight`,
 `validate-prototype-plan`, and `loop3-refresh-reports`. A handwritten PASS
@@ -106,7 +105,7 @@ evidence.
 
 ## Output Rule
 
-Markdown files are for human review. YAML files are the machine-readable source
+The four generated `output/docs/**` documents are for user review. YAML files are the machine-readable source
 for gates, traceability, permissions, and Loop1/Loop2/Loop3 handoff.
 
 The structured spec YAML files are the required machine-readable bridge
@@ -146,7 +145,7 @@ open_questions:
 question_review:
   status: REVIEWED
   reviewed_by: user-or-reviewer
-  review_evidence: work/docparse/frontdoor/open_questions.md
+  review_evidence: work/docparse/structured_spec/document_analysis.yaml
   unresolved_count: 0
 ```
 

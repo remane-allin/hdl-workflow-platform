@@ -18,18 +18,12 @@ from .validate import validate_project
 
 FRONTDOOR_FILES = {
     "srs.yaml",
-    "srs.md",
     "acceptance_criteria.yaml",
     "forbidden_designs.yaml",
-    "open_questions.md",
 }
 
 REQ_DECOMPOSE_FILES = {
     "requirements.json",
-    "requirements.md",
-    "module_plan.md",
-    "path_partition.md",
-    "decomposition_notes.md",
 }
 
 DESIGN_REPORT_PREFIX = "output/docs"
