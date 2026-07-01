@@ -1,0 +1,24 @@
+{
+  "command": {
+    "path": "work/loop1_rtl_tb/current/cmd/command.json",
+    "sha256": "b772cfc6ceb3f948e4eac37684149cb8fcac0a2d99b2dcb1f496a25c7fd992dc"
+  },
+  "generated_reports": [
+    {
+      "path": "output/reports/loop1/loop1_report.md",
+      "sha256": "8f9eaf3a55a3f16c9a50a498d2e2e734d7fb3e5d7407f9437e1e806e9c339c66"
+    },
+    {
+      "path": "output/reports/loop1/loop1_report.json",
+      "sha256": "fc92911b3a7bb5a7419ef311a3d9f496266ca21f78edcb426cf5f94e93943c75"
+    }
+  ],
+  "logs": [
+    {
+      "path": "work/loop1_rtl_tb/current/log/modelsim.log",
+      "sha256": "3993c601a43af1771b68e32f199038d58965b19efb8457124b71117a8491be1c"
+    }
+  ],
+  "schema": "hdlflow_run_current_v1",
+  "stage": "loop1_rtl_tb"
+}

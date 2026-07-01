@@ -1,0 +1,39 @@
+{
+  "change_id": null,
+  "docset_version": 1,
+  "documents": [
+    {
+      "doc_type": "application_guide",
+      "manifest": "output/docs/manifests/application_doc_manifest.json",
+      "path": "output/docs/application/application_guide.md",
+      "required": true,
+      "sha256": "ba96e6d4fbf1fe03b347a5130efcbf93b99c989195f0c155527a1be59a6d2162"
+    },
+    {
+      "doc_type": "microarchitecture_specification",
+      "manifest": "output/docs/manifests/microarchitecture_doc_manifest.json",
+      "path": "output/docs/design/microarchitecture_spec.md",
+      "required": true,
+      "sha256": "6ec60df56c6db1c40af6b11790dd5604ebdd1b1d9ad77fc2b2ed502015726e3d"
+    },
+    {
+      "doc_type": "verification_plan",
+      "manifest": "output/docs/manifests/verification_doc_manifest.json",
+      "path": "output/docs/test/verification_plan.md",
+      "required": true,
+      "sha256": "f1ea6c86fefb30546e4ed6d237c511c8f8ef711c366756bdb161c833ad6a4704"
+    },
+    {
+      "doc_type": "delivery_package",
+      "manifest": "output/docs/manifests/delivery_doc_manifest.json",
+      "path": "output/docs/delivery/delivery_package.md",
+      "required": true,
+      "sha256": "e6f6203e7dc5cc5edfc04e847afe224acc91d073fcf6582ed3d582973ca1d0e7"
+    }
+  ],
+  "generated_at": "2026-06-30T22:42:50",
+  "ip_name": "Hi3593_v2",
+  "project": "Hi3593_v2",
+  "schema_version": 1,
+  "status": "DRAFT"
+}

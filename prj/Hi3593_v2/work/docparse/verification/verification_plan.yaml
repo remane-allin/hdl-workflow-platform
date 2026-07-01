@@ -1,0 +1,104 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: sim
+module_level:
+  - id: ML-SPI
+    module: spi_slave_if
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+    checks:
+      - partial byte discard
+      - opcode_04 opcode_08 opcode_0C opcode_10 opcode_24 opcode_40 opcode_44 opcode_80 opcode_84 opcode_A0 opcode_C0
+  - id: ML-SPI-CDC
+    module: spi_cmd_cdc
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+    checks:
+      - read opcode dummy bytes are ignored while CDC response is pending
+      - ACLK command pulse is emitted once per complete SCK-domain command
+  - id: ML-MAILBOX
+    module: rx_mailbox_status
+    req_ids:
+      - REQ-MAILBOX-001
+      - REQ-MB-PINS-001
+      - REQ-FLAGINT-001
+    checks:
+      - priority mailbox capture and read-clear
+      - flag interrupt output selection
+  - id: ML-FIFO
+    module: sync_fifo
+    req_ids:
+      - REQ-FIFO-001
+    checks:
+      - tx_fifo_full_ignore
+      - rx_location32_overwrite
+  - id: ML-ARINC
+    module: arinc429_tx
+    req_ids:
+      - REQ-ARINC-001
+      - REQ-TX-001
+    checks:
+      - parity_odd_even
+      - selftest_null_driver
+system_level:
+  - id: SL-RESET
+    text: "MR and opcode_04 produce master reset; opcode_44 is FIFO/mailbox-only."
+scoreboards:
+  - id: SB-SPEC
+    model: "Command-level reference model tracks registers, FIFO counts, and expected readbacks from register_map.yaml."
+reference_models:
+  - id: RM-ARINC
+    text: "ARINC model handles 32-bit word parity, label bit order, and selected high/low rate class."
+baseline_entry_checks:
+  - id: BE-001
+    text: "After MR, tx_control, rx_control, aclk_division, and flag assignment registers read default zero; TX empty is asserted."
+full_function_matrix:
+  - id: FFM-OPCODES
+    text: "Directed opcode matrix covers 04h 08h 0Ch 10h 24h 40h 44h 80h 84h A0h C0h."
+  - id: FFM-BOUNDARIES
+    text: "Boundary markers: partial, rx_location32_overwrite, master_reset_keeps_control_register, selftest, tx_fifo."
+scenario_tests:
+  - reset_mid_frame
+  - label_filtering
+  - parity_odd_even
+  - selftest_loopback
+  - status_polling
+stress_tests:
+  - "FIFO pressure: fill TX to 32 and attempt 33rd write."
+  - "FIFO pressure: fill RX to 32 and accept 33rd word."
+fpga_realistic_tests:
+  - "PS+PL register sanity through generated address window."
+  - "PS+PL driver/receiver digital pin sampler sanity."
+negative_tests:
+  - partial_spi_byte
+  - unsupported_opcode_no_side_effect
+waveform_comparison:
+  - id: WAVE-RESET
+    window: reset_release
+    signals:
+      - MR
+      - TEMPTY
+      - TFULL
+  - id: WAVE-SPI
+    window: spi_opcode_activity
+    signals:
+      - CS
+      - SCK
+      - SI
+      - SO
+  - id: WAVE-TX
+    window: arinc_tx_response
+    signals:
+      - TX1IN
+      - TX0IN
+      - SLP
+agent_consumers:
+  - Sim Agent
+  - Review Agent
+  - Arbtr Agent
+assumptions:
+  - ASM-BOUNDARY-001

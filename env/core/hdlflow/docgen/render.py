@@ -134,7 +134,11 @@ def _verification_doc(definition: DocDefinition, snapshot: dict[str, Any], data:
             _waveform_table(data),
             "## 6. Directed TB Log / Waveform Artifact Contract",
             _directed_tb_contract_table(data.get("verification_plan")),
-            "## 7. Exit Criteria",
+            "## 7. UVM Environment Plan",
+            _uvm_environment_table(data.get("uvm_plan")),
+            "## 8. UVM Tests / Scoreboards / Coverage",
+            _uvm_tests_table(data.get("uvm_plan"), data.get("trace_req_to_uvm_intent")),
+            "## 9. Exit Criteria",
             _items_table(_list_from(data.get("acceptance"), "criteria", "acceptance_criteria"), ("Criteria", "Evidence")),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -538,6 +542,99 @@ def _directed_tb_contract_table(verification_plan: Any) -> str:
     return _table(
         ("Contract Area", "Value"),
         rows or [("no directed TB contract", "not recorded")],
+    )
+
+
+def _uvm_environment_table(uvm_plan: Any) -> str:
+    rows = []
+    if isinstance(uvm_plan, dict):
+        framework = uvm_plan.get("framework")
+        if isinstance(framework, dict):
+            for key in ("root", "template_family", "package_entry", "tb_top", "entry_check", "regression_entry"):
+                value = framework.get(key)
+                if value not in (None, "", [], {}):
+                    rows.append(("framework", key, _compact(value)))
+            for key in ("authoritative_planning_sources", "forbidden_planning_outputs", "anti_sidecar_rule", "pre_generation_check"):
+                value = framework.get(key)
+                if value not in (None, "", [], {}):
+                    rows.append(("planning_guard", key, _compact(value)))
+            for item in _list_from(framework, "required_entry_files"):
+                rows.append(("required_entry_file", _compact(item), "Loop2 compile prerequisite"))
+        for item in _named_list(uvm_plan, "interfaces"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "interface",
+                        _first_present(item, "name", default="interface"),
+                        _first_present(item, "signals", "role", "path", default="interface contract"),
+                    )
+                )
+        for item in _named_list(uvm_plan, "agents"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "agent",
+                        _first_present(item, "name", default="agent"),
+                        _first_present(item, "mode", "owns", "analysis_exports", default="agent ownership"),
+                    )
+                )
+        for item in _named_list(uvm_plan, "env_components"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "env_component",
+                        _first_present(item, "name", default="component"),
+                        _first_present(item, "role", "connects", "path", default="environment component"),
+                    )
+                )
+    return _table(
+        ("Area", "Item", "Detail"),
+        rows or [("no UVM plan", "not recorded", "not recorded")],
+    )
+
+
+def _uvm_tests_table(uvm_plan: Any, trace: Any) -> str:
+    rows = []
+    if isinstance(uvm_plan, dict):
+        for item in _named_list(uvm_plan, "scoreboards"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "scoreboard",
+                        _first_present(item, "name", default="scoreboard"),
+                        _first_present(item, "checks", "model", "inputs", default="scoreboard check"),
+                    )
+                )
+        for item in _named_list(uvm_plan, "tests"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "test",
+                        _first_present(item, "name", default="test"),
+                        _first_present(item, "virtual_sequence", "req_ids", "checker_path", default="test intent"),
+                    )
+                )
+        for item in _named_list(uvm_plan, "coverage"):
+            if isinstance(item, dict):
+                rows.append(
+                    (
+                        "coverage",
+                        _first_present(item, "id", "name", default="coverage"),
+                        _first_present(item, "bins", "crosses", "ignore_bins", default="coverage intent"),
+                    )
+                )
+    for item in _named_list(trace, "links"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    "trace",
+                    _first_present(item, "requirement_id", "req_id", default="requirement"),
+                    _first_present(item, "uvm_tests", "virtual_sequences", "scoreboard_checks", "coverage_points", default="UVM trace target"),
+                )
+            )
+    return _table(
+        ("Kind", "Item", "Plan / Trace"),
+        rows or [("no UVM test plan", "not recorded", "not recorded")],
     )
 
 

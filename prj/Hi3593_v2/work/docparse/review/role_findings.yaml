@@ -1,0 +1,161 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: review
+review_policy:
+  blocking_severities:
+    - critical
+    - high
+  release_blocking_severities:
+    - critical
+    - high
+    - medium
+  closed_statuses:
+    - closed
+    - verified
+    - waived
+  valid_statuses:
+    - open
+    - routed
+    - fixed
+    - verified
+    - closed
+    - waived
+roles:
+  spec:
+    status: READY
+    findings:
+      - id: RF-SPEC-BASELINE-001
+        severity: info
+        status: closed
+        category: baseline_review
+        owner: spec
+        artifact: work/docparse/structured_spec/document_analysis.yaml
+        issue: "Fresh MinerU evidence and chat MR input are mapped to active requirements."
+        impact: "Requirements are ready for architecture handoff."
+        evidence: "question_review.unresolved_count is 0 and evidence_map links REQ-SPI/RST/FIFO/ARINC/RX/TX/STATUS/PROTO."
+        recommendation: "Proceed to architecture and keep new changes in intake."
+        route_to: arch
+    confidence: high
+  arch:
+    status: READY
+    findings:
+      - id: RF-ARCH-BASELINE-001
+        severity: info
+        status: closed
+        category: architecture_review
+        owner: arch
+        artifact: work/docparse/architecture/module_plan.yaml
+        issue: "Module ownership separates top, reset, SPI, register, FIFO, TX, and RX responsibilities."
+        impact: "gen_rtl can proceed with hierarchy-only top and no monolithic FSM."
+        evidence: "rtl_planning_policy_ref and module interfaces are populated."
+        recommendation: "Proceed to RTL generation."
+        route_to: exec
+    confidence: high
+  exec:
+    status: READY
+    findings:
+      - id: RF-EXEC-BASELINE-001
+        severity: info
+        status: closed
+        category: execution_boundary
+        owner: exec
+        artifact: work/docparse/architecture/rtl_planning_rules.yaml
+        issue: "RTL generation constraints are ready: Verilog-2001, output/rtl, hierarchy-only top, and per-file audit."
+        impact: "Implementation can be checked against gen_rtl style."
+        evidence: "source_skill and style_guide paths resolve under env/rule/skills."
+        recommendation: "Run rtl-skill-audit after RTL generation."
+        route_to: sim
+      - id: RF-EXEC-LOOP1-RTL-001
+        severity: info
+        status: verified
+        category: rtl_skill_review
+        owner: exec
+        artifact: output/reports/loop1/rtl_skill_audit.md
+        issue: "Generated RTL was reviewed against rtl-architecture-and-gen and the verilog-rtl-style-guide."
+        impact: "Loop1 may use the generated RTL as the implementation under test."
+        evidence: "output/reports/loop1/rtl_skill_audit.md reports PASS and rtl_semantic_stub_absent is expected PASS for arinc429_rx.v, arinc429_tx.v, control_status_regs.v, hi3593_v2_top.v, reset_ctrl.v, rx_mailbox_status.v, spi_cmd_cdc.v, spi_slave_if.v, and sync_fifo.v."
+        recommendation: "Keep RTL changes behind the Loop1/Loop2 rerun policy."
+        route_to: sim
+    confidence: high
+  sim:
+    status: READY
+    findings:
+      - id: RF-SIM-BASELINE-001
+        severity: info
+        status: closed
+        category: verification_plan
+        owner: sim
+        artifact: work/docparse/verification/verification_plan.yaml
+        issue: "Loop1, VCD, Loop2, and Loop3 evidence formats are defined before implementation."
+        impact: "Simulation reports can be generated from structured markers."
+        evidence: "HDLFLOW CHECK/SUMMARY and UVM_CHECK/UVM_SUMMARY obligations are in active verification intent."
+        recommendation: "Generate directed TB and UVM scaffold against this plan."
+        route_to: review
+      - id: RF-SIM-LOOP1-TB-001
+        severity: info
+        status: verified
+        category: directed_tb_review
+        owner: sim
+        artifact: output/tb/loop1_tb.v
+        issue: "Loop1 directed TB is task-bound, ModelSim-run, and VCD-gated against the active verification plan."
+        impact: "Loop1 functional and waveform evidence can feed Loop2 readiness."
+        evidence: "output/docs/test/verification_plan.md is implemented by loop1_tb.v; output/reports/loop1/loop1_report.md is PASS with 32 checks; loop1_waveform_blocking is PASS through output/reports/loop1/waveform_gate.json; loop1_task_requirement_evidence is satisfied; modelsim-run-triage-debug governs work/loop1_rtl_tb/sim/rtl_functional.do."
+        recommendation: "Proceed only after work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml is present."
+        route_to: review
+    confidence: high
+  review:
+    status: READY
+    findings:
+      - id: RF-REVIEW-BASELINE-001
+        severity: info
+        status: closed
+        category: review_gate
+        owner: review
+        artifact: work/docparse/review/role_findings.yaml
+        issue: "Baseline review has no open blocker before implementation, and Loop3 review scope is claim-policy bounded."
+        impact: "Formal artifact review must be refreshed after RTL/TB/UVM/Loop3 artifacts exist."
+        evidence: "Loop3 signoff entry points are prototype-preflight, validate-prototype-plan, and loop3-refresh-reports; loop3_validation_boundary_claim and claim policy keep external/full hardware claims false."
+        recommendation: "After generated artifacts exist, rerun review-check and add artifact-specific findings."
+        route_to: arbtr
+      - id: RF-REVIEW-LOOP1-001
+        severity: info
+        status: verified
+        category: loop1_review_gate
+        owner: review
+        artifact: output/reports/loop1/loop1_report.md
+        issue: "Review Agent refreshed Loop1 artifact coverage after RTL and directed TB generation."
+        impact: "The review gate has current citations for RTL, TB, waveform, and semantic signoff evidence."
+        evidence: "Cites output/reports/loop1/rtl_skill_audit.md, rtl-architecture-and-gen, verilog-rtl-style-guide, rtl_semantic_stub_absent, output/docs/test/verification_plan.md, loop1_waveform_blocking, waveform_gate.json, loop1_task_requirement_evidence, modelsim-run-triage-debug, loop1_tb.v, and RTL files arinc429_rx.v, arinc429_tx.v, control_status_regs.v, hi3593_v2_top.v, reset_ctrl.v, rx_mailbox_status.v, spi_cmd_cdc.v, spi_slave_if.v, sync_fifo.v."
+        recommendation: "Rerun review-check after UVM and Loop3 artifacts are generated."
+        route_to: arbtr
+      - id: RF-REVIEW-LOOP2-UVM-001
+        severity: info
+        status: verified
+        category: loop2_uvm_review_gate
+        owner: review
+        artifact: output/reports/loop2/loop2_report.md
+        issue: "Review Agent refreshed Loop2 UVM artifact coverage against uvm-env-and-test-build and the active verification baseline."
+        impact: "Loop2 evidence now cites the UVM environment, observed monitor path, independent oracle, coverage collector, bound assertions, and structured report."
+        evidence: "Cites uvm-env-and-test-build, loop2_independent_oracle, output/reports/loop2/loop2_report.md, work/loop2_uvm/trace_matrix/req_to_uvm.yaml, work/loop2_uvm/trace_matrix/req_to_assertion.yaml, work/loop2_uvm/trace_matrix/req_to_coverage.yaml, tb_dut_if.sv, uvm_config.sv, spi_item.sv, spi_sequencer.sv, spi_driver.sv, spi_monitor.sv, spi_agent.sv, coverage.sv, scoreboard.sv, env.sv, virtual_sequences.svh, tests.svh, uvm_pkg.sv, tb_uvm.sv, and dut_assertions.sv."
+        recommendation: "Keep Loop2 claims tied to the structured UVM report and rerun regression after any RTL, UVM, assertion, or coverage change."
+        route_to: arbtr
+    confidence: medium
+  arbtr:
+    status: READY
+    findings:
+      - id: RF-ARBTR-BASELINE-001
+        severity: info
+        status: closed
+        category: arbitration
+        owner: arbtr
+        artifact: work/gates/claim_policy.yaml
+        issue: "Final claims remain locked until fresh evidence is generated in the new project."
+        impact: "No old project result can accidentally satisfy final signoff."
+        evidence: "arbtr_decision is REWORK_REQUIRED and external/full hardware claims are false."
+        recommendation: "Proceed to Loop1 only after DocParse gate passes."
+        route_to: exec
+    confidence: high
+cross_role_conflicts: []
+assumptions: []

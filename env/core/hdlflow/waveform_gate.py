@@ -1,4 +1,4 @@
-"""Loop1 advisory waveform report built on deterministic signal rules."""
+"""Loop1 blocking waveform report built on deterministic signal rules."""
 
 from __future__ import annotations
 
@@ -188,7 +188,7 @@ def run_loop1_waveform_gate(
         "project": project.name,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "result": "PASS" if gate_ok else "FAIL",
-        "gate_policy": "advisory",
+        "gate_policy": "blocking",
         "rule_engine": WAVEFORM_RULE_ENGINE,
         "llm_decision_source": False,
         "manifest": _rel(project, manifest_file),
@@ -237,8 +237,8 @@ def check_loop1_waveform_gate_report(project_path: Path, report_rel: str = WAVEF
         errors.append(f"{report_rel} schema_version must be 1")
     if data.get("result") != "PASS":
         errors.append(f"{report_rel} result must be PASS")
-    if data.get("gate_policy") != "advisory":
-        errors.append(f"{report_rel} gate_policy must be advisory")
+    if data.get("gate_policy") != "blocking":
+        errors.append(f"{report_rel} gate_policy must be blocking")
     if data.get("rule_engine") != WAVEFORM_RULE_ENGINE:
         errors.append(f"{report_rel} rule_engine must be {WAVEFORM_RULE_ENGINE}")
     if data.get("llm_decision_source") is not False:

@@ -1,0 +1,74 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+stage: loop1
+target: rtl
+links:
+  - req_id: REQ-RST-001
+    requirement_id: REQ-RST-001
+    target: reset_control
+    artifacts: [output/rtl/reset_ctrl.v, output/rtl/control_status_regs.v, output/rtl/rx_mailbox_status.v, output/rtl/sync_fifo.v]
+  - req_id: REQ-RST-002
+    requirement_id: REQ-RST-002
+    target: software_reset_boundary
+    artifacts: [output/rtl/reset_ctrl.v, output/rtl/control_status_regs.v, output/rtl/rx_mailbox_status.v, output/rtl/sync_fifo.v]
+  - req_id: REQ-SPI-001
+    requirement_id: REQ-SPI-001
+    target: spi_byte_framing_and_sck_to_aclk_cdc
+    artifacts: [output/rtl/spi_slave_if.v, output/rtl/spi_cmd_cdc.v, output/rtl/hi3593_v2_top.v]
+  - req_id: REQ-SPI-002
+    requirement_id: REQ-SPI-002
+    target: opcode_side_effects_and_readback
+    artifacts: [output/rtl/spi_slave_if.v, output/rtl/spi_cmd_cdc.v, output/rtl/control_status_regs.v]
+  - req_id: REQ-INST-001
+    requirement_id: REQ-INST-001
+    target: instruction_decode_matrix
+    artifacts: [output/rtl/spi_slave_if.v, output/rtl/control_status_regs.v]
+  - req_id: REQ-FIFO-001
+    requirement_id: REQ-FIFO-001
+    target: fifo_storage_and_full_policy
+    artifacts: [output/rtl/sync_fifo.v, output/rtl/control_status_regs.v, output/rtl/arinc429_rx.v]
+  - req_id: REQ-TX-001
+    requirement_id: REQ-TX-001
+    target: arinc429_tx_digital_path
+    artifacts: [output/rtl/arinc429_tx.v, output/rtl/sync_fifo.v, output/rtl/control_status_regs.v]
+  - req_id: REQ-RX-001
+    requirement_id: REQ-RX-001
+    target: arinc429_rx_digital_path
+    artifacts: [output/rtl/arinc429_rx.v, output/rtl/sync_fifo.v, output/rtl/rx_mailbox_status.v, output/rtl/control_status_regs.v]
+  - req_id: REQ-STATUS-001
+    requirement_id: REQ-STATUS-001
+    target: status_readback_muxes
+    artifacts: [output/rtl/control_status_regs.v, output/rtl/rx_mailbox_status.v, output/rtl/sync_fifo.v]
+  - req_id: REQ-LABEL-001
+    requirement_id: REQ-LABEL-001
+    target: label_memory_and_filtering
+    artifacts: [output/rtl/control_status_regs.v, output/rtl/arinc429_rx.v]
+  - req_id: REQ-PLABEL-001
+    requirement_id: REQ-PLABEL-001
+    target: priority_label_configuration
+    artifacts: [output/rtl/control_status_regs.v, output/rtl/arinc429_rx.v, output/rtl/rx_mailbox_status.v]
+  - req_id: REQ-MAILBOX-001
+    requirement_id: REQ-MAILBOX-001
+    target: priority_mailbox_state_and_clear
+    artifacts: [output/rtl/rx_mailbox_status.v, output/rtl/control_status_regs.v]
+  - req_id: REQ-MB-PINS-001
+    requirement_id: REQ-MB-PINS-001
+    target: mailbox_valid_output_pins
+    artifacts: [output/rtl/rx_mailbox_status.v, output/rtl/hi3593_v2_top.v]
+  - req_id: REQ-FLAGINT-001
+    requirement_id: REQ-FLAGINT-001
+    target: flag_interrupt_assignment
+    artifacts: [output/rtl/control_status_regs.v, output/rtl/rx_mailbox_status.v]
+  - req_id: REQ-ACLK-001
+    requirement_id: REQ-ACLK-001
+    target: aclk_division_register
+    artifacts: [output/rtl/control_status_regs.v]
+  - req_id: REQ-TX-FULL-001
+    requirement_id: REQ-TX-FULL-001
+    target: tx_fifo_full_and_tx_start_behavior
+    artifacts: [output/rtl/sync_fifo.v, output/rtl/control_status_regs.v, output/rtl/arinc429_tx.v]
+  - req_id: REQ-RX-FILTER-001
+    requirement_id: REQ-RX-FILTER-001
+    target: rx_label_priority_filtering
+    artifacts: [output/rtl/arinc429_rx.v, output/rtl/control_status_regs.v, output/rtl/rx_mailbox_status.v]

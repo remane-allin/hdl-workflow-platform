@@ -30,11 +30,202 @@ FRONTDOOR_REL = "work/docparse/frontdoor"
 SRS_REL = f"{FRONTDOOR_REL}/srs.yaml"
 ACCEPTANCE_REL = f"{FRONTDOOR_REL}/acceptance_criteria.yaml"
 FORBIDDEN_DESIGNS_REL = f"{FRONTDOOR_REL}/forbidden_designs.yaml"
+CONTRACT_REL = f"{FRONTDOOR_REL}/contract.yaml"
+FRONTDOOR_BASELINE_RELS = [
+    f"{FRONTDOOR_REL}/baseline/srs.yaml",
+    f"{FRONTDOOR_REL}/baseline/acceptance_criteria.yaml",
+    f"{FRONTDOOR_REL}/baseline/design_intent.yaml",
+    f"{FRONTDOOR_REL}/baseline/verification_intent.yaml",
+    f"{FRONTDOOR_REL}/baseline/prototype_intent.yaml",
+    f"{FRONTDOOR_REL}/baseline/forbidden_designs.yaml",
+]
+FRONTDOOR_TEMPLATE_RELS = [
+    f"{FRONTDOOR_REL}/templates/new_requirement.template.yaml",
+    f"{FRONTDOOR_REL}/templates/requirement_change.template.yaml",
+    f"{FRONTDOOR_REL}/templates/architecture_supplement.template.yaml",
+    f"{FRONTDOOR_REL}/templates/verification_supplement.template.yaml",
+    f"{FRONTDOOR_REL}/templates/prototype_supplement.template.yaml",
+]
+FRONTDOOR_TEMPLATE_CONTRACTS = {
+    f"{FRONTDOOR_REL}/templates/new_requirement.template.yaml": {
+        "template_type": "new_requirement",
+        "requires_merge_policy": True,
+        "required_fields": [
+            "id",
+            "request_type",
+            "source_refs",
+            "requirement_text",
+            "rationale",
+            "acceptance_criteria",
+            "affected_modules",
+            "affected_interfaces",
+            "design_obligations",
+            "verification_obligations",
+            "prototype_obligations",
+            "trace_links",
+            "impacted_documents",
+            "risk_impact",
+            "approval_status",
+            "merge_status",
+        ],
+        "example_fields": [
+            "id",
+            "request_type",
+            "source_refs",
+            "requirement_text",
+            "rationale",
+            "acceptance_criteria",
+            "affected_modules",
+            "affected_interfaces",
+            "design_obligations",
+            "verification_obligations",
+            "prototype_obligations",
+            "trace_links",
+            "impacted_documents",
+            "risk_impact",
+            "approval_status",
+            "merge_status",
+        ],
+    },
+    f"{FRONTDOOR_REL}/templates/requirement_change.template.yaml": {
+        "template_type": "requirement_change",
+        "requires_merge_policy": True,
+        "required_fields": [
+            "change_id",
+            "target_requirement_id",
+            "old_text",
+            "new_text",
+            "reason",
+            "impact_analysis",
+            "affected_artifacts",
+            "reverification_required",
+            "rollback_plan",
+            "approval_status",
+            "merge_status",
+        ],
+        "example_fields": [
+            "change_id",
+            "target_requirement_id",
+            "old_text",
+            "new_text",
+            "reason",
+            "impact_analysis",
+            "affected_artifacts",
+            "reverification_required",
+            "rollback_plan",
+            "approval_status",
+            "merge_status",
+        ],
+    },
+    f"{FRONTDOOR_REL}/templates/architecture_supplement.template.yaml": {
+        "template_type": "architecture_supplement",
+        "requires_merge_policy": False,
+        "required_fields": [
+            "supplement_id",
+            "source_requirement_ids",
+            "rule_text",
+            "applies_to",
+            "module_plan_changes",
+            "interface_contract_changes",
+            "forbidden_design_impacts",
+            "blocking",
+            "documents_to_update",
+            "gates_to_update",
+            "approval_status",
+        ],
+        "example_fields": [
+            "supplement_id",
+            "source_requirement_ids",
+            "rule_text",
+            "applies_to",
+            "module_plan_changes",
+            "interface_contract_changes",
+            "forbidden_design_impacts",
+            "blocking",
+            "documents_to_update",
+            "gates_to_update",
+            "approval_status",
+        ],
+    },
+    f"{FRONTDOOR_REL}/templates/verification_supplement.template.yaml": {
+        "template_type": "verification_supplement",
+        "requires_merge_policy": False,
+        "required_fields": [
+            "supplement_id",
+            "requirement_ids",
+            "test_tasks",
+            "task_packaging",
+            "expected_model",
+            "required_signals",
+            "vcd_parser",
+            "uvm_obligations",
+            "coverage_obligations",
+            "final_verdict_rule",
+            "approval_status",
+        ],
+        "example_fields": [
+            "supplement_id",
+            "requirement_ids",
+            "test_tasks",
+            "task_packaging",
+            "expected_model",
+            "required_signals",
+            "vcd_parser",
+            "uvm_obligations",
+            "coverage_obligations",
+            "final_verdict_rule",
+            "approval_status",
+        ],
+    },
+    f"{FRONTDOOR_REL}/templates/prototype_supplement.template.yaml": {
+        "template_type": "prototype_supplement",
+        "requires_merge_policy": False,
+        "required_fields": [
+            "supplement_id",
+            "requirement_ids",
+            "external_interfaces",
+            "database_queries",
+            "fallback_mode",
+            "validation_modes",
+            "claim_policy",
+            "pin_level_validation_status",
+            "approval_status",
+        ],
+        "example_fields": [
+            "supplement_id",
+            "requirement_ids",
+            "external_interfaces",
+            "database_queries",
+            "fallback_mode",
+            "validation_modes",
+            "claim_policy",
+            "pin_level_validation_status",
+            "approval_status",
+        ],
+    },
+}
+FRONTDOOR_GENERATED_RELS = [
+    f"{FRONTDOOR_REL}/generated/active_srs.generated.yaml",
+    f"{FRONTDOOR_REL}/generated/active_design_intent.generated.yaml",
+    f"{FRONTDOOR_REL}/generated/active_verification_intent.generated.yaml",
+    f"{FRONTDOOR_REL}/generated/active_prototype_intent.generated.yaml",
+    f"{FRONTDOOR_REL}/generated/active_trace_matrix.generated.yaml",
+]
+FRONTDOOR_REQUIRED_DIR_RELS = [
+    f"{FRONTDOOR_REL}/intake/pending",
+    f"{FRONTDOOR_REL}/intake/approved",
+    f"{FRONTDOOR_REL}/intake/rejected",
+    f"{FRONTDOOR_REL}/intake/merged",
+    f"{FRONTDOOR_REL}/history/baseline_snapshots",
+    f"{FRONTDOOR_REL}/history/merged_intake",
+    f"{FRONTDOOR_REL}/history/rejected_intake",
+]
 DOCUMENT_ANALYSIS_REL = "work/docparse/structured_spec/document_analysis.yaml"
 DOC_PROJECTION_REL = "work/docparse/doc_projection.yaml"
 DOCPARSE_TRACE_RELS = [
     "work/docparse/trace_matrix/req_to_design_intent.yaml",
     "work/docparse/trace_matrix/req_to_test_intent.yaml",
+    "work/docparse/trace_matrix/req_to_uvm_intent.yaml",
 ]
 LOOP_TRACE_RELS = [
     "work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml",
@@ -99,6 +290,7 @@ ROLE_CONTRACTS = [
         "owns": "simulation tests, wave sampling, logs, coverage, UVM, board-level validation evidence, and waveform comparison",
         "primary_outputs": [
             "work/docparse/verification/verification_plan.yaml",
+            "work/docparse/verification/uvm_plan.yaml",
             "work/docparse/verification/assertion_plan.yaml",
             "work/docparse/verification/coverage_plan.yaml",
             "output/uvm/",
@@ -106,6 +298,7 @@ ROLE_CONTRACTS = [
             "output/reports/loop2/",
             "output/reports/loop3/",
             "work/docparse/trace_matrix/req_to_test_intent.yaml",
+            "work/docparse/trace_matrix/req_to_uvm_intent.yaml",
             "work/loop2_uvm/trace_matrix/req_to_uvm.yaml",
             "work/loop2_uvm/trace_matrix/req_to_assertion.yaml",
             "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
@@ -136,9 +329,13 @@ ROLE_CONTRACTS = [
 ]
 
 REQUIRED_FRONTEND_ARTIFACTS = [
+    CONTRACT_REL,
     SRS_REL,
     ACCEPTANCE_REL,
     FORBIDDEN_DESIGNS_REL,
+    *FRONTDOOR_BASELINE_RELS,
+    *FRONTDOOR_TEMPLATE_RELS,
+    *FRONTDOOR_GENERATED_RELS,
     "work/docparse/structured_spec/interface_spec.yaml",
     DOCUMENT_ANALYSIS_REL,
     "work/docparse/structured_spec/register_map.yaml",
@@ -152,6 +349,7 @@ REQUIRED_FRONTEND_ARTIFACTS = [
     "work/docparse/architecture/timing_model.yaml",
     "work/docparse/architecture/rtl_planning_rules.yaml",
     "work/docparse/verification/verification_plan.yaml",
+    "work/docparse/verification/uvm_plan.yaml",
     "work/docparse/verification/assertion_plan.yaml",
     "work/docparse/verification/coverage_plan.yaml",
     "work/docparse/prototype/prototype_plan.yaml",
@@ -291,6 +489,7 @@ def check_requirements_frontend(project_path: Path, *, require_ready: bool = Tru
     _check_rtl_planning_rules(project, errors, warnings, require_ready=require_ready)
     _check_architecture_cross_file_contracts(project, errors, require_ready=require_ready)
     _check_doc_projection_contract(project, errors, require_ready=require_ready)
+    _check_frontdoor_governance_model(project, errors, warnings, require_ready=require_ready)
     _check_requirement_question_review(project, errors, warnings, require_ready=require_ready)
     _check_external_document_parse_policy(project, errors, warnings, require_ready=require_ready)
     plan_result = check_plan(project, maturity="loop1" if require_ready else "docparse")
@@ -370,6 +569,7 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
     }
 
     return {
+        **_frontdoor_governance_templates(project_name, status, source_refs),
         SRS_REL: _yaml_doc(
             {
                 **base,
@@ -688,6 +888,33 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
                 "assumptions": [],
             }
         ),
+        "work/docparse/verification/uvm_plan.yaml": _yaml_doc(
+            {
+                **base,
+                "owner_role": "sim",
+                "framework": {
+                    "root": "output/uvm",
+                    "template_family": "rkv_style_uvm",
+                    "package_entry": "output/uvm/env/uvm_pkg.sv",
+                    "tb_top": "output/uvm/tb/tb_uvm.sv",
+                    "entry_check": "work/loop2_uvm/sim/uvm_full_functional.do",
+                    "regression_entry": "work/loop2_uvm/sim/regression.do",
+                    "required_entry_files": [
+                        "output/uvm/tb/tb_dut_if.sv",
+                        "output/uvm/env/uvm_pkg.sv",
+                        "output/uvm/tb/tb_uvm.sv",
+                    ],
+                },
+                "interfaces": [],
+                "agents": [],
+                "env_components": [],
+                "scoreboards": [],
+                "tests": [],
+                "coverage": [],
+                "handoff_gates": [],
+                "assumptions": [],
+            }
+        ),
         "work/docparse/verification/assertion_plan.yaml": _yaml_doc(
             {
                 **base,
@@ -923,7 +1150,330 @@ def _artifact_templates(project_name: str, status: str, source_refs: list[str]) 
             "test_intent",
             "sim",
         ),
+        "work/docparse/trace_matrix/req_to_uvm_intent.yaml": _trace_yaml(
+            project_name,
+            status,
+            source_refs,
+            "docparse",
+            "uvm_intent",
+            "sim",
+        ),
     }
+
+
+def _frontdoor_governance_templates(project_name: str, status: str, source_refs: list[str]) -> dict[str, str]:
+    base = {
+        "schema_version": FRONTEND_VERSION,
+        "project": project_name,
+        "status": status,
+        "source_refs": source_refs,
+    }
+    machine_readable = list(FRONTDOOR_GENERATED_RELS)
+    artifacts: dict[str, str] = {
+        CONTRACT_REL: _yaml_doc(
+            {
+                **base,
+                "owner_role": "arbtr",
+                "contract_version": "frontdoor_contract_v2",
+                "active_contract": "generated_active_baseline",
+                "authoritative_baseline": {
+                    "human_readable": [
+                        "output/docs/design/microarchitecture_spec.md",
+                        "output/docs/test/verification_plan.md",
+                        "output/docs/delivery/delivery_package.md",
+                    ],
+                    "machine_readable": machine_readable,
+                    "hash_binding": {
+                        "required": True,
+                        "manifest": "output/docs/manifests/docset_manifest.json",
+                    },
+                },
+                "derived_plans": [
+                    "work/docparse/architecture/module_plan.yaml",
+                    "work/docparse/verification/verification_plan.yaml",
+                    "work/docparse/verification/uvm_plan.yaml",
+                    "work/loop1_rtl_tb/config/top_wave_manifest.yaml",
+                    "work/loop3_fpga_proto/board_tests/prototype_plan.yaml",
+                ],
+                "legacy_contracts": {
+                    f"{FRONTDOOR_REL}/open_questions.md": {
+                        "status": "inactive",
+                        "replacement": DOCUMENT_ANALYSIS_REL,
+                        "reason": "Open questions are tracked in document_analysis.yaml question_review and open_questions mappings.",
+                    }
+                },
+                "execution_lock": {
+                    "pending_intake_blocks_execution": True,
+                    "approved_intake_must_merge_before_execution": True,
+                    "derived_plans_must_not_add_design_intent": True,
+                },
+            }
+        ),
+    }
+
+    baseline_refs = {
+        f"{FRONTDOOR_REL}/baseline/srs.yaml": SRS_REL,
+        f"{FRONTDOOR_REL}/baseline/acceptance_criteria.yaml": ACCEPTANCE_REL,
+        f"{FRONTDOOR_REL}/baseline/design_intent.yaml": "work/docparse/architecture/module_plan.yaml",
+        f"{FRONTDOOR_REL}/baseline/verification_intent.yaml": "work/docparse/verification/verification_plan.yaml",
+        f"{FRONTDOOR_REL}/baseline/prototype_intent.yaml": "work/docparse/prototype/prototype_plan.yaml",
+        f"{FRONTDOOR_REL}/baseline/forbidden_designs.yaml": FORBIDDEN_DESIGNS_REL,
+    }
+    for rel, source_rel in baseline_refs.items():
+        artifacts[rel] = _yaml_doc(
+            {
+                **base,
+                "owner_role": "arbtr",
+                "baseline_source": source_rel,
+                "baseline_type": Path(rel).stem,
+                "snapshot_policy": "refresh only through approved frontdoor intake merge",
+                "items": [],
+                "assumptions": [],
+            }
+        )
+
+    template_payloads = {
+        f"{FRONTDOOR_REL}/templates/new_requirement.template.yaml": {
+            "template_type": "new_requirement",
+            "intake_target": f"{FRONTDOOR_REL}/intake/pending",
+            "merge_policy": "approved request must merge into generated active_srs, design, verification, prototype, and trace baselines before execution",
+            "required_fields": [
+                "id",
+                "request_type",
+                "source_refs",
+                "requirement_text",
+                "rationale",
+                "acceptance_criteria",
+                "affected_modules",
+                "affected_interfaces",
+                "design_obligations",
+                "verification_obligations",
+                "prototype_obligations",
+                "trace_links",
+                "impacted_documents",
+                "risk_impact",
+                "approval_status",
+                "merge_status",
+            ],
+            "example": {
+                "id": "REQ-NEW-001",
+                "request_type": "new_requirement",
+                "source_refs": ["input/spec/user_request.md"],
+                "owner_role": "spec",
+                "requirement_text": "The design shall implement the requested observable behavior.",
+                "rationale": "Record why this is a product requirement, not an implementation guess.",
+                "priority": "must",
+                "acceptance_criteria": [
+                    {
+                        "id": "AC-REQ-NEW-001",
+                        "text": "Observable pass/fail condition tied to the requirement.",
+                        "verification_method": "loop1_directed_tb_or_loop2_uvm",
+                    }
+                ],
+                "affected_modules": ["module_or_new_module_name"],
+                "affected_interfaces": ["top_or_bus_signal_name"],
+                "affected_registers": [],
+                "design_obligations": ["Update module_plan/dataflow/interface_contracts when approved."],
+                "verification_obligations": ["Create task-bound Loop1 checks and UVM coverage/scoreboard intent."],
+                "prototype_obligations": ["State whether Loop3 evidence is required or explicitly not applicable."],
+                "trace_links": [
+                    {
+                        "requirement_id": "REQ-NEW-001",
+                        "design_intent": "work/docparse/architecture/module_plan.yaml",
+                        "verification_intent": "work/docparse/verification/verification_plan.yaml",
+                        "prototype_intent": "work/docparse/prototype/prototype_plan.yaml",
+                    }
+                ],
+                "impacted_documents": [
+                    f"{FRONTDOOR_REL}/generated/active_srs.generated.yaml",
+                    f"{FRONTDOOR_REL}/generated/active_design_intent.generated.yaml",
+                    f"{FRONTDOOR_REL}/generated/active_verification_intent.generated.yaml",
+                    f"{FRONTDOOR_REL}/generated/active_trace_matrix.generated.yaml",
+                ],
+                "risk_impact": "List compatibility, timing, protocol, coverage, and claim risks.",
+                "approval_status": "pending",
+                "merge_status": "not_merged",
+            },
+        },
+        f"{FRONTDOOR_REL}/templates/requirement_change.template.yaml": {
+            "template_type": "requirement_change",
+            "intake_target": f"{FRONTDOOR_REL}/intake/pending",
+            "merge_policy": "approved change must update generated active baselines and invalidate downstream stale gate evidence",
+            "required_fields": [
+                "change_id",
+                "target_requirement_id",
+                "old_text",
+                "new_text",
+                "reason",
+                "impact_analysis",
+                "affected_artifacts",
+                "reverification_required",
+                "rollback_plan",
+                "approval_status",
+                "merge_status",
+            ],
+            "example": {
+                "change_id": "REQ-CHG-001",
+                "target_requirement_id": "REQ-EXISTING-001",
+                "old_text": "Previous approved requirement text.",
+                "new_text": "Replacement requirement text.",
+                "reason": "Why the previous baseline is wrong or incomplete.",
+                "impact_analysis": ["architecture", "directed_tb", "uvm", "claim_policy"],
+                "affected_artifacts": [
+                    f"{FRONTDOOR_REL}/generated/active_srs.generated.yaml",
+                    "work/docparse/architecture/module_plan.yaml",
+                    "work/docparse/verification/verification_plan.yaml",
+                ],
+                "reverification_required": True,
+                "rollback_plan": "Reject or archive this intake if evidence does not support the change.",
+                "approval_status": "pending",
+                "merge_status": "not_merged",
+            },
+        },
+        f"{FRONTDOOR_REL}/templates/architecture_supplement.template.yaml": {
+            "template_type": "architecture_supplement",
+            "intake_target": f"{FRONTDOOR_REL}/intake/pending",
+            "required_fields": [
+                "supplement_id",
+                "source_requirement_ids",
+                "rule_text",
+                "applies_to",
+                "module_plan_changes",
+                "interface_contract_changes",
+                "forbidden_design_impacts",
+                "blocking",
+                "documents_to_update",
+                "gates_to_update",
+                "approval_status",
+            ],
+            "example": {
+                "supplement_id": "ARCH-SUP-001",
+                "source_requirement_ids": ["REQ-NEW-001"],
+                "rule_text": "Architecture rule or partitioning decision.",
+                "applies_to": ["work/docparse/architecture/module_plan.yaml"],
+                "module_plan_changes": ["Add/modify module ownership and interfaces."],
+                "interface_contract_changes": ["Signal, timing, or register contract updates."],
+                "forbidden_design_impacts": ["No event-level injection or accept-all shortcut."],
+                "blocking": True,
+                "documents_to_update": ["output/docs/design/microarchitecture_spec.md"],
+                "gates_to_update": ["docparse", "loop1"],
+                "approval_status": "pending",
+            },
+        },
+        f"{FRONTDOOR_REL}/templates/verification_supplement.template.yaml": {
+            "template_type": "verification_supplement",
+            "intake_target": f"{FRONTDOOR_REL}/intake/pending",
+            "required_fields": [
+                "supplement_id",
+                "requirement_ids",
+                "test_tasks",
+                "task_packaging",
+                "expected_model",
+                "required_signals",
+                "vcd_parser",
+                "uvm_obligations",
+                "coverage_obligations",
+                "final_verdict_rule",
+                "approval_status",
+            ],
+            "example": {
+                "supplement_id": "VERIF-SUP-001",
+                "requirement_ids": ["REQ-NEW-001"],
+                "test_tasks": ["tb_task_name_bound_to_requirement"],
+                "task_packaging": "Each task emits HDLFLOW|TEST_BEGIN, HDLFLOW|CHECK, and HDLFLOW|SUMMARY evidence.",
+                "expected_model": "Spec-derived expected behavior, not DUT echo.",
+                "required_signals": ["top.input_signal", "top.output_signal"],
+                "vcd_parser": "loop1-waveform-gate must sample required_signals and fail missing/incorrect transitions.",
+                "uvm_obligations": ["monitor observed transactions", "scoreboard independent expected model"],
+                "coverage_obligations": ["functional coverpoint or code coverage target"],
+                "final_verdict_rule": "TB PASS and VCD FAIL means final Loop1 result FAIL.",
+                "approval_status": "pending",
+            },
+        },
+        f"{FRONTDOOR_REL}/templates/prototype_supplement.template.yaml": {
+            "template_type": "prototype_supplement",
+            "intake_target": f"{FRONTDOOR_REL}/intake/pending",
+            "required_fields": [
+                "supplement_id",
+                "requirement_ids",
+                "external_interfaces",
+                "database_queries",
+                "fallback_mode",
+                "validation_modes",
+                "claim_policy",
+                "pin_level_validation_status",
+                "approval_status",
+            ],
+            "example": {
+                "supplement_id": "PROTO-SUP-001",
+                "requirement_ids": ["REQ-NEW-001"],
+                "external_interfaces": ["board connector, pin, UART, SPI, or GPIO boundary"],
+                "database_queries": ["FPGA IO/schematic/tool command lookups required before script generation."],
+                "fallback_mode": "none_or_ps_pl_software_emulated",
+                "validation_modes": ["simulation", "prototype_bringup"],
+                "claim_policy": {
+                    "may_claim_external_pin_level_validation": False,
+                    "may_claim_full_hardware_validation": False,
+                },
+                "pin_level_validation_status": "not_validated",
+                "approval_status": "pending",
+            },
+        },
+    }
+    for rel, payload in template_payloads.items():
+        artifacts[rel] = _yaml_doc(
+            {
+                "schema_version": FRONTEND_VERSION,
+                "project": project_name,
+                **payload,
+            }
+        )
+
+    generated_payloads = {
+        f"{FRONTDOOR_REL}/generated/active_srs.generated.yaml": {
+            "source_artifacts": [SRS_REL, f"{FRONTDOOR_REL}/intake/merged"],
+            "requirements": [],
+        },
+        f"{FRONTDOOR_REL}/generated/active_design_intent.generated.yaml": {
+            "source_artifacts": ["work/docparse/architecture/module_plan.yaml", f"{FRONTDOOR_REL}/intake/merged"],
+            "design_obligations": [],
+        },
+        f"{FRONTDOOR_REL}/generated/active_verification_intent.generated.yaml": {
+            "source_artifacts": ["work/docparse/verification/verification_plan.yaml", "work/docparse/verification/uvm_plan.yaml", f"{FRONTDOOR_REL}/intake/merged"],
+            "verification_obligations": [],
+        },
+        f"{FRONTDOOR_REL}/generated/active_prototype_intent.generated.yaml": {
+            "source_artifacts": ["work/docparse/prototype/prototype_plan.yaml", f"{FRONTDOOR_REL}/intake/merged"],
+            "prototype_obligations": [],
+        },
+        f"{FRONTDOOR_REL}/generated/active_trace_matrix.generated.yaml": {
+            "source_artifacts": [*DOCPARSE_TRACE_RELS, f"{FRONTDOOR_REL}/intake/merged"],
+            "links": [],
+        },
+    }
+    for rel, payload in generated_payloads.items():
+        artifacts[rel] = _yaml_doc(
+            {
+                **base,
+                "owner_role": "arbtr",
+                "generated_from": "approved and merged frontdoor baseline",
+                **payload,
+                "assumptions": [],
+            }
+        )
+
+    for rel in FRONTDOOR_REQUIRED_DIR_RELS:
+        artifacts[f"{rel}/README.md"] = "\n".join(
+            [
+                f"# {rel}",
+                "",
+                "Managed by the requirements frontdoor governance model.",
+                "Do not bypass approved intake, merge, and active baseline refresh gates.",
+                "",
+            ]
+        )
+
+    return artifacts
 
 
 def _requirement_source_refs(project: Path) -> list[str]:
@@ -959,14 +1509,14 @@ def _load_structured(path: Path) -> dict[str, Any] | None:
 def _check_ready_payload(rel: str, data: dict[str, Any], errors: list[str]) -> None:
     if "source_refs" in data and not data.get("source_refs"):
         errors.append(f"{rel} source_refs must be non-empty for READY")
-    if rel.endswith("srs.yaml"):
+    if rel == SRS_REL:
         functional = data.get("functional_requirements")
         non_functional = data.get("non_functional_requirements")
         if not _non_empty_list(functional) and not _non_empty_list(non_functional):
             errors.append(f"{rel} must contain at least one requirement for READY")
-    if rel.endswith("acceptance_criteria.yaml") and not _non_empty_list(data.get("criteria")):
+    if rel == ACCEPTANCE_REL and not _non_empty_list(data.get("criteria")):
         errors.append(f"{rel} criteria must be non-empty for READY")
-    if rel.endswith("forbidden_designs.yaml") and not _non_empty_list(data.get("forbidden_designs")):
+    if rel == FORBIDDEN_DESIGNS_REL and not _non_empty_list(data.get("forbidden_designs")):
         errors.append(f"{rel} forbidden_designs must be non-empty for READY")
     if rel.endswith("interface_spec.yaml") and not _has_any_ready_payload(data, ["interfaces", "ports"]):
         errors.append(f"{rel} interfaces or ports must be non-empty for READY")
@@ -995,6 +1545,7 @@ def _check_ready_payload(rel: str, data: dict[str, Any], errors: list[str]) -> N
         "timing_model.yaml": "clock_domains",
         "rtl_planning_rules.yaml": "hard_rules",
         "verification_plan.yaml": "module_level",
+        "uvm_plan.yaml": "agents",
         "assertion_plan.yaml": "assertions",
         "coverage_plan.yaml": "functional_coverage",
         "prototype_plan.yaml": "resource_estimate",
@@ -1019,6 +1570,193 @@ def _check_ready_payload(rel: str, data: dict[str, Any], errors: list[str]) -> N
         ]:
             if not _non_empty_list(data.get(coverage_key)):
                 errors.append(f"{rel} {coverage_key} must be non-empty for READY")
+    if rel.endswith("uvm_plan.yaml"):
+        for uvm_key in ["framework", "interfaces", "agents", "env_components", "scoreboards", "tests", "coverage"]:
+            value = data.get(uvm_key)
+            if uvm_key == "framework":
+                if not isinstance(value, dict) or not value:
+                    errors.append(f"{rel} {uvm_key} must be non-empty for READY")
+            elif not _non_empty_list(value):
+                errors.append(f"{rel} {uvm_key} must be non-empty for READY")
+
+
+def _check_frontdoor_governance_model(
+    project: Path,
+    errors: list[str],
+    warnings: list[str],
+    *,
+    require_ready: bool,
+) -> None:
+    for rel in FRONTDOOR_REQUIRED_DIR_RELS:
+        if not (project / rel).is_dir():
+            errors.append(f"missing required frontdoor governance directory: {rel}")
+
+    contract = _load_structured(project / CONTRACT_REL)
+    if contract is None:
+        errors.append(f"{CONTRACT_REL} is not parseable")
+        return
+
+    if contract.get("contract_version") != "frontdoor_contract_v2":
+        errors.append(f"{CONTRACT_REL} contract_version must be frontdoor_contract_v2")
+    if contract.get("active_contract") != "generated_active_baseline":
+        errors.append(f"{CONTRACT_REL} active_contract must be generated_active_baseline")
+
+    baseline = contract.get("authoritative_baseline")
+    if not isinstance(baseline, dict):
+        errors.append(f"{CONTRACT_REL} authoritative_baseline must be a mapping")
+    else:
+        machine = baseline.get("machine_readable")
+        if not _non_empty_list(machine):
+            errors.append(f"{CONTRACT_REL} authoritative_baseline.machine_readable must be non-empty")
+        else:
+            missing = [str(rel) for rel in machine if not (project / str(rel)).is_file()]
+            if missing:
+                errors.append(f"{CONTRACT_REL} authoritative_baseline.machine_readable missing path(s): " + ", ".join(missing[:8]))
+        human = baseline.get("human_readable")
+        if human is not None and not isinstance(human, list):
+            errors.append(f"{CONTRACT_REL} authoritative_baseline.human_readable must be a list")
+
+    legacy = contract.get("legacy_contracts")
+    if isinstance(legacy, dict):
+        open_questions = legacy.get(f"{FRONTDOOR_REL}/open_questions.md")
+        if (project / FRONTDOOR_REL / "open_questions.md").exists():
+            if not isinstance(open_questions, dict) or str(open_questions.get("status", "")).lower() != "inactive":
+                errors.append(f"{CONTRACT_REL} must mark {FRONTDOOR_REL}/open_questions.md as inactive legacy")
+    elif (project / FRONTDOOR_REL / "open_questions.md").exists():
+        errors.append(f"{CONTRACT_REL} legacy_contracts must quarantine {FRONTDOOR_REL}/open_questions.md")
+
+    for rel in FRONTDOOR_TEMPLATE_RELS:
+        payload = _load_structured(project / rel)
+        if payload is None:
+            errors.append(f"{rel} is not parseable")
+            continue
+        errors.extend(_frontdoor_template_contract_errors(rel, payload))
+
+    generated_text = "\n".join(_read_optional(project, rel) for rel in FRONTDOOR_GENERATED_RELS)
+    approved = _frontdoor_intake_files(project, "approved")
+    if approved:
+        missing_merge = []
+        for path in approved:
+            token = _frontdoor_intake_token(path)
+            if token and token not in generated_text and not _frontdoor_has_merged_intake(project, token):
+                missing_merge.append(str(path.relative_to(project)).replace("\\", "/"))
+        if missing_merge:
+            errors.append(
+                "approved_intake_merge_gate: approved intake must be merged into active generated baseline: "
+                + ", ".join(missing_merge[:8])
+            )
+
+    pending = _frontdoor_intake_files(project, "pending")
+    if pending and require_ready:
+        errors.append(
+            "execution_lock_gate: pending frontdoor intake blocks READY promotion and downstream execution: "
+            + ", ".join(str(path.relative_to(project)).replace("\\", "/") for path in pending[:8])
+        )
+    elif pending:
+        warnings.append(
+            "execution_lock_gate: pending frontdoor intake exists and must be approved or rejected before execution: "
+            + ", ".join(str(path.relative_to(project)).replace("\\", "/") for path in pending[:8])
+        )
+
+    trace = _load_structured(project / f"{FRONTDOOR_REL}/generated/active_trace_matrix.generated.yaml")
+    if trace is None:
+        errors.append(f"{FRONTDOOR_REL}/generated/active_trace_matrix.generated.yaml is not parseable")
+    elif approved and not _non_empty_list(trace.get("links")):
+        errors.append("trace_freshness_gate: approved intake requires active_trace_matrix.generated.yaml links")
+
+
+def _frontdoor_template_contract_errors(rel: str, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    contract = FRONTDOOR_TEMPLATE_CONTRACTS.get(rel)
+    if not isinstance(contract, dict):
+        return [f"{rel} has no platform template contract"]
+    expected_type = contract.get("template_type")
+    if payload.get("template_type") != expected_type:
+        errors.append(f"{rel} template_type must be {expected_type}")
+    if payload.get("intake_target") != f"{FRONTDOOR_REL}/intake/pending":
+        errors.append(f"{rel} intake_target must be {FRONTDOOR_REL}/intake/pending")
+    if contract.get("requires_merge_policy") and not _non_empty_value(payload.get("merge_policy")):
+        errors.append(f"{rel} merge_policy must be non-empty")
+
+    required = payload.get("required_fields")
+    if not isinstance(required, list) or not required:
+        errors.append(f"{rel} required_fields must be a non-empty list")
+        required = []
+    expected_required = [str(item) for item in contract.get("required_fields", [])]
+    missing_required = [field for field in expected_required if field not in required]
+    if missing_required:
+        errors.append(f"{rel} required_fields missing required platform field(s): " + ", ".join(missing_required))
+
+    example = payload.get("example")
+    if not isinstance(example, dict) or not example:
+        errors.append(f"{rel} example must be a non-empty mapping")
+        return errors
+    missing_example = [field for field in contract.get("example_fields", []) if not _non_empty_value(example.get(str(field)))]
+    if missing_example:
+        errors.append(f"{rel} example missing non-empty field(s): " + ", ".join(str(item) for item in missing_example))
+    if "approval_status" in expected_required and example.get("approval_status") != "pending":
+        errors.append(f"{rel} example.approval_status must be pending")
+    if "merge_status" in expected_required and example.get("merge_status") != "not_merged":
+        errors.append(f"{rel} example.merge_status must be not_merged")
+    if rel.endswith("new_requirement.template.yaml"):
+        if not _non_empty_list(example.get("trace_links")):
+            errors.append(f"{rel} example.trace_links must bind requirement to design/verification/prototype intent")
+        if not _non_empty_list(example.get("acceptance_criteria")):
+            errors.append(f"{rel} example.acceptance_criteria must be non-empty")
+    if rel.endswith("verification_supplement.template.yaml"):
+        if not _non_empty_list(example.get("required_signals")):
+            errors.append(f"{rel} example.required_signals must be non-empty")
+        if not _non_empty_value(example.get("vcd_parser")):
+            errors.append(f"{rel} example.vcd_parser must be non-empty")
+    if rel.endswith("prototype_supplement.template.yaml"):
+        claim_policy = example.get("claim_policy")
+        if not isinstance(claim_policy, dict):
+            errors.append(f"{rel} example.claim_policy must be a mapping")
+        else:
+            if claim_policy.get("may_claim_external_pin_level_validation") is not False:
+                errors.append(f"{rel} example.claim_policy.may_claim_external_pin_level_validation must be false")
+            if claim_policy.get("may_claim_full_hardware_validation") is not False:
+                errors.append(f"{rel} example.claim_policy.may_claim_full_hardware_validation must be false")
+    return errors
+
+
+def _frontdoor_intake_files(project: Path, state: str) -> list[Path]:
+    root = project / FRONTDOOR_REL / "intake" / state
+    if not root.is_dir():
+        return []
+    ignored = {".gitkeep", "README.md"}
+    return sorted(path for path in root.iterdir() if path.is_file() and path.name not in ignored)
+
+
+def _frontdoor_intake_token(path: Path) -> str:
+    payload = _load_structured(path)
+    if isinstance(payload, dict):
+        for key in ("id", "change_id", "requirement_id", "supplement_id"):
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return path.stem
+
+
+def _frontdoor_has_merged_intake(project: Path, token: str) -> bool:
+    merged_roots = [
+        project / FRONTDOOR_REL / "intake" / "merged",
+        project / FRONTDOOR_REL / "history" / "merged_intake",
+    ]
+    for root in merged_roots:
+        if not root.is_dir():
+            continue
+        for path in root.iterdir():
+            if path.is_file() and token in path.name:
+                return True
+    return False
+
+
+def _read_optional(project: Path, rel: str) -> str:
+    path = project / rel
+    if not path.is_file():
+        return ""
+    return path.read_text(encoding="utf-8", errors="ignore")
 
 
 def _check_role_findings(project: Path, errors: list[str], warnings: list[str], *, require_ready: bool) -> None:
@@ -1058,6 +1796,7 @@ def _check_cross_loop_trace(project: Path, errors: list[str], *, require_ready: 
     expected_targets = {
         "work/docparse/trace_matrix/req_to_design_intent.yaml": "design_intent",
         "work/docparse/trace_matrix/req_to_test_intent.yaml": "test_intent",
+        "work/docparse/trace_matrix/req_to_uvm_intent.yaml": "uvm_intent",
     }
     for rel in DOCPARSE_TRACE_RELS:
         data = _load_structured(project / rel)
@@ -1734,6 +2473,14 @@ def _non_empty_list(value: Any) -> bool:
     return isinstance(value, list) and bool(value)
 
 
+def _non_empty_value(value: Any) -> bool:
+    if value in (None, "", [], {}):
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
+
+
 def _has_any_ready_payload(data: dict[str, Any], keys: list[str]) -> bool:
     for key in keys:
         value = data.get(key)
@@ -1924,9 +2671,11 @@ def _doc_projection_yaml(project_name: str, status: str, source_refs: list[str])
                     "sources": [
                         {"id": "test_intent", "path": "work/docparse/structured_spec/test_intent.yaml", **base_source},
                         {"id": "verification_plan", "path": "work/docparse/verification/verification_plan.yaml", **base_source},
+                        {"id": "uvm_plan", "path": "work/docparse/verification/uvm_plan.yaml", **base_source},
                         {"id": "assertion_plan", "path": "work/docparse/verification/assertion_plan.yaml", **base_source},
                         {"id": "coverage_plan", "path": "work/docparse/verification/coverage_plan.yaml", **base_source},
                         {"id": "trace_req_to_test_intent", "path": "work/docparse/trace_matrix/req_to_test_intent.yaml", **base_source},
+                        {"id": "trace_req_to_uvm_intent", "path": "work/docparse/trace_matrix/req_to_uvm_intent.yaml", **base_source},
                     ],
                 },
                 "delivery_package": {

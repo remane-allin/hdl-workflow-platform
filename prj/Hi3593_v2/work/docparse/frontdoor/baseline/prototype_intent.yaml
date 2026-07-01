@@ -1,0 +1,11 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arbtr
+baseline_ref: work/docparse/frontdoor/generated/active_prototype_intent.generated.yaml
+prototype_obligations:
+  - PI-IP-001
+  - PI-CLAIM-001
+claim_policy:
+  may_claim_external_pin_level_validation: false
+  may_claim_full_hardware_validation: false

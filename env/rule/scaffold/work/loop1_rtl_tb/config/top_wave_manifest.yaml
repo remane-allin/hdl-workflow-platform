@@ -1,9 +1,20 @@
 schema_version: 1
 owner: Loop1 directed TB
-purpose: Controlled DUT top-port waveform query manifest.
+purpose: Controlled DUT top-port waveform query manifest bound to requirement tasks.
 dut_scope: /loop1_tb/dut
 waveform_format: vcd
 dump_policy: top_ports_windowed
+gate_policy: blocking
+signal_source: active_verification_intent
+task_binding_policy:
+  required: true
+  task_results: work/loop1_rtl_tb/current/log/loop1_task_results.jsonl
+  check_results: work/loop1_rtl_tb/current/log/loop1_check_results.jsonl
+  final_result_rule: TB_Result_AND_VCD_Result
+vcd_parser:
+  required: true
+  engine: hdlflow_waveform_signal_rule_engine_v1
+  actual_input_output_reconstruction: true
 max_dump_duration: 2000000
 max_file_size_mb: 50
 clock:
@@ -29,6 +40,8 @@ ports:
 windows:
   -
     name: baseline
+    linked_test_task: TASK_BASELINE_001
+    requirement_id: REQ-BASELINE-001
     checks:
       - no_xz
       - clock_edges_present

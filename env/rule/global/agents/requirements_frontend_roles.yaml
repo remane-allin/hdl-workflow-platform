@@ -11,6 +11,9 @@ roles:
       - work/docparse/frontdoor/srs.yaml
       - work/docparse/frontdoor/acceptance_criteria.yaml
       - work/docparse/frontdoor/forbidden_designs.yaml
+      - work/docparse/frontdoor/contract.yaml
+      - work/docparse/frontdoor/intake/
+      - work/docparse/frontdoor/generated/
       - work/docparse/structured_spec/interface_spec.yaml
       - work/docparse/structured_spec/interface_timing.yaml
       - work/docparse/structured_spec/timing_rules.yaml
@@ -36,8 +39,10 @@ roles:
     owns: simulation stimulus, UVM, waveform comparison, logs, coverage, Loop1/Loop2/Loop3 validation evidence
     outputs:
       - work/docparse/verification/verification_plan.yaml
+      - work/docparse/verification/uvm_plan.yaml
       - work/docparse/verification/assertion_plan.yaml
       - work/docparse/verification/coverage_plan.yaml
+      - work/docparse/trace_matrix/req_to_uvm_intent.yaml
       - output/uvm/
       - output/reports/loop1/
       - output/reports/loop2/
@@ -50,10 +55,11 @@ roles:
       - output/reports/review/
   arbtr:
     title: Arbtr Agent
-    owns: global log, disputes, version baseline, iteration count, correction routing, final freeze
+    owns: global log, disputes, version baseline, intake merge lock, claim control, iteration count, correction routing, final freeze
     outputs:
       - work/docparse/review/decision_log.yaml
       - work/docparse/review/arbitration_log.yaml
+      - work/gates/claim_policy.yaml
       - work/memory/
       - work/gates/
       - output/reports/freeze/

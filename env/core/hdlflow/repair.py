@@ -24,6 +24,7 @@ FRONTDOOR_FILES = {
 
 REQ_DECOMPOSE_FILES = {
     "requirements.json",
+    "requirements.md",
 }
 
 DESIGN_REPORT_PREFIX = "output/docs"

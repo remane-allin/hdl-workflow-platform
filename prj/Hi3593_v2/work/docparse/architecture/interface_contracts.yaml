@@ -1,0 +1,170 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: arch
+interfaces:
+  - id: IF-SPI-CMD
+    name: spi_cmd_req
+    producer_module: spi_slave_if
+    consumer_module: spi_cmd_cdc
+    clock_domain: SCK
+    reset_domain: MR
+    pins: []
+    signals:
+      - sck_cmd_req
+      - sck_opcode
+      - sck_wdata
+      - sck_cmd_ack
+      - read_data_sck
+    protocol: "SCK-domain SPI command request held until CDC acknowledgement."
+    contract:
+      - "One command strobe per complete SPI command/data payload."
+      - "No strobe for partial byte transfers."
+      - "Dummy read clocks while a command is pending do not decode a second opcode."
+    latency: "bounded by SCK/ACLK synchronizer handshake"
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+  - id: IF-SPI-REG
+    name: spi_cmd_aclk
+    producer_module: spi_cmd_cdc
+    consumer_module: control_status_regs
+    clock_domain: ACLK
+    reset_domain: MR
+    pins: []
+    signals:
+      - aclk_cmd_valid
+      - aclk_opcode
+      - aclk_wdata
+      - read_data_aclk
+    protocol: "Single ACLK pulse per accepted SPI command with paired readback data capture."
+    contract:
+      - "Register side effects occur in ACLK domain only."
+      - "Readback data is captured before the CDC acknowledge returns to SCK."
+    latency: "two-or-more synchronizer clocks plus one response cycle"
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+  - id: IF-REG-MAILBOX
+    name: mailbox_status_bus
+    producer_module: rx_mailbox_status
+    consumer_module: control_status_regs
+    clock_domain: ACLK
+    reset_domain: MR
+    pins:
+      - MB1_1
+      - MB1_2
+      - MB1_3
+      - MB2_1
+      - MB2_2
+      - MB2_3
+      - R1FLAG
+      - R2FLAG
+      - R1INT
+      - R2INT
+    signals:
+      - rx1_status
+      - rx2_status
+      - rx_mailbox_data
+      - rx_mailbox_clear
+      - flag_interrupt_assignment
+    protocol: "Mailbox/status block owns RX mailbox state; register block owns read-clear pulses and readback muxing."
+    contract:
+      - "Read mailbox opcode clears the valid bit after data is available to readback."
+      - "Opcode 44 clears FIFO and mailbox state while retaining control registers."
+    latency: one_aclk
+    req_ids:
+      - REQ-MAILBOX-001
+      - REQ-MB-PINS-001
+      - REQ-FLAGINT-001
+      - REQ-STATUS-001
+  - id: IF-REG-FIFO
+    name: tx_fifo_bus
+    producer_module: control_status_regs
+    consumer_module: sync_fifo
+    clock_domain: ACLK
+    reset_domain: MR
+    pins: []
+    signals:
+      - tx_fifo_wr
+      - tx_fifo_wdata
+      - tx_fifo_full
+    protocol: "Single-cycle FIFO push/read status."
+    contract:
+      - "TX full ignores write."
+    latency: one_aclk
+    req_ids:
+      - REQ-FIFO-001
+  - id: IF-TX-WORD
+    name: tx_word_if
+    producer_module: sync_fifo
+    consumer_module: arinc429_tx
+    clock_domain: ACLK
+    reset_domain: MR
+    pins: []
+    signals:
+      - tx_fifo_rdata
+      - tx_fifo_empty
+      - tx_fifo_rd
+    protocol: "TX engine pops words when TMODE or opcode_40 permits transmission."
+    contract:
+      - "TX pop only when FIFO not empty."
+    latency: one_aclk
+    req_ids:
+      - REQ-TX-001
+  - id: IF-RX-WORD
+    name: rx_word_if
+    producer_module: arinc429_rx
+    consumer_module: sync_fifo
+    clock_domain: ACLK
+    reset_domain: MR
+    pins: []
+    signals:
+      - rx_word_valid
+      - rx_word_data
+      - rx_fifo_full
+    protocol: "RX engine writes accepted words to RX FIFO with overwrite-on-full policy."
+    contract:
+      - "Accepted RX word is not dropped solely because count is full."
+    latency: one_aclk
+    req_ids:
+      - REQ-RX-001
+      - REQ-FIFO-001
+  - id: IF-DRIVER
+    name: arinc_driver_logic
+    producer_module: arinc429_tx
+    consumer_module: hi3593_v2_top
+    clock_domain: ACLK
+    reset_domain: MR
+    pins:
+      - TX1IN
+      - TX0IN
+      - SLP
+    signals:
+      - TX1IN
+      - TX0IN
+      - SLP
+    protocol: "HI-8592 digital driver control."
+    contract:
+      - "TX1IN/TX0IN both zero mean NULL; both one request Hi-Z only in external driver contexts."
+    latency: bit_cell
+    req_ids:
+      - REQ-TX-001
+ports:
+  - ACLK
+  - MR
+  - CS
+  - SCK
+  - SI
+  - SO
+  - TX1IN
+  - TX0IN
+  - SLP
+protocols:
+  - SPI mode 0
+  - ARINC 429 digital logic boundary
+latency_contracts:
+  - "SPI command effects cross from SCK to ACLK before changing register/FIFO state."
+assumptions:
+  - ASM-BOUNDARY-001

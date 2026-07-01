@@ -1,0 +1,116 @@
+platform_change_request:
+  id: PCR-20260625-001
+  title: Platform governance hardening for frontdoor, RTL/TB/VCD/UVM/Loop3 claims, and platform PCR control
+  status: accepted_with_waiver
+  change_type:
+    - skill_update
+    - template_update
+    - schema_update
+    - gate_update
+    - report_generator_update
+    - parser_update
+    - cli_update
+    - migration_update
+    - regression_update
+    - rule_update
+    - arbtr_update
+  purpose: Prevent mixed old/new frontdoor contracts, semantic RTL stubs passing gates, advisory waveform evidence, UVM scoreboard echoing DUT behavior, Loop3 claim overreach, and platform changes that update only one layer.
+  affected_stages:
+    - requirements_planning
+    - directed_tb
+    - vcd_analysis
+    - uvm
+    - fpga_prototype
+    - platform_governance
+    - regression
+  affected_components:
+    platform_governance:
+      - env/rule/platform_governance/platform_change_request.yaml
+      - env/rule/platform_governance/impact_matrix.yaml
+      - env/rule/platform_governance/regression_manifest.yaml
+    requirements_planning:
+      - env/core/hdlflow/requirements_frontend.py
+      - env/rule/scaffold/work/docparse/frontdoor
+    vcd_analysis:
+      - env/core/hdlflow/waveform_gate.py
+      - env/rule/scaffold/work/loop1_rtl_tb/config/top_wave_manifest.yaml
+    fpga_prototype:
+      - env/rule/scaffold/work/loop3_fpga_proto/board_tests/prototype_plan.yaml
+      - env/tool/scripts/Invoke-HdlLoop3BoardVerify.ps1
+    core_modules:
+      - env/core/hdlflow/requirements_frontend.py
+      - env/core/hdlflow/gates.py
+      - env/core/hdlflow/waveform_gate.py
+      - env/core/hdlflow/review.py
+      - env/core/hdlflow/platform_governance.py
+    skills:
+      - env/rule/skills/requirements-frontdoor/SKILL.md
+      - env/rule/skills/rtl-architecture-and-gen/SKILL.md
+      - env/rule/skills/uvm-env-and-test-build/SKILL.md
+    templates:
+      - env/rule/scaffold/work/docparse/frontdoor
+      - env/rule/scaffold/work/loop1_rtl_tb
+      - env/rule/scaffold/work/loop3_fpga_proto
+    schemas:
+      - env/rule/scaffold/work/docparse/frontdoor/contract.yaml
+      - env/rule/scaffold/work/gates/claim_policy.yaml
+    gates:
+      - env/core/hdlflow/gates.py
+      - env/rule/global/gates/global_gate_rules.yaml
+    parsers:
+      - env/core/hdlflow/waveform_gate.py
+    report_generators:
+      - env/core/hdlflow/docgen
+      - env/core/hdlflow/reports
+    cli_commands:
+      - env/core/hdlflow/cli.py
+    tool_scripts:
+      - env/tool/scripts
+    migrations:
+      - python -m hdlflow.cli migrate-project
+    tests:
+      - env/test/tests/test_hdlflow_platform.py
+    regression:
+      - env/rule/platform_governance/regression_manifest.yaml
+    rules:
+      - env/rule/project_default/project_config.yaml
+      - env/rule/global/gates/global_gate_rules.yaml
+    arbtr_review:
+      - env/rule/global/agents/requirements_frontend_roles.yaml
+      - env/rule/skills/requirements-frontdoor/SKILL.md
+  backward_compatibility:
+    old_projects_supported: true
+    migration_required: true
+    migration_script: python -m hdlflow.cli migrate-project
+  acceptance_criteria:
+    - Approved intake must merge into generated active baseline before downstream execution.
+    - Pending intake must block READY promotion and implementation gates.
+    - RTL event injection, stubs, accept-all, and fixed prototype words must fail semantic signoff.
+    - Loop1 task-bound structured logs and waveform gate failures must block Loop1.
+    - Loop2 must use an independent monitor/scoreboard oracle and meet code coverage thresholds.
+    - Loop3 PS/PL emulation must downgrade external pin-level/full-hardware claims.
+    - Final Arbtr claim policy must block unsupported delivery claims.
+    - Platform changes must pass PCR, impact matrix, migration readiness, regression coverage, and Arbtr platform review gates.
+  required_regression_fixtures:
+    - full_contract_pass_project
+    - requirement_intake_refresh_project
+    - vcd_required_signal_missing_project
+    - tb_pass_vcd_fail_project
+    - plan_drift_block_project
+    - loop3_emulated_boundary_claim_project
+    - claim_overreach_block_project
+    - legacy_frontdoor_contract_migration_project
+  report_provenance:
+    required: true
+    generated_report: env/rule/platform_governance/platform_change_audit_report.md
+  arbtr_review:
+    decision: ACCEPT_WITH_WAIVER
+    rationale: Platform-only governance change is accepted for regeneration trials; external hardware fixtures remain evidence-declared rather than executed in unit regression.
+    checklist:
+      - PCR fields complete
+      - impact matrix covers skill/template/gate/report/parser/migration/tests/docs/arbtr
+      - negative fixtures declared for frontdoor drift, VCD missing signal, TB PASS/VCD FAIL, plan drift, Loop3 emulated boundary, and claim overreach
+      - migration path exists for legacy frontdoor projects
+      - final claim policy blocks unsupported hardware validation claims
+    waivers:
+      - External board-level fixture execution is deferred until project regeneration/prototype run; platform unit tests cover the blocking gate behavior.

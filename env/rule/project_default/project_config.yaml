@@ -160,6 +160,9 @@ nodes:
       spec: input/spec
     outputs:
       frontdoor: work/docparse/frontdoor
+      frontdoor_contract: work/docparse/frontdoor/contract.yaml
+      frontdoor_intake: work/docparse/frontdoor/intake
+      active_baseline: work/docparse/frontdoor/generated
       architecture: work/docparse/architecture
       verification: work/docparse/verification
       prototype: work/docparse/prototype
@@ -191,6 +194,10 @@ nodes:
     gates:
       exit:
         - requirements_frontdoor_ready
+        - frontdoor_template_readiness_gate
+        - approved_intake_merge_gate
+        - execution_lock_gate
+        - trace_freshness_gate
         - requirement_questions_reviewed
         - machine_readable_specs_ready
         - spec_agent_ready
@@ -299,6 +306,7 @@ nodes:
         structured_summary:
           - "HDLFLOW|SUMMARY"
     directed_test_policy:
+      require_task_bound_structured_log: true
       required_opcodes_explicit: false
       required_opcodes: []
       required_boundary_markers:
@@ -312,6 +320,9 @@ nodes:
         - rtl_compile_zero_error
         - directed_tb_regression_pass
         - rtl_skill_per_file_audit
+        - rtl_semantic_stub_absent
+        - loop1_task_requirement_evidence
+        - loop1_waveform_blocking
         - no_open_critical_or_major_bug
         - requirement_trace_complete
   work/loop2_uvm:
@@ -391,6 +402,7 @@ nodes:
       min_checked_transactions: 64
       min_scenario_tests: 5
       min_stress_stimuli_per_transaction: 2
+      require_spec_driven_scoreboard: true
       coverage_triage_required: true
       bound_assertions_required: true
       monitor_sampled_functional_coverage_required: true
@@ -472,6 +484,8 @@ nodes:
         - assertion_no_failure
         - bound_assertions_present
         - functional_coverage_observed
+        - loop2_independent_oracle
+        - loop2_code_coverage
         - coverage_triage_closed
         - stimulus_breadth_complete
         - bug_closure_pass
@@ -685,6 +699,7 @@ nodes:
         - database_preflight_report_available
         - prototype_plan_check_report_available
         - implementation_report_available
+        - loop3_validation_boundary_claim
         - timing_report_available
         - board_test_report_available
   output:
@@ -710,6 +725,8 @@ nodes:
       final:
         - all_enabled_nodes_passed
         - manifest_available
+        - rtl_semantic_stub_absent
+        - final_claim_gate
         - final_audit_report_available
 versioning:
   tag_on_final_gate_pass: false

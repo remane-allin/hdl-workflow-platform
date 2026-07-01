@@ -1,0 +1,43 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: arch
+source_skill: env/rule/skills/rtl-architecture-and-gen/SKILL.md
+style_guide: env/rule/skills/rtl-architecture-and-gen/references/verilog-rtl-style-guide.md
+rtl_language: Verilog-2001
+rtl_root: output/rtl
+directed_tb_language: Verilog-2001
+directed_tb_root: output/tb
+uvm_language: SystemVerilog
+uvm_root: output/uvm
+hard_rules:
+  - hierarchy_only_top
+  - hierarchical_module_composition
+  - one_primary_module_per_file
+  - top_down_module_partitioning
+  - cohesive_module_boundary
+  - balanced_module_granularity
+  - verilog_2001_rtl_only
+  - no_systemverilog_in_rtl_or_directed_tb
+  - official_bus_protocol_naming
+  - protocol_naming_follows_official_or_industry_standard
+  - three_process_fsm_when_applicable
+  - no_monolithic_fsm_file
+  - fsm_single_responsibility
+  - standalone_else
+  - explicit_final_else
+  - explicit_cdc_plan
+  - staged_trace_contract_required
+module_plan_requirements:
+  - module hierarchy
+  - parent/child module composition
+  - top-down functional-domain partition
+  - clear module boundary and ownership
+  - balanced granularity that avoids broad monoliths and over-fragmented helper files
+  - clock/reset ownership
+  - interface ownership
+  - register block ownership
+  - protocol module naming follows official or industry terminology
+  - implementation order
+assumptions: []

@@ -1,0 +1,2160 @@
+{
+  "backend": "pywellen",
+  "extractor": "pywellen_query_backend",
+  "generated_at": "2026-06-30T22:29:08",
+  "project": "Hi3593_v2",
+  "queries": [
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {},
+      "query": "list_scopes",
+      "result": {
+        "count": 2
+      }
+    },
+    {
+      "args": {
+        "scope": "loop1_tb.dut"
+      },
+      "query": "list_signals",
+      "result": {
+        "count": 100
+      }
+    },
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "name": "reset_release"
+      },
+      "query": "window_by_name",
+      "result": {
+        "found": true
+      }
+    },
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "ACLK",
+          "MR",
+          "CS",
+          "SCK",
+          "SI",
+          "SO",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 35000
+      },
+      "query": "check_xz",
+      "result": {
+        "offenders": []
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "ACLK",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 17,
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "CS",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 1,
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SCK",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SI",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SO",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1A",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1B",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2A",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2B",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX1IN",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX0IN",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SLP",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TEMPTY",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TFULL",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1FLAG",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2FLAG",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1INT",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2INT",
+        "start": 35000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 115000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "CS",
+          "SCK",
+          "SI",
+          "SO",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 35000
+      },
+      "query": "transition_count",
+      "result": {
+        "count": 1
+      }
+    },
+    {
+      "args": {
+        "name": "spi_opcode_activity"
+      },
+      "query": "window_by_name",
+      "result": {
+        "found": true
+      }
+    },
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "ACLK",
+          "MR",
+          "CS",
+          "SCK",
+          "SI",
+          "SO",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 265000
+      },
+      "query": "check_xz",
+      "result": {
+        "offenders": []
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "ACLK",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 751,
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "CS",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 15,
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SCK",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 192,
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SI",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 23,
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1A",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1B",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2A",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2B",
+        "start": 265000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "end": 4015000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "CS",
+          "SCK",
+          "SI",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B"
+        ],
+        "start": 265000
+      },
+      "query": "transition_count",
+      "result": {
+        "count": 230
+      }
+    },
+    {
+      "args": {
+        "name": "rx_location32_overwrite"
+      },
+      "query": "window_by_name",
+      "result": {
+        "found": true
+      }
+    },
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "ACLK",
+          "MR",
+          "CS",
+          "SCK",
+          "SI",
+          "SO",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 98605000
+      },
+      "query": "check_xz",
+      "result": {
+        "offenders": []
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "ACLK",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 2997,
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "CS",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 7,
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SCK",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 192,
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SI",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 8,
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1A",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 230,
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT1B",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 264,
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2A",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "OUT2B",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "CS",
+          "SCK",
+          "SI",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B"
+        ],
+        "start": 98605000
+      },
+      "query": "transition_count",
+      "result": {
+        "count": 701
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SO",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX1IN",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX0IN",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SLP",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TEMPTY",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TFULL",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1FLAG",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 1,
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2FLAG",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1INT",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 1,
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2INT",
+        "start": 98605000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 113585000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "SO",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 98605000
+      },
+      "query": "transition_count",
+      "result": {
+        "count": 2
+      }
+    },
+    {
+      "args": {
+        "name": "arinc_tx_response"
+      },
+      "query": "window_by_name",
+      "result": {
+        "found": true
+      }
+    },
+    {
+      "args": {
+        "name": "ACLK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "name": "MR",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.MR"
+      }
+    },
+    {
+      "args": {
+        "name": "CS",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.CS"
+      }
+    },
+    {
+      "args": {
+        "name": "SCK",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SCK"
+      }
+    },
+    {
+      "args": {
+        "name": "SI",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SI"
+      }
+    },
+    {
+      "args": {
+        "name": "SO",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT1B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT1B"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2A",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2A"
+      }
+    },
+    {
+      "args": {
+        "name": "OUT2B",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.OUT2B"
+      }
+    },
+    {
+      "args": {
+        "name": "TX1IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "name": "TX0IN",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "name": "SLP",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "name": "TEMPTY",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "name": "TFULL",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "name": "R1FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R2FLAG",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "name": "R1INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "name": "R2INT",
+        "scope": "/loop1_tb/dut"
+      },
+      "query": "resolve_signal",
+      "result": {
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "ACLK",
+          "MR",
+          "CS",
+          "SCK",
+          "SI",
+          "SO",
+          "OUT1A",
+          "OUT1B",
+          "OUT2A",
+          "OUT2B",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 113585000
+      },
+      "query": "check_xz",
+      "result": {
+        "offenders": []
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "ACLK",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 717,
+        "path": "loop1_tb.dut.ACLK"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SO",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SO"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX1IN",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TX1IN"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TX0IN",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 17,
+        "path": "loop1_tb.dut.TX0IN"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "SLP",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.SLP"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TEMPTY",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 2,
+        "path": "loop1_tb.dut.TEMPTY"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "TFULL",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.TFULL"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1FLAG",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 1,
+        "path": "loop1_tb.dut.R1FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2FLAG",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2FLAG"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R1INT",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 1,
+        "path": "loop1_tb.dut.R1INT"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signal": "R2INT",
+        "start": 113585000
+      },
+      "query": "get_transitions",
+      "result": {
+        "count": 0,
+        "path": "loop1_tb.dut.R2INT"
+      }
+    },
+    {
+      "args": {
+        "end": 117165000,
+        "scope": "/loop1_tb/dut",
+        "signals": [
+          "SO",
+          "TX1IN",
+          "TX0IN",
+          "SLP",
+          "TEMPTY",
+          "TFULL",
+          "R1FLAG",
+          "R2FLAG",
+          "R1INT",
+          "R2INT"
+        ],
+        "start": 113585000
+      },
+      "query": "transition_count",
+      "result": {
+        "count": 21
+      }
+    }
+  ],
+  "schema_version": 1
+}

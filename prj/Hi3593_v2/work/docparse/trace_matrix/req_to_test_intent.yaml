@@ -1,0 +1,66 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: sim
+stage: docparse
+target: test_intent
+links:
+  - requirement_id: REQ-SPI-001
+    test_intent: T-SPI-PARTIAL
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-SPI-002
+    test_intent: T-OPCODE-MATRIX
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-RST-001
+    test_intent: T-MR-SHARED
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-RST-002
+    test_intent: T-SWRESET-44
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-FIFO-001
+    test_intent: rx_location32_overwrite
+    artifact: work/docparse/verification/verification_plan.yaml
+  - requirement_id: REQ-ARINC-001
+    test_intent: WAVE-TX
+    artifact: work/docparse/verification/verification_plan.yaml
+  - requirement_id: REQ-RX-001
+    test_intent: arinc_filter_test
+    artifact: work/docparse/verification/uvm_plan.yaml
+  - requirement_id: REQ-TX-001
+    test_intent: fifo_pressure_test
+    artifact: work/docparse/verification/uvm_plan.yaml
+  - requirement_id: REQ-STATUS-001
+    test_intent: status_polling
+    artifact: work/docparse/verification/verification_plan.yaml
+  - requirement_id: REQ-LABEL-001
+    test_intent: T-LABEL-MEMORY
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-PLABEL-001
+    test_intent: T-PRIORITY-MAILBOX
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-MAILBOX-001
+    test_intent: T-PRIORITY-MAILBOX
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-FLAGINT-001
+    test_intent: T-FLAG-INT
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-MB-PINS-001
+    test_intent: T-PRIORITY-MAILBOX
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-ACLK-001
+    test_intent: T-FLAG-INT
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-TX-FULL-001
+    test_intent: T-TX-FULL
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-RX-FILTER-001
+    test_intent: T-RX-FILTER
+    artifact: work/docparse/structured_spec/test_intent.yaml
+  - requirement_id: REQ-PROTO-001
+    test_intent: ps_pl_sanity_test
+    artifact: work/docparse/prototype/prototype_plan.yaml
+  - requirement_id: REQ-PROTO-001
+    test_intent: ps_pl_wrapper_toolchain_bringup
+    artifact: work/docparse/frontdoor/intake/merged/PROTO-SUP-TOOL-FPGA-001.yaml
+unmapped_requirements: []
+assumptions: []

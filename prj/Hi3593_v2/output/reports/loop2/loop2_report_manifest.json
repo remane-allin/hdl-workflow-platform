@@ -1,0 +1,10 @@
+{
+  "report_json": "output/reports/loop2/loop2_report.json",
+  "report_json_sha256": "24c86da3ec3dee6d32cb01360c6610f1e718ad5f552549db1e6d4998a321f047",
+  "report_md": "output/reports/loop2/loop2_report.md",
+  "report_sha256": "d05c159507aa81c4ef520d00bc6460791e8b4d080f4f1857d526be9c7d115fad",
+  "schema": "hdlflow_report_manifest_v1",
+  "source_manifest_sha256": "b6dec72fae5f5bfa4d1165b78ec3a99c87d7b5c1bbe37f52cefccdba58999eb7",
+  "source_run_manifest": "work/loop2_uvm/current/manifest.json",
+  "stage": "loop2"
+}

@@ -15,7 +15,7 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
 - Sim Agent: owns simulation stimulus, UVM, waveform sampling, simulator logs, coverage, waveform comparison, and Loop1/Loop2/Loop3 validation evidence.
 - Review Agent: owns defect lists, severities, lifecycle status, risks, correction advice, compliance review, and root-cause routing. It does not edit Spec, architecture, RTL, or TB.
 - Review Agent defect lists remain structured YAML records with lifecycle status and evidence.
-- Arbtr Agent: owns global flow records, disputes, version baselines, iteration count, feedback routing, termination checks, and final freeze. It does not edit Spec, architecture, RTL, or TB.
+- Arbtr Agent: owns global flow records, disputes, version baselines, intake merge lock, claim control, iteration count, feedback routing, termination checks, and final freeze. It does not edit Spec, architecture, RTL, or TB.
 
 ## Flow
 
@@ -37,6 +37,11 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
 3. Run `python -m hdlflow.cli requirements-frontdoor-init --project <project> --status DRAFT` if artifacts are missing.
 4. Fill or refresh:
    - `work/docparse/frontdoor/srs.yaml`
+   - `work/docparse/frontdoor/contract.yaml`
+   - `work/docparse/frontdoor/intake/{pending,approved,rejected,merged}/`
+   - `work/docparse/frontdoor/templates/new_requirement.template.yaml`
+   - `work/docparse/frontdoor/templates/requirement_change.template.yaml`
+   - `work/docparse/frontdoor/generated/active_*.generated.yaml`
    - `work/docparse/frontdoor/forbidden_designs.yaml`
    - `work/docparse/structured_spec/document_analysis.yaml`
    - `work/docparse/structured_spec/interface_spec.yaml`
@@ -52,13 +57,14 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
    - `work/docparse/doc_projection.yaml`
    - `work/docparse/trace_matrix/req_to_design_intent.yaml`
    - `work/docparse/trace_matrix/req_to_test_intent.yaml`
+   - `work/docparse/trace_matrix/req_to_uvm_intent.yaml`
    Use platform-checker field names exactly:
    `document_analysis.yaml.source_documents[]` uses `source_ref`,
    `parser_output`, and `document_type`; `analysis_units[]` uses `unit_id`,
    `source_ref`, `section`, `summary`, plus `extracted_requirements` or
    `evidence_refs`. Open questions are mapping entries, not bare IDs. Trace
-   matrices use `links`, not `mappings`. DocParse trace records design and test
-   intent only; RTL, directed-TB, UVM, assertion, coverage, and FPGA evidence
+   matrices use `links`, not `mappings`. DocParse trace records design, test,
+   and UVM intent only; RTL, directed-TB, UVM implementation, assertion, coverage, and FPGA evidence
    traces are produced in their matching loop directories after implementation
    or evidence exists.
    `work/docparse/structured_spec/test_intent.yaml` must include
@@ -67,6 +73,21 @@ Use this skill before broad RTL, UVM, simulation, or FPGA prototype work.
    not Loop1 afterthoughts: they define which requirement windows need WLF/VCD
    evidence, which top-level signals/scopes are observed first, the trigger or
    time span, expected activity, and pass/fail criteria.
+   New or changed requirements must enter `frontdoor/intake/` first. Pending
+   intake locks Loop1/Loop2/Loop3/final execution. Approved intake must be
+   merged into the generated active SRS, design, verification, prototype, and
+   trace baselines before downstream execution.
+   `work/docparse/frontdoor/open_questions.md` is an inactive legacy file only;
+   the active question source is `document_analysis.yaml.question_review`.
+   To add a requirement, copy
+   `work/docparse/frontdoor/templates/new_requirement.template.yaml` into
+   `work/docparse/frontdoor/intake/pending/<REQ-ID>.yaml`, fill source refs,
+   acceptance criteria, affected modules/interfaces, design/verification/prototype
+   obligations, trace links, risk impact, approval status, and merge status.
+   To change an existing requirement, use
+   `work/docparse/frontdoor/templates/requirement_change.template.yaml` the same
+   way. Do not edit derived architecture, TB, UVM, prototype, or generated docs
+   first; those are downstream of the approved intake merge.
 5. Before promoting artifacts to READY, Spec Agent must record unresolved doubts in `work/docparse/structured_spec/document_analysis.yaml.open_questions`. Send those questions to the user for review. Every question must be answered, accepted, waived, or marked not blocking, and `document_analysis.yaml.question_review` must record `status: REVIEWED`, `reviewed_by`, `review_evidence: work/docparse/structured_spec/document_analysis.yaml`, and `unresolved_count: 0`. If there are no unresolved doubts, record that explicit zero-question review instead of leaving the field empty.
 6. Promote artifact `status` values to `READY` only after Spec, Arch, Sim planning, Review, and Arbtr handoff fields are consistent and requirement questions are reviewed.
 7. Run `python -m hdlflow.cli requirements-frontdoor-check --project <project>`.
@@ -97,16 +118,23 @@ formal-artifact review findings, even if the result is PASS. RTL review must
 cite `output/reports/loop1/rtl_skill_audit.md`, the `rtl-architecture-and-gen`
 skill or `verilog-rtl-style-guide`, and every RTL file name reviewed. Directed
 TB review must cite `output/docs/test/verification_plan.md` and the owning
-Loop1/ModelSim skill evidence. UVM review must cite `uvm-env-and-test-build`
-and every UVM file name reviewed. Loop3 review must cite `prototype-preflight`,
-`validate-prototype-plan`, and `loop3-refresh-reports`. A handwritten PASS
-statement without the platform audit and skill references is not review
-evidence.
+Loop1/ModelSim skill evidence, including `loop1_task_requirement_evidence` and
+`loop1_waveform_blocking` or `waveform_gate.json`. UVM review must cite
+`uvm-env-and-test-build`, `loop2_independent_oracle`, and every UVM file name
+reviewed. Loop3 review must cite `prototype-preflight`,
+`validate-prototype-plan`, `loop3-refresh-reports`, and
+`loop3_validation_boundary_claim` or claim policy. A handwritten PASS statement
+without the platform audit, semantic signoff, claim boundary, and skill
+references is not review evidence.
 
 ## Output Rule
 
 The four generated `output/docs/**` documents are for user review. YAML files are the machine-readable source
 for gates, traceability, permissions, and Loop1/Loop2/Loop3 handoff.
+`work/gates/claim_policy.yaml` is the machine-readable final claim contract.
+Arbtr must output ACCEPT, ACCEPT_WITH_WAIVER, REWORK_REQUIRED, REJECT, or
+CLAIM_DOWNGRADE_REQUIRED, and final reports must not claim capabilities that
+Loop1/Loop2/Loop3 evidence did not prove.
 
 The structured spec YAML files are the required machine-readable bridge
 from DocParse into architecture and verification. Generate or update them before

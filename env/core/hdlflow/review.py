@@ -262,6 +262,8 @@ def _check_rtl_skill_review_coverage(project: Path, findings: list[ReviewFinding
     missing = [path.name for path in rtl_files if path.name.lower() not in review_text]
     if missing:
         errors.append("Review Agent RTL skill finding must mention every RTL file reviewed: " + ", ".join(missing[:8]))
+    if "rtl_semantic_stub_absent" not in review_text and "semantic signoff" not in review_text:
+        errors.append("Review Agent must cite rtl_semantic_stub_absent or semantic signoff when reviewing RTL")
     _check_tb_review_coverage(project, review_text, errors)
     _check_uvm_review_coverage(project, review_text, errors)
     _check_loop3_review_coverage(project, review_text, errors)
@@ -283,6 +285,10 @@ def _check_tb_review_coverage(project: Path, review_text: str, errors: list[str]
         return
     if "output/docs/test/verification_plan.md" not in review_text:
         errors.append("Review Agent must cite output/docs/test/verification_plan.md when directed TB files exist")
+    if "loop1_waveform_blocking" not in review_text and "waveform_gate.json" not in review_text:
+        errors.append("Review Agent must cite loop1_waveform_blocking or waveform_gate.json when reviewing directed TB files")
+    if "loop1_task_requirement_evidence" not in review_text and "task requirement evidence" not in review_text:
+        errors.append("Review Agent must cite loop1_task_requirement_evidence when reviewing directed TB files")
     if "modelsim-run-triage-debug" not in review_text and "rtl-architecture-and-gen" not in review_text:
         errors.append("Review Agent must cite modelsim-run-triage-debug or rtl-architecture-and-gen when reviewing directed TB files")
     missing = [path.name for path in tb_files if path.name.lower() not in review_text]
@@ -296,6 +302,8 @@ def _check_uvm_review_coverage(project: Path, review_text: str, errors: list[str
         return
     if "uvm-env-and-test-build" not in review_text:
         errors.append("Review Agent must cite uvm-env-and-test-build when UVM files exist")
+    if "loop2_independent_oracle" not in review_text and "independent oracle" not in review_text:
+        errors.append("Review Agent must cite loop2_independent_oracle when reviewing UVM files")
     missing = [path.name for path in uvm_files if path.name.lower() not in review_text]
     if missing:
         errors.append("Review Agent UVM finding must mention every UVM file reviewed: " + ", ".join(missing[:8]))
@@ -308,6 +316,8 @@ def _check_loop3_review_coverage(project: Path, review_text: str, errors: list[s
     missing = [marker for marker in required if marker not in review_text]
     if missing:
         errors.append("Review Agent Loop3 finding must cite prototype signoff entry point(s): " + ", ".join(missing))
+    if "loop3_validation_boundary_claim" not in review_text and "claim policy" not in review_text:
+        errors.append("Review Agent Loop3 finding must cite loop3_validation_boundary_claim or claim policy")
 
 
 def _has_loop3_formal_artifacts(project: Path) -> bool:

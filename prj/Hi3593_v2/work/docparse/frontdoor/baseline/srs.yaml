@@ -1,0 +1,16 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arbtr
+baseline_ref: work/docparse/frontdoor/generated/active_srs.generated.yaml
+requirements:
+  - REQ-SPI-001
+  - REQ-SPI-002
+  - REQ-RST-001
+  - REQ-RST-002
+  - REQ-FIFO-001
+  - REQ-ARINC-001
+  - REQ-RX-001
+  - REQ-TX-001
+  - REQ-STATUS-001
+  - REQ-PROTO-001

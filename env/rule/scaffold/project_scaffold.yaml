@@ -5,3 +5,6 @@ creation_mode: script_only
 template_source: env/rule/scaffold
 created_at: GENERATED_AT
 manual_project_directory_creation: forbidden
+platform_contract_version: 2026.06-contract-v2
+migration_status: complete
+migration_report: work/migration/migration_report.md

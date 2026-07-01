@@ -48,6 +48,8 @@ if (-not $Launcher) {
 if (-not (Test-Path -LiteralPath $Launcher)) {
     throw "Vitis launcher not found: $Launcher"
 }
+$env:HDLFLOW_VITIS_LAUNCHER = $Launcher
+$env:HDLFLOW_VITIS_ROOT = Split-Path -Parent (Split-Path -Parent $Launcher)
 
 if ($LogDir) {
     $ResolvedLogDir = $LogDir
@@ -83,10 +85,13 @@ $LogPath = Join-Path $ResolvedLogDir "$Tool`_$Stamp.log"
 Push-Location $ResolvedRunDir
 $ExitCode = 1
 try {
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     & $Launcher @Args *> $LogPath
     $ExitCode = $LASTEXITCODE
 }
 finally {
+    $ErrorActionPreference = $PreviousErrorActionPreference
     Pop-Location
 }
 

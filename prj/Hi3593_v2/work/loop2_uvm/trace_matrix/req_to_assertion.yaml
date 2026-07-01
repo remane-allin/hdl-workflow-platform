@@ -1,0 +1,46 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_from:
+  requirements: work/docparse/frontdoor/generated/active_srs.generated.yaml
+  assertion_plan: work/docparse/verification/assertion_plan.yaml
+  assertion_source: output/uvm/assertions/dut_assertions.sv
+  loop2_report: output/reports/loop2/loop2_report.md
+policy:
+  assertion_binding: non_invasive_bind
+  source_scope: new_project_only
+bindings:
+  - requirement_id: REQ-RST-001
+    assertion_source: output/uvm/assertions/dut_assertions.sv
+    checks:
+      - reset state is driven to safe defaults
+      - reset does not leave unknown FIFO flags
+    evidence:
+      - work/loop2_uvm/current/log/modelsim.log
+  - requirement_id: REQ-SPI-001
+    assertion_source: output/uvm/assertions/dut_assertions.sv
+    checks:
+      - CS high terminates SPI frame collection
+      - partial frame is discarded without command side effect
+    evidence:
+      - output/reports/loop2/loop2_report.md
+  - requirement_id: REQ-FIFO-001
+    assertion_source: output/uvm/assertions/dut_assertions.sv
+    checks:
+      - FIFO full status prevents overflow write side effect
+      - FIFO clear returns count to empty state
+    evidence:
+      - output/reports/loop2/loop2_report.md
+  - requirement_id: REQ-TX-001
+    assertion_source: output/uvm/assertions/dut_assertions.sv
+    checks:
+      - TX enable requires a non-empty FIFO
+      - TX driver pins leave idle during reset
+    evidence:
+      - work/loop2_uvm/current/log/modelsim.log
+  - requirement_id: REQ-STATUS-001
+    assertion_source: output/uvm/assertions/dut_assertions.sv
+    checks:
+      - status flags reflect FIFO state observations
+    evidence:
+      - output/reports/loop2/loop2_report.json

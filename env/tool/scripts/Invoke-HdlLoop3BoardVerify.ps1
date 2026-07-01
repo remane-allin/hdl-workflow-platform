@@ -8,9 +8,9 @@ param(
 
     [int]$BaudRate = 115200,
 
-    [int]$CaptureSeconds = 18,
+    [int]$CaptureSeconds = 60,
 
-    [string]$Command = "read",
+    [string]$Command = "read;suite",
 
     [switch]$SkipProgram,
 
@@ -21,6 +21,32 @@ $ErrorActionPreference = "Stop"
 
 function Get-HdlTimestamp {
     return (Get-Date).ToString("HH:mm:ss.fff")
+}
+
+function Wait-HdlJobOrThrow {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.Job]$Job,
+
+        [int]$TimeoutSeconds = 180,
+
+        [string]$Name = "background job"
+    )
+
+    $completed = Wait-Job $Job -Timeout $TimeoutSeconds
+    if (-not $completed) {
+        Stop-Job $Job
+        Receive-Job $Job | ForEach-Object { Write-Host $_ }
+        Remove-Job $Job -Force
+        throw "$Name did not finish within $TimeoutSeconds seconds"
+    }
+
+    Receive-Job $Job | ForEach-Object { Write-Host $_ }
+    $state = $Job.State
+    Remove-Job $Job -Force
+    if ($state -ne "Completed") {
+        throw "$Name failed with state $state"
+    }
 }
 
 $Workspace = Resolve-Path $WorkspacePath
@@ -62,8 +88,16 @@ if ((-not $SkipPsRun) -and (Test-Path -LiteralPath $VitisRunScript)) {
     $RunJob = Start-Job -ScriptBlock {
         param($wrapper, $workspace, $project, $source)
         & powershell -NoProfile -ExecutionPolicy Bypass -File $wrapper -WorkspacePath $workspace -Project $project -Tool xsct -Source $source
-        exit $LASTEXITCODE
+        if ($LASTEXITCODE -ne 0) {
+            throw "PS application JTAG run failed with code $LASTEXITCODE"
+        }
     } -ArgumentList $VitisWrapper, $Workspace.Path, $ProjectRoot.Path, $VitisRunScript
+}
+
+if ($RunJob) {
+    Wait-HdlJobOrThrow -Job $RunJob -TimeoutSeconds 180 -Name "PS application JTAG run"
+    $RunJob = $null
+    Start-Sleep -Milliseconds 500
 }
 
 $AvailablePorts = [System.IO.Ports.SerialPort]::GetPortNames()
@@ -75,6 +109,20 @@ if ($AvailablePorts -notcontains $SerialPort) {
 $RawLines = New-Object System.Collections.Generic.List[string]
 $RxPayloads = New-Object System.Collections.Generic.List[string]
 $TxLines = New-Object System.Collections.Generic.List[string]
+$CommandList = @(
+    $Command -split "[,;]" |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_.Length -gt 0 }
+)
+if ($CommandList.Count -eq 0) {
+    $CommandList = @("read")
+}
+$CurrentCommandIndex = 0
+$CommandSent = $false
+$ReadMatched = $false
+$SuiteMatched = $false
+$SuiteFailed = $false
+$CheckFailed = $false
 $serial = New-Object System.IO.Ports.SerialPort $SerialPort, $BaudRate, "None", 8, "One"
 $serial.ReadTimeout = 200
 $serial.WriteTimeout = 1000
@@ -89,17 +137,18 @@ try {
     $deadline = (Get-Date).AddSeconds($CaptureSeconds)
     $nextCommandAt = Get-Date
     while ((Get-Date) -lt $deadline) {
-        $matched = $RxPayloads | Where-Object { $_ -match "^read data=0x[0-9A-Fa-f]{8}$" } | Select-Object -First 1
-        if ($matched) {
+        if (($CurrentCommandIndex -ge $CommandList.Count) -and $ReadMatched -and (-not ($CommandList -contains "suite") -or $SuiteMatched)) {
             break
         }
-        if ((Get-Date) -ge $nextCommandAt) {
-            $serial.Write("$Command`r")
+        if ((Get-Date) -ge $nextCommandAt -and $CurrentCommandIndex -lt $CommandList.Count) {
+            $ActiveCommand = $CommandList[$CurrentCommandIndex]
+            $serial.Write("$ActiveCommand`r")
             $stamp = Get-HdlTimestamp
-            $line = "TX[$stamp]: $Command"
+            $line = "TX[$stamp]: $ActiveCommand"
             $TxLines.Add($line)
             $RawLines.Add($line)
-            $nextCommandAt = (Get-Date).AddSeconds(2)
+            $CommandSent = $true
+            $nextCommandAt = (Get-Date).AddSeconds(6)
         }
         try {
             $line = $serial.ReadLine()
@@ -110,6 +159,33 @@ try {
                     $entry = "RX[$stamp]: $payload"
                     $RawLines.Add($entry)
                     $RxPayloads.Add($payload)
+                    if ($payload -match "^read data=0x[0-9A-Fa-f]{8}$") {
+                        $ReadMatched = $true
+                        if ($CurrentCommandIndex -lt $CommandList.Count -and $CommandList[$CurrentCommandIndex] -match "^(read|r)$") {
+                            $CurrentCommandIndex++
+                            $CommandSent = $false
+                            $nextCommandAt = Get-Date
+                        }
+                    }
+                    if ($payload -match "^LOOP3_CHECK .* FAIL\b") {
+                        $CheckFailed = $true
+                    }
+                    if ($payload -match "^LOOP3_SUITE FAIL\b") {
+                        $SuiteFailed = $true
+                    }
+                    if ($payload -match "^LOOP3_SUITE PASS\b") {
+                        $SuiteMatched = $true
+                        if ($CurrentCommandIndex -lt $CommandList.Count -and $CommandList[$CurrentCommandIndex] -match "^(suite|s)$") {
+                            $CurrentCommandIndex++
+                            $CommandSent = $false
+                            $nextCommandAt = Get-Date
+                        }
+                    }
+                    if ($CommandSent -and $CurrentCommandIndex -lt $CommandList.Count -and $CommandList[$CurrentCommandIndex] -notmatch "^(read|r|suite|s)$") {
+                        $CurrentCommandIndex++
+                        $CommandSent = $false
+                        $nextCommandAt = Get-Date
+                    }
                 }
             }
         }
@@ -122,10 +198,11 @@ finally {
         $serial.Close()
     }
     if ($RunJob) {
-        Wait-Job $RunJob -Timeout 5 | Out-Null
+        Wait-Job $RunJob -Timeout 30 | Out-Null
         if ($RunJob.State -ne "Completed") {
-            Stop-Job $RunJob -Force
+            Stop-Job $RunJob
         }
+        Receive-Job $RunJob | ForEach-Object { Write-Host $_ }
         Remove-Job $RunJob -Force
     }
 }
@@ -133,7 +210,7 @@ finally {
 $MatchedPayload = $RxPayloads | Where-Object { $_ -match "^read data=0x[0-9A-Fa-f]{8}$" } | Select-Object -First 1
 $TxReport = if ($TxLines.Count -gt 0) { $TxLines[0] } else { "TX[$(Get-HdlTimestamp)]: <not sent>" }
 
-if ($MatchedPayload) {
+if ($MatchedPayload -and (-not ($CommandList -contains "suite") -or $SuiteMatched) -and (-not $SuiteFailed) -and (-not $CheckFailed)) {
     $rxReport = "RX[$(Get-HdlTimestamp)]: $MatchedPayload"
     $RawLines.Add("LOOP3_RESULT PASS")
     Set-Content -Path $RawLog -Value $RawLines -Encoding ASCII
@@ -144,13 +221,29 @@ if ($MatchedPayload) {
         "- baud: $BaudRate",
         "- $TxReport",
         "- $rxReport",
-        "- result: PASS"
+        "- suite: $(if ($CommandList -contains "suite") { "PASS" } else { "not-requested" })",
+        "- result: PASS",
+        "",
+        "## Captured Lines",
+        '```text',
+        ($RawLines -join "`n"),
+        '```'
     ) -Encoding ASCII
-    Write-Host "LOOP3_BOARD_VERIFY_PASS payload=$MatchedPayload"
+    Write-Host "LOOP3_BOARD_VERIFY_PASS payload=$MatchedPayload suite=$SuiteMatched"
     exit 0
 }
 
-$RawLines.Add("DUT_PROTOCOL_MODEL FAIL read response not observed")
+$FailureReason = "read response not observed"
+if ($MatchedPayload -and ($CommandList -contains "suite") -and (-not $SuiteMatched)) {
+    $FailureReason = "suite PASS marker not observed"
+}
+if ($SuiteFailed) {
+    $FailureReason = "suite reported FAIL"
+}
+if ($CheckFailed) {
+    $FailureReason = "one or more LOOP3_CHECK lines reported FAIL"
+}
+$RawLines.Add("DUT_PROTOCOL_MODEL FAIL $FailureReason")
 $RawLines.Add("LOOP3_RESULT FAIL")
 Set-Content -Path $RawLog -Value $RawLines -Encoding ASCII
 Set-Content -Path $ValidationReport -Value @(
@@ -168,4 +261,4 @@ Set-Content -Path $ValidationReport -Value @(
     '```'
 ) -Encoding ASCII
 
-throw "No PL UART read data line observed on $SerialPort within $CaptureSeconds seconds"
+throw "Loop3 board validation failed on $SerialPort within $CaptureSeconds seconds: $FailureReason"

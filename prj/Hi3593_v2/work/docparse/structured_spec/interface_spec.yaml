@@ -1,0 +1,169 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: spec
+module_name: hi3593_v2_top
+clock_domains:
+  - name: ACLK
+    purpose: "Master timing source for control, FIFOs, and ARINC engines."
+  - name: SCK
+    purpose: "SPI serial clock sampled by the SPI slave and synchronized into ACLK command strobes."
+reset_signals:
+  - name: MR
+    polarity: active_high
+    scope: top_level_only
+    req_ids:
+      - REQ-RST-001
+interfaces:
+  - name: spi_mode0
+    protocol: SPI mode 0 half-duplex
+    pins:
+      - CS
+      - SCK
+      - SI
+      - SO
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+  - name: arinc429_driver_logic
+    protocol: HI-8592 digital driver control
+    pins:
+      - TX1IN
+      - TX0IN
+      - SLP
+    req_ids:
+      - REQ-TX-001
+      - REQ-PROTO-001
+  - name: arinc429_receiver_logic
+    protocol: HI-8450 decoded receiver logic
+    pins:
+      - OUT1A
+      - OUT1B
+      - OUT2A
+      - OUT2B
+    req_ids:
+      - REQ-RX-001
+  - name: priority_mailbox_outputs
+    protocol: HI-3593 priority-label mailbox valid pins
+    pins:
+      - MB1_1
+      - MB1_2
+      - MB1_3
+      - MB2_1
+      - MB2_2
+      - MB2_3
+    req_ids:
+      - REQ-MB-PINS-001
+      - REQ-MAILBOX-001
+ports:
+  - name: ACLK
+    direction: input
+    width: 1
+    clock_domain: ACLK
+    role: clock
+  - name: MR
+    direction: input
+    width: 1
+    role: reset
+  - name: CS
+    direction: input
+    width: 1
+    clock_domain: SCK
+    active_level: low
+  - name: SCK
+    direction: input
+    width: 1
+    clock_domain: SCK
+    role: clock
+  - name: SI
+    direction: input
+    width: 1
+    clock_domain: SCK
+  - name: SO
+    direction: output
+    width: 1
+    clock_domain: SCK
+  - name: OUT1A
+    direction: input
+    width: 1
+    clock_domain: ACLK
+  - name: OUT1B
+    direction: input
+    width: 1
+    clock_domain: ACLK
+  - name: OUT2A
+    direction: input
+    width: 1
+    clock_domain: ACLK
+  - name: OUT2B
+    direction: input
+    width: 1
+    clock_domain: ACLK
+  - name: TX1IN
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: TX0IN
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: SLP
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: TEMPTY
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: TFULL
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: R1FLAG
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: R2FLAG
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: R1INT
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: R2INT
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB1_1
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB1_2
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB1_3
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB2_1
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB2_2
+    direction: output
+    width: 1
+    clock_domain: ACLK
+  - name: MB2_3
+    direction: output
+    width: 1
+    clock_domain: ACLK
+protocol_notes:
+  - "CS is the datasheet chip-select boundary and is active low."
+  - "SO is driven only for read response bits in the discrete HI-3593 behavior; FPGA RTL models idle as zero because tri-state is a board wrapper concern."
+legal_design_boundaries:
+  - "Analog ARINC bus voltage, slew, and lightning behavior are external to RTL."
+assumptions:
+  - ASM-BOUNDARY-001

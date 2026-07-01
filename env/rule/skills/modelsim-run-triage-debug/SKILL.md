@@ -19,7 +19,7 @@ Use this skill for evidence-driven simulation work under `work/loop1_rtl_tb/sim/
 
 1. Choose the right `.do` target:
    - `compile.do` for compile-only checks
-   - `baseline.do` for a focused sanity run
+   - `baseline.do` for a focused requirement-bound configuration verification run
    - `regression.do` for broader batch work
 2. Run the selected ModelSim/Questa `.do` script from the owning Loop directory.
 3. Read the generated runtime log and the corresponding report under `output/reports/loop1/` or `output/reports/loop2/`.

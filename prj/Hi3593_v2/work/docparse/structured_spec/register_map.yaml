@@ -1,0 +1,114 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T22:49:00+08:00"
+owner_role: spec
+register_blocks:
+  - id: RB-CTRL
+    name: hi3593_control_status
+    owner_module: control_status_regs
+registers:
+  - name: tx_control
+    width: 8
+    reset: 0x00
+    write_opcode: 0x08
+    read_opcode: 0x84
+    fields: [HIZ, TFLIP, TMODE, SELFTEST, ODDEVEN, TPARITY, X, RATE]
+  - name: rx1_control
+    width: 8
+    reset: 0x00
+    write_opcode: 0x10
+    read_opcode: 0x94
+    fields: [RFLIP, SD9, SD10, SDON, PARITY, LABREC, PLON, RATE]
+  - name: rx2_control
+    width: 8
+    reset: 0x00
+    write_opcode: 0x24
+    read_opcode: 0xB4
+    fields: [RFLIP, SD9, SD10, SDON, PARITY, LABREC, PLON, RATE]
+  - name: flag_interrupt_assignment
+    width: 8
+    reset: 0x00
+    write_opcode: 0x34
+    read_opcode: 0xD0
+    fields: [R2INT_1_0, R2FLAG_1_0, R1INT_1_0, R1FLAG_1_0]
+  - name: aclk_division
+    width: 8
+    reset: 0x00
+    write_opcode: 0x38
+    read_opcode: 0xD4
+    fields: [X7, X6, X5, DIV3, DIV2, DIV1, DIV0, X0]
+  - name: rx1_label_memory
+    width: 256
+    reset: 0x0000000000000000000000000000000000000000000000000000000000000000
+    write_opcode: 0x14
+    read_opcode: 0x98
+    set_all_opcode: 0x48
+  - name: rx2_label_memory
+    width: 256
+    reset: 0x0000000000000000000000000000000000000000000000000000000000000000
+    write_opcode: 0x28
+    read_opcode: 0xB8
+    set_all_opcode: 0x4C
+  - name: rx1_priority_label_match
+    width: 24
+    reset: 0x000000
+    write_opcode: 0x18
+    read_opcode: 0x9C
+    fields: [PL3, PL2, PL1]
+  - name: rx2_priority_label_match
+    width: 24
+    reset: 0x000000
+    write_opcode: 0x2C
+    read_opcode: 0xBC
+    fields: [PL3, PL2, PL1]
+  - name: rx_priority_mailboxes
+    width: 24
+    reset: 0x000000
+    read_opcodes: [0xA4, 0xA8, 0xAC, 0xC4, 0xC8, 0xCC]
+opcodes:
+  - {code: 0x00, name: opcode_00_no_operation, access: write, data_bytes: 0, req_ids: [REQ-INST-001]}
+  - {code: 0x04, name: opcode_04_master_reset, access: write, data_bytes: 0, req_ids: [REQ-RST-001]}
+  - {code: 0x08, name: opcode_08_write_tx_control, access: write, data_bytes: 1, req_ids: [REQ-SPI-002, REQ-TX-FULL-001]}
+  - {code: 0x0C, name: opcode_0C_write_tx_fifo, access: write, data_bytes: 4, req_ids: [REQ-TX-001, REQ-FIFO-001]}
+  - {code: 0x10, name: opcode_10_write_rx1_control, access: write, data_bytes: 1, req_ids: [REQ-RX-001, REQ-RX-FILTER-001]}
+  - {code: 0x14, name: opcode_14_write_rx1_label_memory, access: write, data_bytes: 32, req_ids: [REQ-LABEL-001]}
+  - {code: 0x18, name: opcode_18_write_rx1_priority_labels, access: write, data_bytes: 3, req_ids: [REQ-PLABEL-001]}
+  - {code: 0x24, name: opcode_24_write_rx2_control, access: write, data_bytes: 1, req_ids: [REQ-RX-001, REQ-RX-FILTER-001]}
+  - {code: 0x28, name: opcode_28_write_rx2_label_memory, access: write, data_bytes: 32, req_ids: [REQ-LABEL-001]}
+  - {code: 0x2C, name: opcode_2C_write_rx2_priority_labels, access: write, data_bytes: 3, req_ids: [REQ-PLABEL-001]}
+  - {code: 0x34, name: opcode_34_write_flag_interrupt_assignment, access: write, data_bytes: 1, req_ids: [REQ-FLAGINT-001]}
+  - {code: 0x38, name: opcode_38_write_aclk_division, access: write, data_bytes: 1, req_ids: [REQ-ACLK-001]}
+  - {code: 0x40, name: opcode_40_transmit_enable, access: write, data_bytes: 0, req_ids: [REQ-TX-001, REQ-TX-FULL-001]}
+  - {code: 0x44, name: opcode_44_fifo_mailbox_reset, access: write, data_bytes: 0, req_ids: [REQ-RST-002, REQ-PLABEL-001, REQ-MAILBOX-001]}
+  - {code: 0x48, name: opcode_48_set_all_rx1_labels, access: write, data_bytes: 0, req_ids: [REQ-LABEL-001]}
+  - {code: 0x4C, name: opcode_4C_set_all_rx2_labels, access: write, data_bytes: 0, req_ids: [REQ-LABEL-001]}
+  - {code: 0x80, name: opcode_80_read_tx_status, access: read, data_bytes: 1, req_ids: [REQ-STATUS-001]}
+  - {code: 0x84, name: opcode_84_read_tx_control, access: read, data_bytes: 1, req_ids: [REQ-SPI-002, REQ-TX-FULL-001]}
+  - {code: 0x90, name: opcode_90_read_rx1_status, access: read, data_bytes: 1, req_ids: [REQ-STATUS-001, REQ-MAILBOX-001]}
+  - {code: 0x94, name: opcode_94_read_rx1_control, access: read, data_bytes: 1, req_ids: [REQ-RX-001]}
+  - {code: 0x98, name: opcode_98_read_rx1_label_memory, access: read, data_bytes: 32, req_ids: [REQ-LABEL-001]}
+  - {code: 0x9C, name: opcode_9C_read_rx1_priority_labels, access: read, data_bytes: 3, req_ids: [REQ-PLABEL-001]}
+  - {code: 0xA0, name: opcode_A0_read_rx1_fifo, access: read, data_bytes: 4, req_ids: [REQ-RX-001, REQ-FIFO-001]}
+  - {code: 0xA4, name: opcode_A4_read_rx1_mailbox_1, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xA8, name: opcode_A8_read_rx1_mailbox_2, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xAC, name: opcode_AC_read_rx1_mailbox_3, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xB0, name: opcode_B0_read_rx2_status, access: read, data_bytes: 1, req_ids: [REQ-STATUS-001, REQ-MAILBOX-001]}
+  - {code: 0xB4, name: opcode_B4_read_rx2_control, access: read, data_bytes: 1, req_ids: [REQ-RX-001]}
+  - {code: 0xB8, name: opcode_B8_read_rx2_label_memory, access: read, data_bytes: 32, req_ids: [REQ-LABEL-001]}
+  - {code: 0xBC, name: opcode_BC_read_rx2_priority_labels, access: read, data_bytes: 3, req_ids: [REQ-PLABEL-001]}
+  - {code: 0xC0, name: opcode_C0_read_rx2_fifo, access: read, data_bytes: 4, req_ids: [REQ-RX-001, REQ-FIFO-001]}
+  - {code: 0xC4, name: opcode_C4_read_rx2_mailbox_1, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xC8, name: opcode_C8_read_rx2_mailbox_2, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xCC, name: opcode_CC_read_rx2_mailbox_3, access: read, data_bytes: 3, req_ids: [REQ-MAILBOX-001]}
+  - {code: 0xD0, name: opcode_D0_read_flag_interrupt_assignment, access: read, data_bytes: 1, req_ids: [REQ-FLAGINT-001]}
+  - {code: 0xD4, name: opcode_D4_read_aclk_division, access: read, data_bytes: 1, req_ids: [REQ-ACLK-001]}
+  - {code: 0xFF, name: opcode_FF_no_operation, access: read, data_bytes: 0, req_ids: [REQ-INST-001]}
+access_rules:
+  - "SPI command byte determines access direction and data length."
+  - "Two instruction bytes cannot be chained without deasserting CS."
+  - "Label memory write/read transfers are 32 bytes in one CS assertion."
+reset_rules:
+  - "MR and opcode_04 reset control/status/FIFO/label/priority/mailbox state."
+  - "opcode_44 clears FIFOs, priority-label match registers, and priority mailboxes only."
+assumptions: []

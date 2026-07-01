@@ -64,6 +64,7 @@ from .memory import (
 )
 from .pipeline import build_pipeline, format_pipeline
 from .plan_checks import check_plan
+from .platform_governance import DEFAULT_PLATFORM_CONTRACT_VERSION, migrate_project_to_contract, run_platform_regression
 from .prototype import write_prototype_preflight
 from .prototype import (
     generate_ps_pl_bd_tcl,
@@ -195,6 +196,26 @@ def build_parser() -> argparse.ArgumentParser:
 
     release_preflight_parser = subparsers.add_parser("release-preflight", help="Report what is missing before release promotion.")
     release_preflight_parser.add_argument("--project", required=True, help="Project path.")
+
+    platform_regression_parser = subparsers.add_parser(
+        "platform-regression",
+        help="Run platform PCR, impact-matrix, migration, regression, and Arbtr governance checks.",
+    )
+    platform_regression_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    platform_regression_parser.add_argument("--all", action="store_true", help="Require the full platform regression manifest contract.")
+    platform_regression_parser.add_argument("--check-only", action="store_true", help="Do not execute the regression manifest command.")
+    platform_regression_parser.add_argument(
+        "--changed-file",
+        action="append",
+        default=[],
+        help="Explicit changed env file for deterministic checks. Repeatable; defaults to git status -- env.",
+    )
+
+    migrate_parser = subparsers.add_parser("migrate-project", help="Migrate an existing project to the current platform contract.")
+    migrate_parser.add_argument("--workspace", default=".", help="Workspace root. Defaults to current directory.")
+    migrate_parser.add_argument("--project", required=True, help="Project path.")
+    migrate_parser.add_argument("--to-contract", default=DEFAULT_PLATFORM_CONTRACT_VERSION)
+    migrate_parser.add_argument("--dry-run", action="store_true")
 
     explore_start_parser = subparsers.add_parser("explore-start", help="Start a lightweight exploration sandbox session.")
     explore_start_parser.add_argument("--project", required=True, help="Project path.")
@@ -766,6 +787,38 @@ def main(argv: list[str] | None = None) -> int:
             for command in result.required_commands:
                 print(f"required_command: {command}")
             print("release preflight: PASS" if result.ok else "release preflight: BLOCKED")
+            return 0 if result.ok else 1
+        if args.command == "platform-regression":
+            result = run_platform_regression(
+                Path(args.workspace),
+                all_checks=args.all,
+                changed_files=args.changed_file or None,
+                run_tests=args.all and not args.check_only,
+            )
+            print(f"report: {result.report_path}")
+            print("components: " + (", ".join(result.actual_components) if result.actual_components else "none"))
+            print("stages: " + (", ".join(result.actual_stages) if result.actual_stages else "none"))
+            print("fixtures: " + (", ".join(result.required_fixtures) if result.required_fixtures else "none"))
+            for check in result.checks:
+                print(f"{check.status}: {check.name} - {check.detail}")
+            print("platform regression: PASS" if result.ok else "platform regression: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "migrate-project":
+            result = migrate_project_to_contract(
+                Path(args.workspace),
+                Path(args.project),
+                to_contract=args.to_contract,
+                dry_run=args.dry_run,
+            )
+            print(f"manifest: {result.manifest_path}")
+            print(f"report: {result.report_path}")
+            for path in result.updated:
+                print(f"updated: {path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            for error in result.errors:
+                print(f"error: {error}")
+            print("project migration: PASS" if result.ok else "project migration: FAIL")
             return 0 if result.ok else 1
         if args.command == "explore-start":
             result = start_exploration(Path(args.project), title=args.title, objective=args.objective)

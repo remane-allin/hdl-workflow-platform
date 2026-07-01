@@ -1,0 +1,57 @@
+schema_version: 1
+id: PROTO-SUP-TOOL-FPGA-001
+request_type: prototype_supplement
+project: Hi3593_v2
+approval_status: approved
+merge_status: merged
+owner_role: arbtr
+merged_at: "2026-06-26T22:05:00+08:00"
+user_request: "Vivado/Vitis executable/launcher and PATH reference the old project/toolchain configuration; FPGA configuration may reference the old project."
+requirement_ids:
+  - REQ-PROTO-001
+external_interfaces:
+  - "Navigator Zynq-7020 PS/PL AXI4-Lite control aperture at 0x43C00000."
+  - "PS UART0 on MIO 14..15 is the COM3 board-control console for PS software text evidence."
+  - "AXI UARTLite on UART3 pins may remain in the block design as a PL serial peripheral, but it is not the active Loop3 board-control console."
+  - "PL digital sampler/driver boundary for TX1IN, TX0IN, SLP, OUT1A/B, and OUT2A/B equivalent checks."
+database_queries:
+  - "Use global toolchains.yaml and HdlToolDefaults.ps1 launcher keys vivado_bat, xsct_bat, vitis_bat, and bootgen_bat."
+  - "Use old project FPGA configuration only as a path/config reference for PS7, AXI, UARTLite, XDC, Vitis, and JTAG flow shape."
+fallback_mode: ps_pl_software_emulated
+validation_modes:
+  ip_level:
+    required: true
+    status: planned
+  ps_pl_emulation:
+    required: true
+    status: planned
+  pin_level_external:
+    required: true
+    status: deferred
+    defer_reason: "External ARINC analog source/receiver and measurement equipment are not available in the workspace."
+claim_policy:
+  may_claim_fpga_bringup: true
+  may_claim_ps_pl_runtime_path: true
+  may_claim_external_pin_level_validation: false
+  may_claim_full_hardware_validation: false
+merge_actions:
+  - "Add DI-PROTO-AXI-001 to the active design baseline for the v2 PS/PL AXI adapter wrapper."
+  - "Add PI-FPGA-TOOLS-001 and PI-FPGA-WRAP-001 to the active prototype baseline."
+  - "Add PI-FPGA-PSUART-001 to the active prototype baseline and route automated board-control serial evidence through PS UART0/STDIN_BASEADDRESS."
+  - "Set board_tests/prototype_plan.yaml rtl_top_module to hi3593_v2_proto_top and keep claim limits false for external/full hardware validation."
+  - "Regenerate XDC, BD Tcl, and Vitis boot scaffolds after the prototype plan update."
+non_reuse_policy:
+  old_project_results_reused: false
+  allowed_reference_scope:
+    - old_project_toolchain_launcher_paths
+    - old_project_fpga_configuration_scripts
+  forbidden_reference_scope:
+    - old_project_rtl_functional_results
+    - old_project_tb_results
+    - old_project_uvm_results
+    - old_project_reports
+    - old_project_gates
+    - old_project_bitstreams
+    - old_project_xsa
+    - old_project_elf_or_boot_images
+pin_level_validation_status: deferred

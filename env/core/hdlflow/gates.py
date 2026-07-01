@@ -30,7 +30,15 @@ from .reports.constants import (
     StageReportDefinition,
 )
 from .reports.manifest import sha256_file
-from .requirements_frontend import DOCUMENT_ANALYSIS_REL, FRONTDOOR_REL, SPEC_INPUT_REL, check_requirements_frontend, required_frontend_paths
+from .requirements_frontend import (
+    CONTRACT_REL,
+    DOCUMENT_ANALYSIS_REL,
+    FRONTDOOR_GENERATED_RELS,
+    FRONTDOOR_REL,
+    SPEC_INPUT_REL,
+    check_requirements_frontend,
+    required_frontend_paths,
+)
 from .review import check_review_findings
 from .rtl_skill_audit import run_rtl_skill_audit
 from .simple_yaml import load_yaml
@@ -52,6 +60,11 @@ LOOP3_ALLOWED_PROJECT_SCRIPT_NAMES = {
     "Generate-VitisBoot.ps1",
     "Invoke-PrototypePreflight.ps1",
     "README.md",
+}
+
+PROJECT_LOCAL_LOOP_SCRIPT_DIRS = {
+    "work/loop1_rtl_tb/scripts": {".gitkeep", "README.md"},
+    "work/loop2_uvm/scripts": {".gitkeep", "README.md"},
 }
 
 MINERU_HIGH_PRECISION_CHANNEL = "mineru-open-api high_precision_api"
@@ -121,6 +134,7 @@ GENERATED_REQUIREMENT_FILES = {
     "acceptance_criteria.yaml",
     "forbidden_designs.yaml",
     "requirements.json",
+    "requirements.md",
 }
 
 DOC_PARSE_ALLOWED_MARKDOWN_RELS = {
@@ -205,7 +219,9 @@ def run_gate(project_path: Path, node: str, level: str = "develop", change_id: s
     checks: list[GateCheck] = []
     checks.extend(_check_project_scaffold(project))
     checks.append(_check_project_root_tool_logs(project))
+    checks.extend(_check_no_project_local_loop_scripts(project))
     checks.extend(_check_change_control(project, change_id))
+    checks.extend(_check_frontdoor_execution_lock(project, normalized_node))
     if _requires_docparse_reentry(normalized_node):
         checks.extend(_check_requirements_reentered_docparse(project))
     if all(check.status == "PASS" for check in checks):
@@ -364,6 +380,109 @@ def _check_project_root_tool_logs(project: Path) -> GateCheck:
             ),
         )
     return GateCheck("project_root_tool_logs", "PASS", "no Vivado journal/log files in project root")
+
+
+def _check_no_project_local_loop_scripts(project: Path) -> list[GateCheck]:
+    hits: list[str] = []
+    for rel_dir, allowed_names in PROJECT_LOCAL_LOOP_SCRIPT_DIRS.items():
+        script_dir = project / rel_dir
+        if not script_dir.exists():
+            continue
+        hits.extend(
+            _rel(project, path)
+            for path in sorted(script_dir.rglob("*"))
+            if path.is_file() and path.name not in allowed_names
+        )
+    if hits:
+        return [
+            GateCheck(
+                "project_local_loop_scripts_absent",
+                "FAIL",
+                "project-local Loop1/Loop2 generator scripts are forbidden in formal flow; use hdlflow.cli platform entry points: "
+                + ", ".join(hits[:8]),
+            )
+        ]
+    return [
+        GateCheck(
+            "project_local_loop_scripts_absent",
+            "PASS",
+            "no project-local Loop1/Loop2 ad hoc generator scripts found",
+        )
+    ]
+
+
+def _check_frontdoor_execution_lock(project: Path, normalized_node: str) -> list[GateCheck]:
+    if normalized_node in {"input", "work/docparse"}:
+        return [
+            GateCheck(
+                "frontdoor_execution_lock",
+                "PASS",
+                "frontdoor intake may be edited only before DocParse exit",
+            )
+        ]
+
+    pending = _frontdoor_intake_files(project, "pending")
+    approved = _frontdoor_intake_files(project, "approved")
+    generated_text = "\n".join(_read(project / rel) for rel in FRONTDOOR_GENERATED_RELS)
+    unmerged = []
+    for path in approved:
+        token = _frontdoor_intake_token(path)
+        if token and token not in generated_text and not _frontdoor_has_merged_intake(project, token):
+            unmerged.append(_rel(project, path))
+
+    if pending or unmerged:
+        details: list[str] = []
+        if pending:
+            details.append("pending=" + ", ".join(_rel(project, path) for path in pending[:6]))
+        if unmerged:
+            details.append("approved_not_merged=" + ", ".join(unmerged[:6]))
+        return [
+            GateCheck(
+                "frontdoor_execution_lock",
+                "FAIL",
+                "downstream execution is locked until all frontdoor intake is approved/rejected and merged: "
+                + "; ".join(details),
+            )
+        ]
+    return [
+        GateCheck(
+            "frontdoor_execution_lock",
+            "PASS",
+            "no pending or unmerged approved frontdoor intake blocks downstream execution",
+        )
+    ]
+
+
+def _frontdoor_intake_files(project: Path, state: str) -> list[Path]:
+    root = project / FRONTDOOR_REL / "intake" / state
+    if not root.is_dir():
+        return []
+    ignored = {".gitkeep", "README.md"}
+    return sorted(path for path in root.iterdir() if path.is_file() and path.name not in ignored)
+
+
+def _frontdoor_intake_token(path: Path) -> str:
+    try:
+        data = load_yaml(path)
+    except Exception:
+        data = None
+    if isinstance(data, dict):
+        for key in ("id", "change_id", "requirement_id", "supplement_id"):
+            value = data.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return path.stem
+
+
+def _frontdoor_has_merged_intake(project: Path, token: str) -> bool:
+    for rel in (f"{FRONTDOOR_REL}/intake/merged", f"{FRONTDOOR_REL}/history/merged_intake"):
+        root = project / rel
+        if not root.is_dir():
+            continue
+        for path in root.iterdir():
+            if path.is_file() and token in path.name:
+                return True
+    return False
 
 
 def _check_change_control(project: Path, change_id: str | None) -> list[GateCheck]:
@@ -581,6 +700,7 @@ def _check_loop1(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_official_protocol_naming(project))
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_comment_headers(project))
+    checks.append(_check_rtl_semantic_signoff(project))
     checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     report_checks, report_payload = _check_stage_report_contract(project, LOOP1_REPORT)
     checks.extend(report_checks)
@@ -596,9 +716,10 @@ def _check_loop1(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_report_parser_clean("loop1_report_parser_clean", report_payload))
     checks.append(_check_report_transactions("loop1_transaction_contract", report_payload))
     checks.append(_loop1_deterministic_gate_check(project, report_payload))
+    checks.append(_loop1_task_requirement_evidence_check(project, report_payload))
     checks.append(_loop1_baseline_gate_check(report_payload))
     checks.append(_loop1_full_function_matrix_check(project, report_payload))
-    checks.append(_check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, level))
+    checks.append(_check_loop1_waveform_blocking_report(project, WAVEFORM_GATE_JSON_REL, level))
     checks.append(_check_bug_tracking(project, "work/loop1_rtl_tb/bug_tracking"))
     checks.append(_check_forbidden_formal_text(project))
     return checks
@@ -612,6 +733,7 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_comment_headers(project))
     checks.append(_check_rtl_skill_audit_freshness(project))
+    checks.append(_check_rtl_semantic_signoff(project))
     checks.extend(_check_docset(project, ["application_guide", "microarchitecture_specification", "verification_plan"]))
     checks.extend(_check_loop2_uvm_policy(project))
     report_checks, report_payload = _check_stage_report_contract(project, LOOP2_REPORT)
@@ -638,6 +760,8 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
     checks.append(_loop2_coverage_triage_check(project, _read(project / LOOP2_REPORT.report_md)))
     checks.append(_loop2_bound_assertion_check(project))
     checks.append(_loop2_functional_coverage_sampling_check(project))
+    checks.append(_loop2_independent_oracle_check(project))
+    checks.append(_loop2_code_coverage_threshold_check(project, level))
     checks.append(_loop2_stimulus_breadth_check(project, level))
     checks.append(_loop2_configured_scenario_evidence_check(project, _report_payload_evidence_text(report_payload)))
     checks.append(_check_bug_tracking(project, "work/loop2_uvm/bug_tracking"))
@@ -668,6 +792,7 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
     checks.append(_check_official_protocol_naming(project))
     checks.append(_check_rtl_task_usage(project))
     checks.append(_check_rtl_skill_audit_freshness(project))
+    checks.append(_check_rtl_semantic_signoff(project))
     checks.append(_check_no_project_local_loop3_scripts(project))
     checks.extend(_path_checks(
         project,
@@ -702,6 +827,7 @@ def _check_loop3(project: Path, level: str) -> list[GateCheck]:
     checks.append(_contains_any("loop3_database_preflight_pass", preflight, _evidence_list(evidence, "required_markers", "database_preflight_pass_any", ["result: PASS"])))
     checks.append(_contains_any("loop3_prototype_plan_pass", plan, _evidence_list(evidence, "required_markers", "prototype_plan_pass_any", ["result: PASS"])))
     checks.append(_loop3_external_stimulus_boundary_check(project, plan))
+    checks.append(_loop3_validation_boundary_claim_check(project))
     checks.extend(_loop3_timing_checks(timing))
     checks.append(_loop3_serial_echo_check(serial_validation, serial_text, serial_validation_path, serial_path))
     checks.append(_loop3_configured_serial_stress_check(project, serial_text))
@@ -953,11 +1079,15 @@ def _run_report_has_noncompat_opcode_evidence(run_report: str, opcode: str) -> b
     return False
 
 
-def _check_loop1_waveform_advisory_report(project: Path, report_rel: str, level: str) -> GateCheck:
+def _check_loop1_waveform_blocking_report(project: Path, report_rel: str, level: str) -> GateCheck:
     errors = check_loop1_waveform_gate_report(project, report_rel)
     if errors:
-        return GateCheck("loop1_waveform_advisory", "PASS", "advisory waveform issue: " + "; ".join(errors[:8]))
-    return GateCheck("loop1_waveform_advisory", "PASS", f"{report_rel} generated by deterministic waveform rule engine")
+        return GateCheck("loop1_waveform_blocking", "FAIL", "blocking waveform issue: " + "; ".join(errors[:8]))
+    return GateCheck("loop1_waveform_blocking", "PASS", f"{report_rel} generated by deterministic waveform rule engine")
+
+
+def _check_loop1_waveform_advisory_report(project: Path, report_rel: str, level: str) -> GateCheck:
+    return _check_loop1_waveform_blocking_report(project, report_rel, level)
 
 
 def _loop2_configured_scenario_evidence_check(project: Path, text: str) -> GateCheck:
@@ -1124,6 +1254,38 @@ def _loop3_external_stimulus_boundary_check(project: Path, plan: str) -> GateChe
     return GateCheck("loop3_external_stimulus_boundary", "PASS", "PS_PL bus/UART stimulus is outside synthesizable PL RTL")
 
 
+def _loop3_validation_boundary_claim_check(project: Path) -> GateCheck:
+    plan_paths = [
+        project / "work" / "loop3_fpga_proto" / "board_tests" / "prototype_plan.yaml",
+        project / "work" / "docparse" / "prototype" / "prototype_plan.yaml",
+    ]
+    payloads = [_yaml_mapping(path) for path in plan_paths if path.is_file()]
+    if not payloads:
+        return GateCheck("loop3_validation_boundary_claim", "FAIL", "missing Loop3 prototype plan")
+
+    text = "\n".join(_read(path) for path in plan_paths)
+    emulated_or_deferred = bool(re.search(r"\bps_pl\b|software[-_ ]emulat|fallback|deferred|external.*not.*available", text, flags=re.IGNORECASE))
+    claim_policy = _first_mapping_value(payloads, "claim_policy")
+    validation_modes = _first_mapping_value(payloads, "validation_modes")
+    external_boundary = _first_mapping_value(payloads, "external_boundary")
+
+    issues: list[str] = []
+    if emulated_or_deferred:
+        if not isinstance(external_boundary, dict):
+            issues.append("external_boundary plan is required for PS/PL emulation or deferred hardware boundary")
+        if not isinstance(validation_modes, dict):
+            issues.append("validation_modes must classify ip_level, ps_pl_emulation, and pin_level_external evidence")
+        if not isinstance(claim_policy, dict):
+            issues.append("claim_policy is required to prevent overclaiming Loop3 evidence")
+        else:
+            for key in ("may_claim_external_pin_level_validation", "may_claim_full_hardware_validation"):
+                if claim_policy.get(key) is True:
+                    issues.append(f"claim_policy.{key} must be false while external pin-level validation is deferred or emulated")
+    if issues:
+        return GateCheck("loop3_validation_boundary_claim", "FAIL", "; ".join(issues[:8]))
+    return GateCheck("loop3_validation_boundary_claim", "PASS", "Loop3 validation boundary and claim policy are explicit")
+
+
 def _strip_verilog_comments(text: str) -> str:
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
     return re.sub(r"//.*", "", text)
@@ -1206,6 +1368,8 @@ def _check_final(project: Path, level: str) -> list[GateCheck]:
     if level == "release":
         checks.append(GateCheck("final_level", "PASS", "release final gate requested"))
     checks.append(_check_rtl_task_usage(project))
+    checks.append(_check_rtl_semantic_signoff(project))
+    checks.append(_check_final_claim_gate(project, level))
     checks.append(_check_forbidden_formal_text(project))
     return checks
 
@@ -1891,6 +2055,79 @@ def _check_rtl_skill_audit_freshness(project: Path) -> GateCheck:
     return GateCheck("rtl_skill_per_file_audit", "FAIL", suffix)
 
 
+def _check_rtl_semantic_signoff(project: Path) -> GateCheck:
+    rtl_root = project / "output" / "rtl"
+    if not rtl_root.is_dir():
+        return GateCheck("rtl_semantic_stub_absent", "PASS", "output/rtl is absent; no RTL semantic scan required yet")
+
+    issue_patterns = [
+        ("event_level_injection", r"\bevent[-_ ]level\b.*\b(inject|injection|stimulus)\b"),
+        ("prototype_word_generation", r"\baccepted prototype words?\b|\bprototype words?\b"),
+        ("stub_or_placeholder", r"\b(prototype_stub|placeholder implementation|stubbed implementation)\b"),
+        ("accept_all_policy", r"\baccept(?:ing)? all\b|\baccept-all\b"),
+        ("always_hit_policy", r"\balways[-_ ]hit\b"),
+        ("forced_true_or", r"\|\s*1'b1\b"),
+        ("forced_priority_match", r"\bpriority_match_hit\s*<=\s*1'b1\b"),
+        ("unmodeled_read_clear", r"\bread-to-clear\b.*\bintentionally not modeled\b"),
+    ]
+    hits: list[str] = []
+    for path in sorted(rtl_root.glob("*.v")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            for label, pattern in issue_patterns:
+                if re.search(pattern, line, flags=re.IGNORECASE):
+                    hits.append(f"{_rel(project, path)}:{line_no} {label}")
+                    break
+    if hits:
+        return GateCheck(
+            "rtl_semantic_stub_absent",
+            "FAIL",
+            "RTL contains prototype/stub semantics that require redesign or explicit claim downgrade: " + "; ".join(hits[:10]),
+        )
+    return GateCheck("rtl_semantic_stub_absent", "PASS", "no event-level/prototype/accept-all/always-hit RTL semantics found")
+
+
+def _loop1_task_requirement_evidence_check(project: Path, report_payload: dict[str, Any]) -> GateCheck:
+    policy = _node_config(project, "work/loop1_rtl_tb").get("directed_test_policy", {})
+    required = True
+    if isinstance(policy, dict):
+        required = _policy_bool(policy, "require_task_bound_structured_log", True)
+    if not required:
+        return GateCheck("loop1_task_requirement_evidence", "PASS", "task-bound structured evidence not required by policy")
+
+    evidence_text = "\n".join(
+        [
+            _read(project / LOOP1_REPORT.log_rel),
+            _read(project / "work" / "loop1_rtl_tb" / "current" / "log" / "loop1_task_results.jsonl"),
+            _read(project / "work" / "loop1_rtl_tb" / "current" / "log" / "loop1_check_results.jsonl"),
+            _report_payload_evidence_text(report_payload),
+        ]
+    )
+    task_markers = [
+        r"\bHDLFLOW\|TASK_BEGIN\b.*\btask_id=",
+        r'"event"\s*:\s*"task_begin"',
+        r"\bTask:\s*TASK_",
+    ]
+    requirement_markers = [
+        r"\brequirement_id=",
+        r"\bRequirement:\s*REQ[-_]",
+        r'"requirement_id"\s*:',
+        r'"requirement_ids"\s*:',
+    ]
+    check_markers = [
+        r"\bHDLFLOW\|CHECK\b",
+        r'"event"\s*:\s*"check"',
+        r"\bCheckID\s*:",
+    ]
+    if not any(re.search(pattern, evidence_text, flags=re.IGNORECASE) for pattern in task_markers):
+        return GateCheck("loop1_task_requirement_evidence", "FAIL", "Directed TB must emit task_begin/task_end evidence per requirement task")
+    if not any(re.search(pattern, evidence_text, flags=re.IGNORECASE) for pattern in requirement_markers):
+        return GateCheck("loop1_task_requirement_evidence", "FAIL", "Directed TB task evidence must include requirement_id/Requirement binding")
+    if not any(re.search(pattern, evidence_text, flags=re.IGNORECASE) for pattern in check_markers):
+        return GateCheck("loop1_task_requirement_evidence", "FAIL", "Directed TB task evidence must include structured checks")
+    return GateCheck("loop1_task_requirement_evidence", "PASS", "Directed TB emits task, requirement, and check evidence")
+
+
 def _contains(name: str, text: str, markers: list[str]) -> GateCheck:
     missing = [marker for marker in markers if marker not in text]
     if missing:
@@ -2108,6 +2345,78 @@ def _loop2_functional_coverage_sampling_check(project: Path) -> GateCheck:
     if re.search(r"\bwrite\s*\(|uvm_subscriber|analysis_export|analysis_imp", coverage_text):
         return GateCheck("loop2_functional_coverage_observed", "PASS", "coverage collector appears connected to observed analysis traffic")
     return GateCheck("loop2_functional_coverage_observed", "FAIL", "no monitor/scoreboard-sampled functional coverage path detected")
+
+
+def _loop2_independent_oracle_check(project: Path) -> GateCheck:
+    policy = _loop2_policy(project)
+    if not _policy_bool(policy, "require_spec_driven_scoreboard", True):
+        return GateCheck("loop2_independent_oracle", "PASS", "spec-driven scoreboard not required by policy")
+
+    uvm_root = project / "output" / "uvm"
+    if not uvm_root.is_dir():
+        return GateCheck("loop2_independent_oracle", "FAIL", "output/uvm is missing")
+
+    driver_text = "\n".join(_read(path) for path in sorted(uvm_root.rglob("*_driver.sv")))
+    monitor_files = sorted(uvm_root.rglob("*_monitor.sv"))
+    monitor_text = "\n".join(_read(path) for path in monitor_files)
+    scoreboard_text = "\n".join(_read(path) for path in sorted((uvm_root / "env").glob("*scoreboard*.sv")))
+
+    issues: list[str] = []
+    if not monitor_files:
+        issues.append("no UVM monitor files found")
+    elif not re.search(r"\brun_phase\s*\(", monitor_text):
+        issues.append("monitor has no run_phase transaction reconstruction")
+    if monitor_files and not re.search(r"\b(?:ap|analysis_port|item_collected_port)\s*\.\s*write\s*\(", monitor_text):
+        issues.append("monitor does not publish observed transactions")
+
+    driver_pass_injection = bool(re.search(r"\bexecute_item\s*\([^;\n]*\breq\.pass\b", driver_text, flags=re.DOTALL))
+    scoreboard_pass_flag = bool(re.search(r"\bt\.pass\b|\breq\.pass\b", scoreboard_text))
+    if driver_pass_injection and scoreboard_pass_flag:
+        issues.append("driver pass flag is consumed by scoreboard instead of independent observed-vs-expected comparison")
+
+    if not re.search(r"\b(expected|exp_|reference|ref_model|predict)\b", scoreboard_text, flags=re.IGNORECASE):
+        issues.append("scoreboard lacks expected/reference-model evidence")
+    if not re.search(r"\b(actual|observed|obs_|monitor)\b", scoreboard_text, flags=re.IGNORECASE):
+        issues.append("scoreboard lacks observed/monitor evidence")
+    if not re.search(r"(?:!=|==|compare\s*\(|mismatch|uvm_error)", scoreboard_text, flags=re.IGNORECASE):
+        issues.append("scoreboard lacks explicit comparison or mismatch reporting")
+
+    if issues:
+        return GateCheck("loop2_independent_oracle", "FAIL", "; ".join(issues[:8]))
+    return GateCheck("loop2_independent_oracle", "PASS", "monitor publishes observed transactions and scoreboard compares against a spec/reference model")
+
+
+def _loop2_code_coverage_threshold_check(project: Path, level: str) -> GateCheck:
+    threshold = _threshold(project, level, "code")
+    if threshold is None:
+        return GateCheck("loop2_code_coverage", "PASS", "code coverage has no threshold for this gate level")
+
+    candidates = [
+        project / "work" / "loop2_uvm" / "current" / "log" / "coverage_raw.txt",
+        project / "output" / "reports" / "loop2" / "coverage_raw.txt",
+    ]
+    text = ""
+    source = ""
+    for path in candidates:
+        text = _read(path)
+        if text:
+            source = _rel(project, path)
+            break
+    if not text:
+        return GateCheck("loop2_code_coverage", "FAIL", "missing raw code coverage report")
+
+    patterns = [
+        r"Total Coverage By File \(code coverage only, filtered view\):\s*([0-9]+(?:\.[0-9]+)?)%",
+        r"\bcode[_ ]coverage\b\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            value = float(match.group(1))
+            if value < threshold:
+                return GateCheck("loop2_code_coverage", "FAIL", f"{value:.2f}% below threshold {threshold:.2f}% from {source}")
+            return GateCheck("loop2_code_coverage", "PASS", f"{value:.2f}% >= {threshold:.2f}% from {source}")
+    return GateCheck("loop2_code_coverage", "FAIL", "code coverage marker not found in raw coverage report")
 
 
 def _loop2_stimulus_breadth_check(project: Path, level: str) -> GateCheck:
@@ -3116,6 +3425,18 @@ def _sync_output_manifest(
 ) -> Path:
     manifest_path = project / "output" / "manifest.yaml"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    generated_at = datetime.now().isoformat(timespec="seconds")
+    existing_text = ""
+    if manifest_path.exists():
+        existing_text = manifest_path.read_text(encoding="utf-8", errors="ignore")
+        match = re.search(r"(?m)^  generated_at: (.+)$", existing_text)
+        if match:
+            generated_at = match.group(1).strip()
+        if final_gate == "PENDING" and re.search(r"(?m)^  final_gate: PASS$", existing_text):
+            final_gate = "PASS"
+            final_report_match = re.search(r"(?m)^  final_report: (.+)$", existing_text)
+            if final_report_match:
+                final_report = project / final_report_match.group(1).strip()
     gate_level = level if level == "release" else None
     loop_nodes = {
         "loop1": "work/loop1_rtl_tb",
@@ -3133,7 +3454,7 @@ def _sync_output_manifest(
         f"project: {project.name}",
         "output:",
         "  version: 1",
-        f"  generated_at: {datetime.now().isoformat(timespec='seconds')}",
+        f"  generated_at: {generated_at}",
         "  signoff_owner: Arbtr Agent",
         "  source_origin: requirements-frontdoor-gated flow",
         "deliverables:",
@@ -3276,6 +3597,75 @@ def _read(path: Path) -> str:
     if not path.exists():
         return ""
     return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def _check_final_claim_gate(project: Path, level: str) -> GateCheck:
+    policy_path = project / "work" / "gates" / "claim_policy.yaml"
+    policy = _yaml_mapping(policy_path)
+    if not policy:
+        return GateCheck("final_claim_gate", "FAIL", "missing machine-readable claim policy: work/gates/claim_policy.yaml")
+    if policy.get("schema_version") != 1:
+        return GateCheck("final_claim_gate", "FAIL", "work/gates/claim_policy.yaml schema_version must be 1")
+
+    decision = str(policy.get("arbtr_decision", "")).upper()
+    valid = {"ACCEPT", "ACCEPT_WITH_WAIVER", "REWORK_REQUIRED", "REJECT", "CLAIM_DOWNGRADE_REQUIRED"}
+    if decision not in valid:
+        return GateCheck("final_claim_gate", "FAIL", "arbtr_decision must be one of " + ", ".join(sorted(valid)))
+    if decision in {"REWORK_REQUIRED", "REJECT", "CLAIM_DOWNGRADE_REQUIRED"}:
+        return GateCheck("final_claim_gate", "FAIL", f"Arbtr decision blocks final signoff: {decision}")
+
+    claims = policy.get("final_claims")
+    if not isinstance(claims, dict):
+        return GateCheck("final_claim_gate", "FAIL", "final_claims must be a mapping")
+    if decision == "ACCEPT_WITH_WAIVER" and not _non_empty(policy.get("waivers")):
+        return GateCheck("final_claim_gate", "FAIL", "ACCEPT_WITH_WAIVER requires explicit waivers")
+
+    if _loop3_external_boundary_deferred(project):
+        forbidden_true = [
+            key
+            for key in ("may_claim_external_pin_level_validation", "may_claim_full_hardware_validation")
+            if claims.get(key) is True
+        ]
+        if forbidden_true:
+            return GateCheck(
+                "final_claim_gate",
+                "FAIL",
+                "final claims overstate deferred Loop3 external-boundary evidence: " + ", ".join(forbidden_true),
+            )
+    return GateCheck("final_claim_gate", "PASS", f"Arbtr decision {decision}; final claims are within available evidence")
+
+
+def _loop3_external_boundary_deferred(project: Path) -> bool:
+    text = "\n".join(
+        _read(path)
+        for path in [
+            project / "work" / "loop3_fpga_proto" / "board_tests" / "prototype_plan.yaml",
+            project / "work" / "docparse" / "prototype" / "prototype_plan.yaml",
+        ]
+    )
+    return bool(re.search(r"\bps_pl\b|software[-_ ]emulat|fallback|deferred|external.*not.*available", text, flags=re.IGNORECASE))
+
+
+def _yaml_mapping(path: Path) -> dict[str, Any]:
+    try:
+        data = load_yaml(path)
+    except Exception:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _first_mapping_value(payloads: list[dict[str, Any]], key: str) -> dict[str, Any] | None:
+    for payload in payloads:
+        value = payload.get(key)
+        if isinstance(value, dict):
+            return value
+    return None
+
+
+def _non_empty(value: Any) -> bool:
+    if isinstance(value, (list, dict, str)):
+        return bool(value)
+    return value is not None
 
 
 def _rel(project: Path, path: Path) -> str:

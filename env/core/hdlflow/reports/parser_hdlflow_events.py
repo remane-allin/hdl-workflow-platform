@@ -12,6 +12,8 @@ def parse_hdlflow_events(text: str) -> list[dict[str, str]]:
     events: list[dict[str, str]] = []
     for raw in text.splitlines():
         line = raw.strip()
+        if line.startswith("#"):
+            line = line[1:].strip()
         if not line.startswith("HDLFLOW|"):
             continue
         parts = line.split("|")

@@ -30,6 +30,18 @@ $script:HdlToolEnvNames = @{
     "iverilog.vvp_exe"       = @("HDLFLOW_IVERILOG_VVP_EXE", "HDL_IVERILOG_VVP_EXE", "IVERILOG_VVP_EXE")
 }
 
+function Get-HdlEnvironmentValue {
+    param([Parameter(Mandatory = $true)][string]$Name)
+
+    foreach ($Scope in @("Process", "User", "Machine")) {
+        $Value = [Environment]::GetEnvironmentVariable($Name, $Scope)
+        if ($Value) {
+            return $Value
+        }
+    }
+    return $null
+}
+
 function Resolve-HdlToolPath {
     param(
         [Parameter(Mandatory = $true)]
@@ -42,7 +54,7 @@ function Resolve-HdlToolPath {
 
     $key = "$Tool.$Launcher"
     foreach ($envName in ($script:HdlToolEnvNames[$key] + @())) {
-        $value = [Environment]::GetEnvironmentVariable($envName)
+        $value = Get-HdlEnvironmentValue -Name $envName
         if ($value -and (Test-Path -LiteralPath $value)) {
             return $value
         }
@@ -77,7 +89,7 @@ function Resolve-HdlToolSetting {
 
     $compound = "$Tool.$Key"
     foreach ($envName in ($script:HdlToolEnvNames[$compound] + @())) {
-        $value = [Environment]::GetEnvironmentVariable($envName)
+        $value = Get-HdlEnvironmentValue -Name $envName
         if ($value) {
             return $value
         }

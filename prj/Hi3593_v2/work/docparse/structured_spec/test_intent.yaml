@@ -1,0 +1,91 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T22:50:00+08:00"
+owner_role: spec
+functional_tests:
+  - id: T-SPI-PARTIAL
+    requirement_id: REQ-SPI-001
+    stimulus: "Assert CS, send fewer than 8 SCK rising edges, deassert CS, then verify no command side effect."
+    expected: "partial transfer discarded"
+  - id: T-OPCODE-FULL
+    requirement_id: REQ-INST-001
+    stimulus: "Exercise every defined HI-3593 opcode from Table 1, including no-op, register, FIFO, label memory, priority-label, mailbox, status, ACLK, reset, and transmit-enable commands."
+    expected: "each supported command returns the documented side effect or read data; no-op/reserved commands do not mutate state"
+  - id: T-MR-SHARED
+    requirement_id: REQ-RST-001
+    stimulus: "Pulse MR and execute opcode_04 after non-default register/FIFO/label/priority state."
+    expected: "same master reset state and no second top-level reset signal"
+  - id: T-SWRESET-44
+    requirement_id: REQ-RST-002
+    stimulus: "Write control registers, label memories, priority labels, and FIFOs, then execute opcode_44."
+    expected: "FIFO, priority-label match registers, and priority mailboxes clear while ordinary control and label memory remain unchanged"
+  - id: T-LABEL-MEMORY
+    requirement_id: REQ-LABEL-001
+    stimulus: "Write/read/set-all receiver label memories and inject accepted/rejected labels."
+    expected: "256-bit label maps read back and LABREC gates RX FIFO acceptance"
+  - id: T-PRIORITY-MAILBOX
+    requirement_id: REQ-MAILBOX-001
+    stimulus: "Program three priority labels per receiver, enable PLON, inject matching labels, and read mailbox opcodes."
+    expected: "mailbox valid pins/status bits assert and mailbox read data matches ARINC bytes 2..4"
+  - id: T-FLAG-INT
+    requirement_id: REQ-FLAGINT-001
+    stimulus: "Program flag/interrupt assignment modes and generate FIFO/mailbox events."
+    expected: "R1FLAG/R2FLAG/R1INT/R2INT follow selected source modes"
+  - id: T-TX-FULL
+    requirement_id: REQ-TX-FULL-001
+    stimulus: "Exercise TMODE, opcode_40, TFLIP, HIZ, TPARITY, ODDEVEN, RATE, SELFTEST, and ACLK division."
+    expected: "TX digital symbols, parity, null/HIZ behavior, and busy timing match configured mode"
+  - id: T-RX-FILTER
+    requirement_id: REQ-RX-FILTER-001
+    stimulus: "Inject RX words with SDI, label, priority, parity, and RFLIP variations."
+    expected: "accepted FIFO words, rejected words, priority slot, and parity error indications match the spec model"
+corner_cases:
+  - rx_location32_overwrite
+  - tx_fifo_full_ignore
+  - label_memory_descending_byte_order
+  - priority_mailbox_read_clears_valid
+  - selftest_null_driver
+  - parity_odd_even
+  - tflip_rflip_label_order
+  - h iz_null_output
+coverage_targets:
+  - "full opcode matrix: 00h 04h 08h 0Ch 10h 14h 18h 24h 28h 2Ch 34h 38h 40h 44h 48h 4Ch 80h 84h 90h 94h 98h 9Ch A0h A4h A8h ACh B0h B4h B8h BCh C0h C4h C8h CCh D0h D4h FFh"
+  - "scenario tests cover reset_mid_frame, FIFO pressure, selftest, label filtering, priority mailbox, flag/interrupt selection, and status polling"
+  - "PS+PL prototype exercises SPI register path, full digital opcode path, mailbox/status samples, and driver/receiver digital pins"
+scoreboard_rules:
+  - id: SB-SPI
+    text: "Register, label memory, priority mailbox, FIFO, and status expected state is updated from command opcode and data payload, independent from DUT readback."
+  - id: SB-ARINC
+    text: "ARINC expected model handles label bit order, SDI, parity, priority match, high/low rate class, self-test, and null/HIZ behavior."
+baseline_entry_checks:
+  - id: BE-RESET
+    text: "MR reset defaults are checked before functional tasks."
+full_function_matrix:
+  - requirement_id: REQ-INST-001
+    tests: [T-OPCODE-FULL]
+  - requirement_id: REQ-LABEL-001
+    tests: [T-LABEL-MEMORY]
+  - requirement_id: REQ-PLABEL-001
+    tests: [T-PRIORITY-MAILBOX]
+  - requirement_id: REQ-MAILBOX-001
+    tests: [T-PRIORITY-MAILBOX]
+  - requirement_id: REQ-FLAGINT-001
+    tests: [T-FLAG-INT]
+  - requirement_id: REQ-TX-FULL-001
+    tests: [T-TX-FULL]
+  - requirement_id: REQ-RX-FILTER-001
+    tests: [T-RX-FILTER]
+waveform_windows:
+  - id: reset_release
+    required_signals: [ACLK, MR, TEMPTY, TFULL]
+  - id: spi_opcode_activity
+    required_signals: [CS, SCK, SI, SO]
+  - id: arinc_tx_response
+    required_signals: [TX1IN, TX0IN, SLP]
+  - id: mailbox_status
+    required_signals: [R1FLAG, R2FLAG, R1INT, R2INT, MB1_1, MB1_2, MB1_3, MB2_1, MB2_2, MB2_3]
+waveform_observability:
+  - "Dump top-level DUT ports only."
+  - "Use HDLFLOW_WAVE_BEGIN/HDLFLOW_WAVE_END markers for each window."
+assumptions: []

@@ -1,0 +1,66 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arch
+stage: docparse
+target: design_intent
+links:
+  - requirement_id: REQ-SPI-001
+    design_intent: DI-SPI-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-SPI-002
+    design_intent: DI-SPI-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-RST-001
+    design_intent: DI-TOP-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-RST-002
+    design_intent: DI-REG-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-FIFO-001
+    design_intent: DI-FIFO-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-ARINC-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-RX-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-TX-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-STATUS-001
+    design_intent: DI-REG-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-LABEL-001
+    design_intent: DI-REG-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-PLABEL-001
+    design_intent: DI-REG-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-MAILBOX-001
+    design_intent: DI-MAILBOX-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-FLAGINT-001
+    design_intent: DI-REG-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-MB-PINS-001
+    design_intent: DI-MAILBOX-001
+    artifact: work/docparse/architecture/interface_contracts.yaml
+  - requirement_id: REQ-ACLK-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/timing_model.yaml
+  - requirement_id: REQ-TX-FULL-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-RX-FILTER-001
+    design_intent: DI-ARINC-001
+    artifact: work/docparse/architecture/module_plan.yaml
+  - requirement_id: REQ-PROTO-001
+    design_intent: DI-TOP-001
+    artifact: work/docparse/prototype/prototype_plan.yaml
+  - requirement_id: REQ-PROTO-001
+    design_intent: DI-PROTO-AXI-001
+    artifact: work/docparse/frontdoor/intake/merged/PROTO-SUP-TOOL-FPGA-001.yaml
+unmapped_requirements: []
+assumptions: []

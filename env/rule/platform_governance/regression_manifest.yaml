@@ -1,0 +1,29 @@
+regression_manifest:
+  schema_version: 1
+  pcr_id: PCR-20260625-001
+  command: python -m unittest discover -s env/test/tests
+  fixtures:
+    - name: full_contract_pass_project
+      status: pass
+      expectation: all gates can pass with complete structured evidence
+    - name: requirement_intake_refresh_project
+      status: pass
+      expectation: approved intake must merge into generated active baseline and trace
+    - name: vcd_required_signal_missing_project
+      status: pass
+      expectation: loop1_waveform_blocking fails when required top-port samples are absent
+    - name: tb_pass_vcd_fail_project
+      status: pass
+      expectation: TB PASS cannot override waveform gate failure
+    - name: plan_drift_block_project
+      status: pass
+      expectation: derived plans cannot add design intent outside active baseline
+    - name: loop3_emulated_boundary_claim_project
+      status: pass
+      expectation: PS/PL software-emulated external boundary cannot claim pin-level hardware validation
+    - name: claim_overreach_block_project
+      status: pass
+      expectation: final_claim_gate blocks claims beyond evidence
+    - name: legacy_frontdoor_contract_migration_project
+      status: pass
+      expectation: migrate-project creates contract/baseline/intake/generated/history and quarantines open_questions.md

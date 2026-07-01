@@ -7,6 +7,23 @@ prototype_mode: ""
 board: ""
 resource_estimate: []
 ps_pl_boundary: []
+external_boundary:
+  required_external_interfaces: []
+validation_modes:
+  ip_level:
+    required: true
+    status: pending
+  ps_pl_emulation:
+    required: false
+    status: pending
+  pin_level_external:
+    required: false
+    status: pending
+claim_policy:
+  may_claim_fpga_bringup: false
+  may_claim_ps_pl_runtime_path: false
+  may_claim_external_pin_level_validation: false
+  may_claim_full_hardware_validation: false
 risk_items: []
 agent_consumers:
   - Sim Agent

@@ -1,0 +1,36 @@
+schema_version: 1
+id: BASELINE-SEED-001
+request_type: baseline_seed
+project: Hi3593_v2
+approval_status: approved
+merge_status: merged
+owner_role: arbtr
+merged_at: "2026-06-26T20:45:00+08:00"
+source_refs:
+  - input/spec/Holtic-HI-3593.pdf
+  - input/spec/hi-8450_v-rev-b.pdf
+  - input/spec/hi-8592_v-rev-j.pdf
+  - input/spec/chat_request_mr_shared_reset_pin.yaml
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md
+  - work/docparse/parsed/mineru_extract/hi-8450_v-rev-b.md
+  - work/docparse/parsed/mineru_extract/hi-8592_v-rev-j.md
+  - work/docparse/parsed/mineru_extract/ARINC-429_protocol_spec.md
+rationale: "Initial active baseline is seeded from copied input documents and fresh MinerU precision extraction in the new project."
+baseline_scope:
+  - requirements
+  - design_intent
+  - verification_intent
+  - trace_matrix
+  - claim_policy
+non_reuse_policy:
+  old_project_results_reused: false
+  allowed_reference_scope: "old input documents only; legacy implementation, old reports, old UVM, old gates, and old parsed outputs are forbidden as evidence"
+trace_links:
+  - requirement_id: REQ-SPI-001
+    design_intent: work/docparse/architecture/module_plan.yaml
+    verification_intent: work/docparse/verification/verification_plan.yaml
+    prototype_intent: work/docparse/prototype/prototype_plan.yaml
+  - requirement_id: REQ-RST-001
+    design_intent: work/docparse/architecture/module_plan.yaml
+    verification_intent: work/docparse/verification/verification_plan.yaml
+    prototype_intent: work/docparse/prototype/prototype_plan.yaml

@@ -1,0 +1,744 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: arch
+rtl_planning_policy_ref: work/docparse/architecture/rtl_planning_rules.yaml
+top_level:
+  name: hi3593_v2_top
+  type: top
+  source_file: hi3593_v2_top.v
+  wrapper_policy: hierarchy_only_top
+  allowed_responsibilities:
+    - instantiate_child_modules
+    - connect_interfaces
+    - expose_top_ports
+  forbidden_responsibilities:
+    - protocol_decode
+    - register_field_update
+    - datapath_mutation
+    - fifo_storage
+    - arbitration_decision
+    - monolithic_fsm
+module_partition_policy:
+  hierarchy_required: true
+  one_primary_module_per_file: true
+  top_down_partitioning: true
+  file_boundary_granularity: functional_domain
+  cohesive_responsibility_per_file: true
+  composite_modules_instantiate_children: true
+  allow_internal_subblocks_without_files: true
+  no_over_fragmentation: true
+  no_under_fragmentation: true
+  no_monolithic_fsm: true
+  no_free_floating_top_logic: true
+  protocol_module_names_follow_official_standard: true
+  explicit_ownership_required: true
+module_granularity_policy:
+  planning_order: top_down
+  file_boundary_rule: "Use one RTL file for a cohesive protocol, register, FIFO, datapath, status, or boundary block."
+  split_when:
+    - a child has independent clock/reset ownership
+    - a child has reusable storage/IP ownership
+    - a child is a separately verifiable protocol or datapath boundary
+    - keeping it inside the parent would create a broad monolithic FSM or hidden side effect
+  keep_inside_parent_when:
+    - "the logic is only a small decode, mux, counter, bit-order, parity, or pulse-generation subblock"
+    - the subblock has no independent interface contract
+    - the subblock is only meaningful inside one protocol engine
+  naming_rule: "Protocol-facing modules use official or industry names such as spi_slave_if, arinc429_tx, or arinc429_rx."
+module_item_contract:
+  required_fields:
+    - id
+    - name
+    - type
+    - status
+    - confidence
+    - known_unknowns
+    - source_file
+    - parent
+    - responsibility
+    - clock_domain
+    - reset_domain
+    - owns
+    - interfaces
+    - dataflow
+    - req_ids or design_feature_ids
+    - verification_refs
+    - forbidden_responsibilities
+  allowed_types:
+    - top
+    - composite
+    - leaf
+modules:
+  - id: MOD-TOP
+    name: hi3593_v2_top
+    type: top
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: hi3593_v2_top.v
+    parent: ""
+    children:
+      - reset_ctrl
+      - spi_slave_if
+      - spi_cmd_cdc
+      - control_status_regs
+      - rx_mailbox_status
+      - sync_fifo
+      - arinc429_tx
+      - arinc429_rx
+    responsibility: "Hierarchy-only top that exposes MR, SPI, status, and digital ARINC driver/receiver boundary ports."
+    boundary_rationale: "Top-level behavior is forbidden by gen_rtl rules; children own function."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms: []
+      fifos: []
+      memories: []
+      counters: []
+      arbiters: []
+      error_flags: []
+    interfaces:
+      inputs:
+        - MR
+        - ACLK
+        - CS
+        - SCK
+        - SI
+        - OUT1A
+        - OUT1B
+        - OUT2A
+        - OUT2B
+      outputs:
+        - SO
+        - TX1IN
+        - TX0IN
+        - SLP
+        - TEMPTY
+        - TFULL
+        - R1FLAG
+        - R2FLAG
+      internal:
+        - spi_cmd_req
+        - spi_cmd_cdc_bus
+        - reg_ctrl_bus
+        - mailbox_status_bus
+        - tx_fifo_bus
+        - rx_fifo_bus
+    dataflow:
+      consumes:
+        - top_ports
+      produces:
+        - child_interconnect
+      transforms: []
+    req_ids:
+      - REQ-RST-001
+      - REQ-PROTO-001
+    design_feature_ids:
+      - DI-TOP-001
+    verification_refs:
+      tests:
+        - T-MR-SHARED
+      assertions:
+        - A-TOP-NO-SECOND-RESET
+      coverage:
+        - COV-TOP-PORTS
+    forbidden_responsibilities:
+      - protocol_decode
+      - register_field_update
+      - datapath_mutation
+      - fifo_storage
+      - monolithic_fsm
+  - id: MOD-RESET
+    name: reset_ctrl
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: reset_ctrl.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Synchronize MR into ACLK, merge opcode_04 master reset request, and generate FIFO-only reset for opcode_44."
+    boundary_rationale: "Reset routing is isolated from register and FIFO ownership."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms: []
+      fifos: []
+      memories: []
+      counters:
+        - mr_sync_chain
+      arbiters: []
+      error_flags: []
+    interfaces:
+      inputs:
+        - MR
+        - opcode_04_pulse
+        - opcode_44_pulse
+      outputs:
+        - master_reset_pulse
+        - fifo_reset_pulse
+      internal: []
+    dataflow:
+      consumes:
+        - MR
+        - spi_reset_requests
+      produces:
+        - reset_pulses
+      transforms:
+        - reset_synchronization
+    req_ids:
+      - REQ-RST-001
+      - REQ-RST-002
+    design_feature_ids:
+      - DI-TOP-001
+    verification_refs:
+      tests:
+        - T-MR-SHARED
+        - T-SWRESET-44
+      assertions:
+        - A-RESET-EFFECTS
+      coverage:
+        - COV-RESET-MODES
+    forbidden_responsibilities:
+      - register_field_update
+      - fifo_storage
+  - id: MOD-SPI
+    name: spi_slave_if
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: spi_slave_if.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own SPI mode 0 byte framing, opcode capture, variable write/read transfer lengths, and SCK-domain command request hold."
+    boundary_rationale: "SPI protocol is independently verifiable and uses the SCK domain; ACLK CDC is isolated in spi_cmd_cdc."
+    clock_domain: SCK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms:
+        - spi_frame_fsm
+      fifos: []
+      memories: []
+      counters:
+        - spi_bit_count
+        - spi_byte_count
+      arbiters: []
+      error_flags:
+        - spi_partial_discard
+    interfaces:
+      inputs:
+        - CS
+        - SCK
+        - SI
+        - read_data_sck
+        - spi_cmd_ack
+      outputs:
+        - SO
+        - spi_cmd_req
+        - spi_opcode
+        - spi_wdata
+        - partial_discard
+      internal: []
+    dataflow:
+      consumes:
+        - spi_mode0_bits
+      produces:
+        - command_transactions
+      transforms:
+        - byte_framing
+        - opcode_decode
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+    design_feature_ids:
+      - DI-SPI-001
+    verification_refs:
+      tests:
+        - T-SPI-PARTIAL
+        - T-OPCODE-MATRIX
+      assertions:
+        - A-SPI-BYTE-BOUNDARY
+      coverage:
+        - COV-SPI-OPCODES
+    forbidden_responsibilities:
+      - fifo_storage
+      - arinc_bit_timing
+      - aclk_command_cdc
+  - id: MOD-SPI-CDC
+    name: spi_cmd_cdc
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: spi_cmd_cdc.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own bundled request/acknowledge CDC for SPI command transactions and ACLK readback response transfer."
+    boundary_rationale: "CDC has independent clock ownership between SCK and ACLK and must stay outside SPI framing and register storage."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms:
+        - spi_cdc_response_fsm
+      fifos: []
+      memories: []
+      counters: []
+      arbiters: []
+      error_flags: []
+    interfaces:
+      inputs:
+        - sck_cmd_req
+        - sck_opcode
+        - sck_wdata
+        - read_data_aclk
+      outputs:
+        - sck_cmd_ack
+        - read_data_sck
+        - aclk_cmd_valid
+        - aclk_opcode
+        - aclk_wdata
+      internal:
+        - req_sync
+        - ack_sync
+    dataflow:
+      consumes:
+        - sck_domain_command_transactions
+        - aclk_domain_readback_data
+      produces:
+        - aclk_domain_command_pulse
+        - sck_domain_readback_data
+      transforms:
+        - toggle_handshake_synchronization
+    req_ids:
+      - REQ-SPI-001
+      - REQ-SPI-002
+    design_feature_ids:
+      - DI-SPI-001
+    verification_refs:
+      tests:
+        - T-SPI-PARTIAL
+        - T-OPCODE-MATRIX
+      assertions:
+        - A-SPI-BYTE-BOUNDARY
+      coverage:
+        - COV-SPI-OPCODES
+    forbidden_responsibilities:
+      - spi_bit_shift
+      - register_field_update
+      - fifo_storage
+  - id: MOD-REGS
+    name: control_status_regs
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: control_status_regs.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own control/status registers, label memories, priority-label registers, command side effects, FIFO commands, mailbox clear pulses, and readback muxing."
+    boundary_rationale: "Register state is separated from SPI bit timing, CDC, FIFO storage, and RX mailbox storage."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers:
+        - tx_control
+        - rx1_control
+        - rx2_control
+        - flag_interrupt_assignment
+        - aclk_division
+      register_fields:
+        - TMODE
+        - SELFTEST
+        - TPARITY
+        - RATE
+        - LABREC
+        - PLON
+      fsms:
+        - register_command_fsm
+      fifos: []
+      memories:
+        - rx1_label_memory
+        - rx2_label_memory
+        - priority_label_registers
+      counters: []
+      arbiters:
+        - read_data_mux
+      error_flags: []
+    interfaces:
+      inputs:
+        - spi_cmd_valid
+        - spi_opcode
+        - spi_wdata
+        - fifo_status
+        - rx_status
+        - rx_mailbox_data
+      outputs:
+        - register_controls
+        - fifo_commands
+        - mailbox_clear_pulses
+        - read_data
+      internal: []
+    dataflow:
+      consumes:
+        - command_transactions
+        - fifo_status
+      produces:
+        - control_registers
+        - readback_data
+        - mailbox_clear_pulses
+      transforms:
+        - opcode_side_effects
+    req_ids:
+      - REQ-SPI-002
+      - REQ-RST-001
+      - REQ-RST-002
+      - REQ-STATUS-001
+    design_feature_ids:
+      - DI-REG-001
+    verification_refs:
+      tests:
+        - T-OPCODE-MATRIX
+        - T-SWRESET-44
+      assertions:
+        - A-REG-RESET
+      coverage:
+        - COV-REG-ACCESS
+    forbidden_responsibilities:
+      - spi_bit_shift
+      - spi_command_cdc
+      - fifo_storage
+      - mailbox_storage
+      - arinc_bit_timing
+  - id: MOD-MAILBOX
+    name: rx_mailbox_status
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: rx_mailbox_status.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own RX priority mailbox payloads, MB valid pins, receiver status bytes, and R1/R2 flag-interrupt output selection."
+    boundary_rationale: "Mailbox and status pin state changes on accepted RX words and register read-clear pulses, independent of register decode storage."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers:
+        - rx1_mailbox1
+        - rx1_mailbox2
+        - rx1_mailbox3
+        - rx2_mailbox1
+        - rx2_mailbox2
+        - rx2_mailbox3
+        - MB1_1
+        - MB1_2
+        - MB1_3
+        - MB2_1
+        - MB2_2
+        - MB2_3
+        - R1FLAG
+        - R2FLAG
+        - R1INT
+        - R2INT
+      register_fields: []
+      fsms: []
+      fifos: []
+      memories: []
+      counters: []
+      arbiters:
+        - flag_interrupt_assignment_mux
+      error_flags:
+        - parity_error_status
+        - label_reject_status
+    interfaces:
+      inputs:
+        - rx_word_valid
+        - rx_word_data
+        - rx_priority_match
+        - rx_priority_slot
+        - rx_fifo_status
+        - mailbox_clear_pulses
+        - flag_interrupt_assignment
+      outputs:
+        - rx_status
+        - rx_mailbox_data
+        - MB_valid_pins
+        - R1FLAG
+        - R2FLAG
+        - R1INT
+        - R2INT
+      internal: []
+    dataflow:
+      consumes:
+        - accepted_rx_words
+        - fifo_status
+        - read_clear_pulses
+      produces:
+        - priority_mailbox_state
+        - receiver_status_bytes
+        - flag_interrupt_outputs
+      transforms:
+        - priority_slot_capture
+        - read_clear_status_update
+    req_ids:
+      - REQ-MAILBOX-001
+      - REQ-MB-PINS-001
+      - REQ-FLAGINT-001
+      - REQ-STATUS-001
+    design_feature_ids:
+      - DI-REG-001
+    verification_refs:
+      tests:
+        - rx1_priority_mailbox_slot1
+        - opcode_a4_read_rx1_mailbox_1
+      assertions:
+        - A-REG-RESET
+      coverage:
+        - COV-REG-ACCESS
+    forbidden_responsibilities:
+      - spi_opcode_decode
+      - fifo_storage
+      - arinc_bit_timing
+  - id: MOD-FIFO
+    name: sync_fifo
+    type: leaf
+    status: ready
+    confidence: high
+    known_unknowns: []
+    open_questions: []
+    source_file: sync_fifo.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Reusable 32-depth by 32-bit FIFO with selectable RX overwrite-on-full or TX ignore-on-full policy."
+    boundary_rationale: "FIFO storage is a reusable storage primitive with independent status outputs."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms: []
+      fifos:
+        - tx_fifo
+        - rx1_fifo
+        - rx2_fifo
+      memories:
+        - fifo_mem
+      counters:
+        - wr_ptr
+        - rd_ptr
+        - count
+      arbiters: []
+      error_flags:
+        - overflow_seen
+    interfaces:
+      inputs:
+        - fifo_wr
+        - fifo_rd
+        - fifo_wdata
+      outputs:
+        - fifo_rdata
+        - fifo_empty
+        - fifo_half
+        - fifo_full
+      internal: []
+    dataflow:
+      consumes:
+        - tx_word_writes
+        - rx_accepted_words
+      produces:
+        - fifo_read_words
+        - fifo_status
+      transforms:
+        - depth32_storage
+    req_ids:
+      - REQ-FIFO-001
+    design_feature_ids:
+      - DI-FIFO-001
+    verification_refs:
+      tests:
+        - rx_location32_overwrite
+        - tx_fifo_full_ignore
+      assertions:
+        - A-FIFO-BOUNDS
+      coverage:
+        - COV-FIFO-LEVELS
+    forbidden_responsibilities:
+      - spi_opcode_decode
+      - register_field_update
+      - arinc_bit_timing
+  - id: MOD-TX
+    name: arinc429_tx
+    type: leaf
+    status: ready
+    confidence: medium
+    known_unknowns:
+      - "External analog slew and voltage are board-level only."
+    open_questions: []
+    source_file: arinc429_tx.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own TX FIFO pop scheduling, optional parity generation, ARINC bit-cell sequencing, and HI-8592 digital driver controls TX1IN/TX0IN/SLP."
+    boundary_rationale: "ARINC TX datapath is separate from register storage and FIFO storage."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms:
+        - arinc_tx_fsm
+      fifos: []
+      memories: []
+      counters:
+        - tx_bit_count
+        - tx_cell_count
+        - tx_gap_count
+      arbiters: []
+      error_flags: []
+    interfaces:
+      inputs:
+        - tx_fifo_rdata
+        - tx_control
+        - tx_start
+      outputs:
+        - tx_fifo_rd
+        - TX1IN
+        - TX0IN
+        - SLP
+      internal: []
+    dataflow:
+      consumes:
+        - tx_fifo_words
+      produces:
+        - driver_logic_states
+      transforms:
+        - parity_insert
+        - label_bit_order
+        - bit_cell_timing
+    req_ids:
+      - REQ-TX-001
+      - REQ-ARINC-001
+    design_feature_ids:
+      - DI-ARINC-001
+    verification_refs:
+      tests:
+        - selftest_null_driver
+        - parity_odd_even
+      assertions:
+        - A-TX-NULL-GAP
+      coverage:
+        - COV-TX-RATE-PARITY
+    forbidden_responsibilities:
+      - register_field_update
+      - fifo_storage
+  - id: MOD-RX
+    name: arinc429_rx
+    type: leaf
+    status: ready
+    confidence: medium
+    known_unknowns:
+      - "External analog threshold is supplied by HI-8450-class receiver logic."
+    open_questions: []
+    source_file: arinc429_rx.v
+    parent: hi3593_v2_top
+    children: []
+    responsibility: "Own decoded OUTA/OUTB sampling, ARINC word assembly, parity/SDI/label filtering, and accepted RX word handoff."
+    boundary_rationale: "RX datapath is separately instanced for receiver 1 and receiver 2."
+    clock_domain: ACLK
+    reset_domain: MR
+    owns:
+      registers: []
+      register_fields: []
+      fsms:
+        - arinc_rx_fsm
+      fifos: []
+      memories: []
+      counters:
+        - rx_bit_count
+        - rx_gap_count
+      arbiters: []
+      error_flags:
+        - parity_error
+        - label_reject
+    interfaces:
+      inputs:
+        - OUTA
+        - OUTB
+        - rx_control
+        - label_memory
+      outputs:
+        - rx_word_valid
+        - rx_word_data
+        - priority_match
+      internal: []
+    dataflow:
+      consumes:
+        - receiver_logic_states
+      produces:
+        - accepted_rx_words
+      transforms:
+        - bit_order_restore
+        - parity_check
+        - label_filter
+    req_ids:
+      - REQ-RX-001
+      - REQ-ARINC-001
+    design_feature_ids:
+      - DI-ARINC-001
+    verification_refs:
+      tests:
+        - label_filtering
+        - parity_odd_even
+      assertions:
+        - A-RX-FILTER
+      coverage:
+        - COV-RX-FILTERS
+    forbidden_responsibilities:
+      - register_field_update
+      - fifo_storage
+clock_reset:
+  - clock: ACLK
+    reset: MR
+    policy: "MR is the only top-level reset; opcode_04 is internal master reset; opcode_44 is FIFO-only clear."
+throughput_plan:
+  - id: TP-SPI
+    text: "SPI accepts one 8-bit command then command-defined data bytes while CS remains active."
+  - id: TP-ARINC
+    text: "ARINC TX uses selected high/low bit clocks and word gap clocks from timing_rules."
+composition:
+  - "Top instantiates one reset controller, one SPI slave, one SPI CDC bridge, one register block, one RX mailbox/status block, one TX FIFO, two RX FIFOs, one TX engine, and two RX engines."
+implementation_order:
+  - sync_fifo
+  - reset_ctrl
+  - spi_slave_if
+  - spi_cmd_cdc
+  - control_status_regs
+  - rx_mailbox_status
+  - arinc429_tx
+  - arinc429_rx
+  - hi3593_v2_top
+dependencies:
+  - "RTL must follow Verilog-2001 gen_rtl style and pass rtl-skill-audit."
+agent_consumers:
+  - Exec Agent
+  - Sim Agent
+  - Review Agent
+  - Arbtr Agent
+assumptions:
+  - ASM-BOUNDARY-001

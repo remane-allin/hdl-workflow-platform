@@ -15,6 +15,8 @@ directory is reserved for Verilog-2001 directed Loop1 testbenches.
 - `work/docparse/structured_spec/register_map.yaml`
 - `work/docparse/structured_spec/test_intent.yaml`
 - `work/docparse/structured_spec/timing_rules.yaml`
+- `work/docparse/verification/uvm_plan.yaml`
+- `work/docparse/trace_matrix/req_to_uvm_intent.yaml`
 - existing UVM files in `output/uvm/`
 - triage output when the issue is TB-side
 
@@ -55,10 +57,12 @@ directory is reserved for Verilog-2001 directed Loop1 testbenches.
    - scoreboard/reference model
    - protocol agent files
 9. If register modeling is needed, consume outputs from `$register-spec-and-ral` or align manually with `register_map.yaml`.
-10. Update `work/loop2_uvm/trace_matrix/req_to_uvm.yaml`, `work/loop2_uvm/trace_matrix/req_to_assertion.yaml`, and `work/loop2_uvm/trace_matrix/req_to_coverage.yaml` after the UVM, assertion, and coverage artifacts exist.
+10. Preserve the DocParse UVM planning intent in `work/docparse/trace_matrix/req_to_uvm_intent.yaml`, then update `work/loop2_uvm/trace_matrix/req_to_uvm.yaml`, `work/loop2_uvm/trace_matrix/req_to_assertion.yaml`, and `work/loop2_uvm/trace_matrix/req_to_coverage.yaml` after the UVM, assertion, and coverage artifacts exist.
 11. Run or hand off to `$modelsim-run-triage-debug`, then update the unified Loop2 report, current run manifest, and binding database evidence together. The binding database is an intermediate trace artifact, not the Loop2 completion result.
 12. Treat Loop2 final reports as current-run artifacts. Every full functional regression run must overwrite `work/loop2_uvm/current/log/modelsim.log`, `output/reports/loop2/loop2_report.md`, `output/reports/loop2/loop2_report.json`, and `output/reports/loop2/loop2_report_manifest.json`; never append a new run into stale reports.
-13. Emit structured `HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|...` log events from sequences, tests, monitors, or scoreboards for every checked test item. Each event must include `test_id`, `txn_id`, `sent`, `expected`, `actual`, and `result` fields. Each signoff run must also emit one `HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|...` event so `loop2-refresh-reports` can generate the final report directly from the real log.
+13. Emit structured `HDLFLOW|UVM_CHECK|...` log events from sequences, tests, monitors, or scoreboards. Emit structured `HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|...` log events for every checked test item. Each event must include `test_id`, `txn_id`, `sent`, `expected`, `actual`, and `result` fields. Each signoff run must also emit one `HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|...` event so `loop2-refresh-reports` can generate the final report directly from the real log.
+14. `loop2_independent_oracle` is a hard gate. Monitors must reconstruct and publish observed transactions; scoreboards must compare observed transactions against a spec/reference model. Do not route `req.pass` or driver-side verdicts into the scoreboard as the source of truth.
+15. `loop2_code_coverage` is a hard gate for develop/release levels. The raw coverage report must meet the configured threshold or have an explicit row-level waiver accepted by the platform gate.
 
 ## UVM Test And Coverage Strategy
 
@@ -70,7 +74,7 @@ scoreboard.
 When building UVM tests and covergroups:
 
 - Prefer deterministic functional sequences before broad randomization.
-- A Loop2 signoff regression must not be a tiny sanity run. Define a project-appropriate minimum transaction count in `uvm_policy.min_checked_transactions`; for ordinary byte/packet protocols, use at least 64 checked transactions unless the spec justifies a smaller bound.
+- A Loop2 signoff regression must be requirement-bound and quantitatively justified. Define a project-appropriate minimum transaction count in `uvm_policy.min_checked_transactions`; for ordinary byte/packet protocols, use at least 64 checked transactions unless the spec justifies a smaller bound.
 - A Loop2 signoff plan must include at least `uvm_policy.min_scenario_tests` scenario tests. The project default is 5.
 - At least one stress scenario is required, and each stress transaction must drive multiple stimuli according to `uvm_policy.min_stress_stimuli_per_transaction`.
 - Every testcase must have a requirement/test-intent link and an active checker path.

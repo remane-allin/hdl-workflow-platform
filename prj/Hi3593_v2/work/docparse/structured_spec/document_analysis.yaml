@@ -1,0 +1,130 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: spec
+analysis_policy:
+  method: source_inventory_section_analysis_evidence_mapping_review
+  fresh_verification_required: true
+source_documents:
+  - id: DOC-HI3593
+    source_ref: input/spec/Holtic-HI-3593.pdf
+    parser_output: work/docparse/parsed/mineru_extract/Holtic-HI-3593.md
+    document_type: datasheet
+  - id: DOC-HI8450
+    source_ref: input/spec/hi-8450_v-rev-b.pdf
+    parser_output: work/docparse/parsed/mineru_extract/hi-8450_v-rev-b.md
+    document_type: receiver_datasheet
+  - id: DOC-HI8592
+    source_ref: input/spec/hi-8592_v-rev-j.pdf
+    parser_output: work/docparse/parsed/mineru_extract/hi-8592_v-rev-j.md
+    document_type: line_driver_datasheet
+  - id: DOC-ARINC429
+    source_ref: input/spec/ARINC-429_protocol_spec.pdf
+    parser_output: work/docparse/parsed/mineru_extract/ARINC-429_protocol_spec.md
+    document_type: protocol_reference
+  - id: DOC-CHAT-MR
+    source_ref: input/spec/chat_request_mr_shared_reset_pin.yaml
+    parser_output: input/spec/chat_request_mr_shared_reset_pin.yaml
+    document_type: chat_requirement
+analysis_units:
+  - unit_id: AU-SPI
+    source_ref: DOC-HI3593
+    section: "SPI basics and instruction op-code table"
+    summary: "SPI mode 0, byte framing, command opcodes, read/write lengths, and CS byte-boundary behavior."
+    extracted_requirements:
+      - REQ-SPI-001
+      - REQ-SPI-002
+    evidence_refs:
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:56
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:315
+  - unit_id: AU-RESET
+    source_ref: DOC-HI3593
+    section: "Master Reset and Software Reset"
+    summary: "MR and opcode 0x04 reset control/FIFO/status state; opcode 0x44 clears FIFO and priority-label state only."
+    extracted_requirements:
+      - REQ-RST-001
+      - REQ-RST-002
+    evidence_refs:
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:303
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:307
+      - input/spec/chat_request_mr_shared_reset_pin.yaml
+  - unit_id: AU-FIFO
+    source_ref: DOC-HI3593
+    section: "Receive Data FIFO and FIFO operation"
+    summary: "TX and RX FIFOs are 32 by 32-bit; RX full overwrites location 32 while TX full ignores further writes."
+    extracted_requirements:
+      - REQ-FIFO-001
+    evidence_refs:
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:229
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:241
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:269
+  - unit_id: AU-ARINC
+    source_ref: DOC-ARINC429
+    section: "ARINC 429 electrical/data characteristics and word format"
+    summary: "32-bit words, bipolar RZ, high/low bit rates, word gaps, parity, and label bit order."
+    extracted_requirements:
+      - REQ-ARINC-001
+      - REQ-TX-001
+      - REQ-RX-001
+    evidence_refs:
+      - work/docparse/parsed/mineru_extract/ARINC-429_protocol_spec.md:119
+      - work/docparse/parsed/mineru_extract/ARINC-429_protocol_spec.md:179
+      - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:253
+  - unit_id: AU-BOUNDARY
+    source_ref: DOC-HI8450
+    section: "External receiver and driver boundary"
+    summary: "External receivers convert ARINC bus levels to OUTA/OUTB logic; external drivers convert TX1IN/TX0IN/SLP logic to ARINC levels."
+    extracted_requirements:
+      - REQ-RX-001
+      - REQ-PROTO-001
+    evidence_refs:
+      - work/docparse/parsed/mineru_extract/hi-8450_v-rev-b.md:7
+      - work/docparse/parsed/mineru_extract/hi-8592_v-rev-j.md:49
+evidence_map:
+  - requirement_id: REQ-SPI-001
+    evidence_refs:
+      - AU-SPI
+  - requirement_id: REQ-SPI-002
+    evidence_refs:
+      - AU-SPI
+  - requirement_id: REQ-RST-001
+    evidence_refs:
+      - AU-RESET
+  - requirement_id: REQ-RST-002
+    evidence_refs:
+      - AU-RESET
+  - requirement_id: REQ-FIFO-001
+    evidence_refs:
+      - AU-FIFO
+  - requirement_id: REQ-ARINC-001
+    evidence_refs:
+      - AU-ARINC
+  - requirement_id: REQ-RX-001
+    evidence_refs:
+      - AU-ARINC
+      - AU-BOUNDARY
+  - requirement_id: REQ-TX-001
+    evidence_refs:
+      - AU-ARINC
+      - AU-BOUNDARY
+  - requirement_id: REQ-STATUS-001
+    evidence_refs:
+      - AU-FIFO
+  - requirement_id: REQ-PROTO-001
+    evidence_refs:
+      - AU-BOUNDARY
+open_questions: []
+question_review:
+  status: REVIEWED
+  reviewed_by: codex_spec_agent
+  review_evidence: work/docparse/structured_spec/document_analysis.yaml
+  unresolved_count: 0
+  notes: "No unresolved requirement questions remain for the new baseline; analog validation is explicitly claim-limited."
+contradictions: []
+cross_checks:
+  - id: XC-RESET-001
+    result: PASS
+    note: "Chat MR clarification is consistent with datasheet opcode 0x04 master reset and 0x44 software reset distinction."
+assumptions:
+  - ASM-BOUNDARY-001

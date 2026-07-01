@@ -1,0 +1,241 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+stage: loop1
+target: rtl
+generated_from:
+  requirements: work/docparse/frontdoor/generated/active_srs.generated.yaml
+  module_plan: work/docparse/architecture/module_plan.yaml
+  rtl_manifest: output/manifest.yaml
+  rtl_audit: output/reports/loop1/rtl_skill_audit.md
+  loop1_report: output/reports/loop1/loop1_report.md
+policy:
+  top_level_name_keeps_ip_name: true
+  child_modules_use_functional_names: true
+  hierarchy_only_top: true
+  evidence_is_current_loop1: true
+links:
+  - req_id: REQ-RST-001
+    requirement_id: REQ-RST-001
+    target: reset_control
+    modules:
+      - reset_ctrl
+      - control_status_regs
+      - rx_mailbox_status
+      - sync_fifo
+    artifacts:
+      - output/rtl/reset_ctrl.v
+      - output/rtl/control_status_regs.v
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/sync_fifo.v
+    evidence:
+      - output/reports/loop1/rtl_skill_audit.md
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-RST-002
+    requirement_id: REQ-RST-002
+    target: software_reset_boundary
+    modules:
+      - reset_ctrl
+      - control_status_regs
+      - rx_mailbox_status
+      - sync_fifo
+    artifacts:
+      - output/rtl/reset_ctrl.v
+      - output/rtl/control_status_regs.v
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/sync_fifo.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-SPI-001
+    requirement_id: REQ-SPI-001
+    target: spi_byte_framing_and_sck_to_aclk_cdc
+    modules:
+      - spi_slave_if
+      - spi_cmd_cdc
+      - hi3593_v2_top
+    artifacts:
+      - output/rtl/spi_slave_if.v
+      - output/rtl/spi_cmd_cdc.v
+      - output/rtl/hi3593_v2_top.v
+    evidence:
+      - output/reports/loop1/rtl_skill_audit.md
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-SPI-002
+    requirement_id: REQ-SPI-002
+    target: opcode_side_effects_and_readback
+    modules:
+      - spi_slave_if
+      - spi_cmd_cdc
+      - control_status_regs
+    artifacts:
+      - output/rtl/spi_slave_if.v
+      - output/rtl/spi_cmd_cdc.v
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop2/loop2_report.md
+  - req_id: REQ-INST-001
+    requirement_id: REQ-INST-001
+    target: instruction_decode_matrix
+    modules:
+      - spi_slave_if
+      - control_status_regs
+    artifacts:
+      - output/rtl/spi_slave_if.v
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop2/loop2_report.md
+  - req_id: REQ-FIFO-001
+    requirement_id: REQ-FIFO-001
+    target: fifo_storage_and_full_policy
+    modules:
+      - sync_fifo
+      - control_status_regs
+      - arinc429_rx
+    artifacts:
+      - output/rtl/sync_fifo.v
+      - output/rtl/control_status_regs.v
+      - output/rtl/arinc429_rx.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_query_report.md
+  - req_id: REQ-TX-001
+    requirement_id: REQ-TX-001
+    target: arinc429_tx_digital_path
+    modules:
+      - arinc429_tx
+      - sync_fifo
+      - control_status_regs
+    artifacts:
+      - output/rtl/arinc429_tx.v
+      - output/rtl/sync_fifo.v
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-RX-001
+    requirement_id: REQ-RX-001
+    target: arinc429_rx_digital_path
+    modules:
+      - arinc429_rx
+      - sync_fifo
+      - rx_mailbox_status
+      - control_status_regs
+    artifacts:
+      - output/rtl/arinc429_rx.v
+      - output/rtl/sync_fifo.v
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-STATUS-001
+    requirement_id: REQ-STATUS-001
+    target: status_readback_muxes
+    modules:
+      - control_status_regs
+      - rx_mailbox_status
+      - sync_fifo
+    artifacts:
+      - output/rtl/control_status_regs.v
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/sync_fifo.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-LABEL-001
+    requirement_id: REQ-LABEL-001
+    target: label_memory_and_filtering
+    modules:
+      - control_status_regs
+      - arinc429_rx
+    artifacts:
+      - output/rtl/control_status_regs.v
+      - output/rtl/arinc429_rx.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-PLABEL-001
+    requirement_id: REQ-PLABEL-001
+    target: priority_label_configuration
+    modules:
+      - control_status_regs
+      - arinc429_rx
+      - rx_mailbox_status
+    artifacts:
+      - output/rtl/control_status_regs.v
+      - output/rtl/arinc429_rx.v
+      - output/rtl/rx_mailbox_status.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-MAILBOX-001
+    requirement_id: REQ-MAILBOX-001
+    target: priority_mailbox_state_and_clear
+    modules:
+      - rx_mailbox_status
+      - control_status_regs
+    artifacts:
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-MB-PINS-001
+    requirement_id: REQ-MB-PINS-001
+    target: mailbox_valid_output_pins
+    modules:
+      - rx_mailbox_status
+      - hi3593_v2_top
+    artifacts:
+      - output/rtl/rx_mailbox_status.v
+      - output/rtl/hi3593_v2_top.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-FLAGINT-001
+    requirement_id: REQ-FLAGINT-001
+    target: flag_interrupt_assignment
+    modules:
+      - control_status_regs
+      - rx_mailbox_status
+    artifacts:
+      - output/rtl/control_status_regs.v
+      - output/rtl/rx_mailbox_status.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-ACLK-001
+    requirement_id: REQ-ACLK-001
+    target: aclk_division_register
+    modules:
+      - control_status_regs
+    artifacts:
+      - output/rtl/control_status_regs.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+  - req_id: REQ-TX-FULL-001
+    requirement_id: REQ-TX-FULL-001
+    target: tx_fifo_full_and_tx_start_behavior
+    modules:
+      - sync_fifo
+      - control_status_regs
+      - arinc429_tx
+    artifacts:
+      - output/rtl/sync_fifo.v
+      - output/rtl/control_status_regs.v
+      - output/rtl/arinc429_tx.v
+    evidence:
+      - output/reports/loop1/loop1_report.md
+      - output/reports/loop1/waveform_gate.json
+  - req_id: REQ-RX-FILTER-001
+    requirement_id: REQ-RX-FILTER-001
+    target: rx_label_priority_filtering
+    modules:
+      - arinc429_rx
+      - control_status_regs
+      - rx_mailbox_status
+    artifacts:
+      - output/rtl/arinc429_rx.v
+      - output/rtl/control_status_regs.v
+      - output/rtl/rx_mailbox_status.v
+    evidence:
+      - output/reports/loop1/loop1_report.md

@@ -1,0 +1,313 @@
+{
+  "change_id": null,
+  "failed_checks": [],
+  "generated_at": "2026-06-30T22:43:20",
+  "parser_errors": [],
+  "project": "Hi3593_v2",
+  "result": "PASS",
+  "schema": "hdlflow_loop1_report_v1",
+  "source": {
+    "cmd": "work/loop1_rtl_tb/current/cmd/command.json",
+    "manifest": "work/loop1_rtl_tb/current/manifest.json"
+  },
+  "stage": "loop1_rtl_tb",
+  "summary": {
+    "failed_checks": 0,
+    "failed_tests": 0,
+    "passed_checks": 32,
+    "passed_tests": 11,
+    "result": "PASS",
+    "total_checks": 32,
+    "total_tests": 11
+  },
+  "transactions": [
+    {
+      "actual": "reset_defaults_sampled",
+      "expected": "tx_control_0_fifo_empty_1",
+      "latency_cycles": 8,
+      "result": "PASS",
+      "sent": "MR=external_active_high",
+      "test_id": "reset_release",
+      "txn_id": "opcode_04_reset_baseline"
+    },
+    {
+      "actual": "partial_discard_sampled",
+      "expected": "partial_discard_1",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "CS_low_three_bits_then_high",
+      "test_id": "partial_spi_byte_discard",
+      "txn_id": "partial_bits_before_cs_inactive"
+    },
+    {
+      "actual": "spi_opcode_00h",
+      "expected": "no_side_effect_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_00",
+      "test_id": "opcode_00_no_operation",
+      "txn_id": "opcode_00"
+    },
+    {
+      "actual": "tx_control_sampled",
+      "expected": "tx_control_15h",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_08_data_15h",
+      "test_id": "opcode_08_write_tx_control",
+      "txn_id": "opcode_08"
+    },
+    {
+      "actual": "rx1_control_sampled",
+      "expected": "rx1_control_00h",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_10_data_00h",
+      "test_id": "opcode_10_write_rx1_control",
+      "txn_id": "opcode_10"
+    },
+    {
+      "actual": "rx2_control_sampled",
+      "expected": "rx2_control_00h",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_24_data_00h",
+      "test_id": "opcode_24_write_rx2_control",
+      "txn_id": "opcode_24"
+    },
+    {
+      "actual": "spi_opcode_84h",
+      "expected": "read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_84_read",
+      "test_id": "opcode_84_read_tx_control",
+      "txn_id": "opcode_84"
+    },
+    {
+      "actual": "spi_opcode_80h",
+      "expected": "read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_80_read",
+      "test_id": "opcode_80_read_tx_status",
+      "txn_id": "opcode_80"
+    },
+    {
+      "actual": "spi_opcode_ffh",
+      "expected": "no_side_effect_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_ff",
+      "test_id": "opcode_ff_no_operation",
+      "txn_id": "opcode_FF"
+    },
+    {
+      "actual": "rx1_label_memory_sampled",
+      "expected": "rx1_label_memory_pattern",
+      "latency_cycles": 32,
+      "result": "PASS",
+      "sent": "opcode_14_32_bytes",
+      "test_id": "opcode_14_write_rx1_label_memory",
+      "txn_id": "opcode_14"
+    },
+    {
+      "actual": "spi_opcode_98h",
+      "expected": "rx1_label_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_98_read_32",
+      "test_id": "opcode_98_read_rx1_label_memory",
+      "txn_id": "opcode_98"
+    },
+    {
+      "actual": "rx1_label_all_sampled",
+      "expected": "rx1_label_memory_all_ones",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_48",
+      "test_id": "opcode_48_set_all_rx1_labels",
+      "txn_id": "opcode_48"
+    },
+    {
+      "actual": "spi_opcode_b8h",
+      "expected": "rx2_label_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_b8_read_32",
+      "test_id": "opcode_b8_read_rx2_label_memory",
+      "txn_id": "opcode_B8"
+    },
+    {
+      "actual": "rx2_label_all_sampled",
+      "expected": "rx2_label_memory_all_ones",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_4c",
+      "test_id": "opcode_4c_set_all_rx2_labels",
+      "txn_id": "opcode_4C"
+    },
+    {
+      "actual": "priority_labels_sampled",
+      "expected": "rx1_priority_labels_112233",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_18_112233",
+      "test_id": "opcode_18_write_rx1_priority_labels",
+      "txn_id": "opcode_18"
+    },
+    {
+      "actual": "spi_opcode_9ch",
+      "expected": "rx1_priority_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_9c_read",
+      "test_id": "opcode_9c_read_rx1_priority_labels",
+      "txn_id": "opcode_9C"
+    },
+    {
+      "actual": "spi_opcode_bch",
+      "expected": "rx2_priority_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_bc_read",
+      "test_id": "opcode_bc_read_rx2_priority_labels",
+      "txn_id": "opcode_BC"
+    },
+    {
+      "actual": "mailbox_sampled",
+      "expected": "MB1_1_valid_mailbox_aabbcc",
+      "latency_cycles": 6,
+      "result": "PASS",
+      "sent": "OUT1_word_label_33",
+      "test_id": "rx1_priority_mailbox_slot1",
+      "txn_id": "rx1_label_33"
+    },
+    {
+      "actual": "mb1_1_clear_sampled",
+      "expected": "MB1_1_cleared_after_read",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_a4_read",
+      "test_id": "opcode_a4_read_rx1_mailbox_1",
+      "txn_id": "opcode_A4"
+    },
+    {
+      "actual": "flag_assignment_sampled",
+      "expected": "flag_assignment_55h",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_34_55h",
+      "test_id": "opcode_34_write_flag_interrupt_assignment",
+      "txn_id": "opcode_34"
+    },
+    {
+      "actual": "aclk_division_sampled",
+      "expected": "aclk_division_b2h",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_38_b2h",
+      "test_id": "opcode_38_write_aclk_division",
+      "txn_id": "opcode_38"
+    },
+    {
+      "actual": "spi_opcode_d0h",
+      "expected": "flag_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_d0_read",
+      "test_id": "opcode_d0_read_flag_interrupt_assignment",
+      "txn_id": "opcode_D0"
+    },
+    {
+      "actual": "spi_opcode_d4h",
+      "expected": "aclk_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_d4_read",
+      "test_id": "opcode_d4_read_aclk_division",
+      "txn_id": "opcode_D4"
+    },
+    {
+      "actual": "tx_fifo_full_sampled",
+      "expected": "tx_fifo_count_32_full_1",
+      "latency_cycles": 32,
+      "result": "PASS",
+      "sent": "opcode_0c_x32",
+      "test_id": "tx_fifo_full_ignore_opcode_0c",
+      "txn_id": "fill_to_32"
+    },
+    {
+      "actual": "tx_full_ignore_sampled",
+      "expected": "tx_count_stays_32_no_overflow",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_0c_extra_word",
+      "test_id": "tx_fifo_full_ignore",
+      "txn_id": "write_when_full"
+    },
+    {
+      "actual": "opcode_44_boundary_sampled",
+      "expected": "tx_control_kept_fifo_clear",
+      "latency_cycles": 6,
+      "result": "PASS",
+      "sent": "opcode_44_fifo_mailbox_reset",
+      "test_id": "master_reset_keeps_control_register_opcode44_boundary",
+      "txn_id": "opcode_44"
+    },
+    {
+      "actual": "master_reset_sampled",
+      "expected": "control_and_fifo_cleared",
+      "latency_cycles": 10,
+      "result": "PASS",
+      "sent": "opcode_04_master_reset",
+      "test_id": "opcode_04_master_reset",
+      "txn_id": "opcode_04"
+    },
+    {
+      "actual": "rx_overwrite_sampled",
+      "expected": "rx_count_32_overflow_seen",
+      "latency_cycles": 33,
+      "result": "PASS",
+      "sent": "OUT1A_OUT1B_33_words",
+      "test_id": "rx_location32_overwrite",
+      "txn_id": "rx1_33_words"
+    },
+    {
+      "actual": "spi_opcode_a0h",
+      "expected": "rx1_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_a0_read",
+      "test_id": "opcode_a0_read_rx1_fifo",
+      "txn_id": "opcode_A0"
+    },
+    {
+      "actual": "spi_opcode_c0h",
+      "expected": "rx2_read_opcode_latched",
+      "latency_cycles": 4,
+      "result": "PASS",
+      "sent": "opcode_c0_read",
+      "test_id": "opcode_c0_read_rx2_fifo",
+      "txn_id": "opcode_C0"
+    },
+    {
+      "actual": "tx_activity_sampled",
+      "expected": "tx_driver_activity",
+      "latency_cycles": 80,
+      "result": "PASS",
+      "sent": "opcode_40_after_tx_fifo_word",
+      "test_id": "opcode_40_transmit_enable",
+      "txn_id": "opcode_40"
+    },
+    {
+      "actual": "selftest_null_sampled",
+      "expected": "tx1in_0_tx0in_0_while_busy",
+      "latency_cycles": 40,
+      "result": "PASS",
+      "sent": "tx_control_selftest_then_opcode_40",
+      "test_id": "selftest_null_driver",
+      "txn_id": "selftest"
+    }
+  ]
+}

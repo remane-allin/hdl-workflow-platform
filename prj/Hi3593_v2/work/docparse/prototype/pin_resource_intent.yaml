@@ -1,0 +1,27 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: sim
+external_ports:
+  - name: ACLK
+    resource: PL_GCLK_50MHZ
+  - name: MR
+    resource: PS_KEY0
+  - name: TX1IN
+    resource: PL_LED0
+  - name: TX0IN
+    resource: PS_LED1
+  - name: SLP
+    resource: PL_LED0
+pin_groups:
+  - name: spi_gpio
+    ports:
+      - CS
+      - SCK
+      - SI
+      - SO
+claim_limits:
+  - "Pin mapping does not prove ARINC analog level compliance."
+assumptions:
+  - ASM-BOUNDARY-001

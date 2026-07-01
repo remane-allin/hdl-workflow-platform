@@ -1,0 +1,18 @@
+schema_version: 1
+board: navigator_zynq_7020
+serial:
+  port_hint: COM3
+  baud: 115200
+  command: R
+  capture_ms: 3000
+  log_format: timestamped_text
+visual:
+  pl_led0: active_during_pl_response
+  ps_led1: follows_ps_key0
+clock:
+  source: PL_GCLK_50MHZ
+  frequency_mhz: 50
+required_report_policy_keys:
+  - prototype_policy.database_preflight_report
+  - prototype_policy.prototype_plan_check_report
+  - prototype_policy.serial_text_log

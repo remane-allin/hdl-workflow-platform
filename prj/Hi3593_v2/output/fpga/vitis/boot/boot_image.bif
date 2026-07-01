@@ -1,0 +1,6 @@
+the_ROM_image:
+{
+  [bootloader] ../workspace/hi3593_v2_hw/zynq_fsbl/fsbl.elf
+  ../../vivado/bitstream/hi3593_v2_ps_pl.bit
+  ../workspace/hi3593_v2_loop3_app/Debug/hi3593_v2_loop3_app.elf
+}

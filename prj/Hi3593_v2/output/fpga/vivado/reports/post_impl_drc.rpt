@@ -1,0 +1,35 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
+| Date         : Mon Jun 29 23:31:03 2026
+| Host         : DESKTOP-ADCQ3LG running 64-bit major release  (build 9200)
+| Command      : report_drc -file G:/Codex_Workflow/Test_new/prj/Hi3593_v2/output/fpga/vivado/reports/post_impl_drc.rpt
+| Design       : ps_pl_system_wrapper
+| Device       : xc7z020clg400-2
+| Speed File   : -2
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: impl_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max checks: <unlimited>
+             Checks found: 0
++------+----------+-------------+--------+
+| Rule | Severity | Description | Checks |
++------+----------+-------------+--------+
++------+----------+-------------+--------+
+
+2. REPORT DETAILS
+-----------------
+

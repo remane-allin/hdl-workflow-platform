@@ -1,0 +1,34 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: arbtr
+decisions:
+  - id: DEC-BASELINE-001
+    decision: "Start a new frontdoor_contract_v2 baseline from copied input documents and fresh MinerU evidence."
+    rationale: "User required no reuse of old project results."
+  - id: DEC-CLAIM-001
+    decision: "Loop3 external pin-level and full hardware claims are false until separate board evidence exists."
+    rationale: "HI-8450/HI-8592 analog behavior is outside synthesizable RTL."
+rejected_alternatives:
+  - id: RJ-OLD-RESULTS
+    rejected: "Import old RTL/TB/UVM/reports/gates or old parsed outputs."
+    reason: "Violates the new-project and no-old-results constraint."
+handoff:
+  spec_to_arch: "Spec Agent releases input/spec plus structured spec boundaries."
+  arch_to_exec: "Arch Agent releases architecture module/interface/dataflow/timing contracts."
+  exec_to_sim: "Exec Agent releases compile-ready RTL and complete functional directed TB."
+  sim_to_review: "Sim Agent releases simulation, coverage, and waveform evidence."
+  review_to_arbtr: "Review Agent releases zero-defect or defect-routed findings."
+iteration_policy:
+  forward:
+    - spec
+    - arch
+    - exec
+    - sim
+    - review
+    - arbtr
+  backward: "Review classifies defect layer, Arbtr selects target, then flow restarts forward from that agent."
+  termination: "review has no open defect and arbtr confirms compliance"
+assumptions:
+  - ASM-BOUNDARY-001

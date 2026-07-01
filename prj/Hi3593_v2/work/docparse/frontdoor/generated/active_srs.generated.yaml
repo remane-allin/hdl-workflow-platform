@@ -1,0 +1,36 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arbtr
+generated_from: approved and merged frontdoor baseline
+source_artifacts:
+  - work/docparse/frontdoor/srs.yaml
+  - work/docparse/frontdoor/intake/merged/BASELINE-SEED-001.yaml
+  - work/docparse/frontdoor/intake/merged/REQ-CHG-HI3593-FULL-001.yaml
+requirements:
+  - REQ-SPI-001
+  - REQ-SPI-002
+  - REQ-INST-001
+  - REQ-RST-001
+  - REQ-RST-002
+  - REQ-FIFO-001
+  - REQ-ARINC-001
+  - REQ-RX-001
+  - REQ-TX-001
+  - REQ-STATUS-001
+  - REQ-LABEL-001
+  - REQ-PLABEL-001
+  - REQ-MAILBOX-001
+  - REQ-FLAGINT-001
+  - REQ-MB-PINS-001
+  - REQ-ACLK-001
+  - REQ-TX-FULL-001
+  - REQ-RX-FILTER-001
+  - REQ-PROTO-001
+digital_scope:
+  - "SPI mode 0 framing and complete datasheet-defined digital opcode table."
+  - "TX/RX control, status, ACLK division, label memory, priority-label match registers, priority mailboxes, FIFO status, flag/interrupt assignment, and digital ARINC TX/RX behavior."
+excluded_scope:
+  - "Analog ARINC voltage, slew, DC/DC converter, package, and lightning-protection behavior require external board evidence and are not synthesizable RTL claims."
+assumptions:
+  - ASM-BOUNDARY-001

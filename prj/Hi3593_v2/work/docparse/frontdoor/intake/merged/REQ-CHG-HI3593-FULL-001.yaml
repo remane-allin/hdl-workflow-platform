@@ -1,0 +1,106 @@
+schema_version: 1
+project: Hi3593_v2
+change_id: REQ-CHG-HI3593-FULL-001
+source_change_request: CR-20260626224447-complete-hi3593-digital-functional-cover
+target_requirement_id: REQ-SPI-002
+request_type: requirement_change
+owner_role: spec
+old_text: "The approved baseline covers a reduced opcode matrix and a coarse RX/TX/status model."
+new_text: "The active baseline shall cover the HI-3593 digital functional surface defined by the datasheet instruction table, control/status registers, label recognition memories, priority-label match/mailbox registers, receiver flag/interrupt assignment, ACLK division register, TX/RX FIFO behavior, TX parity/rate/self-test/HIZ behavior, and RX SDI/parity/label/priority filtering. Analog voltage, slew, DC/DC converter, package, and line-protection behavior remain outside synthesizable RTL and require external board evidence."
+reason: "The previous active baseline and implementation passed Loop3 for a reduced PS/PL path but did not implement or verify all datasheet-defined HI-3593 digital functions."
+source_refs:
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:1
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:40
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:56
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:66
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:73
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:79
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:86
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:93
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:211
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:229
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:241
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:251
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:259
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:263
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:303
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:307
+  - work/docparse/parsed/mineru_extract/Holtic-HI-3593.md:313
+derived_requirements:
+  - id: REQ-INST-001
+    priority: must
+    text: "The SPI command decoder shall implement all datasheet-defined digital opcodes: 00, 04, 08, 0C, 10, 14, 18, 24, 28, 2C, 34, 38, 40, 44, 48, 4C, 80, 84, 90, 94, 98, 9C, A0, A4, A8, AC, B0, B4, B8, BC, C0, C4, C8, CC, D0, D4, and FF, with unsupported reserved opcodes producing no meaningful side effect."
+  - id: REQ-LABEL-001
+    priority: must
+    text: "Receiver 1 and Receiver 2 shall each provide a 256-bit label recognition memory, writeable through 0x14/0x28 as 32 bytes starting at label 0xFF descending to 0x00, readable through 0x98/0xB8, and set-all through 0x48/0x4C."
+  - id: REQ-PLABEL-001
+    priority: must
+    text: "Receiver 1 and Receiver 2 shall each provide three 8-bit priority-label match registers written by 0x18/0x2C, read by 0x9C/0xBC, and cleared by software reset 0x44 without changing ordinary control registers."
+  - id: REQ-MAILBOX-001
+    priority: must
+    text: "When PLON is enabled, received words whose labels match priority-label filter 1, 2, or 3 shall update the corresponding double-buffered priority mailbox, assert the corresponding mailbox status bit/output, and support reading bytes 2..4 through A4/A8/AC and C4/C8/CC."
+  - id: REQ-FLAGINT-001
+    priority: must
+    text: "R1FLAG, R2FLAG, R1INT, and R2INT shall follow the Flag / Interrupt Assignment Register selections for FIFO and priority mailbox indications instead of being hard-wired to FIFO-not-empty or word-valid only."
+  - id: REQ-MB-PINS-001
+    priority: must
+    text: "The top-level digital boundary shall expose MB1_1, MB1_2, MB1_3, MB2_1, MB2_2, and MB2_3 mailbox outputs for priority-label mailbox-valid indication."
+  - id: REQ-ACLK-001
+    priority: must
+    text: "The ACLK Division Register shall be readable/writeable and shall drive the internal ARINC timing divider used by high-speed and low-speed TX/RX bit timing classes."
+  - id: REQ-TX-FULL-001
+    priority: must
+    text: "The TX engine shall implement TFLIP, HIZ, TMODE, TPARITY, ODDEVEN, RATE, and SELFTEST effects, including parity insertion, label bit-order reversal, high/low rate timing, null output during self-test, and transmit start behavior for opcode 0x40."
+  - id: REQ-RX-FILTER-001
+    priority: must
+    text: "Each RX engine shall implement RFLIP, SD9, SD10, SDON, PARITY, LABREC, PLON, and RATE effects using the channel label memory and priority-label registers, with accepted FIFO words and rejected/parity-failed words separated by active checks."
+acceptance_criteria:
+  - id: AC-INST-001
+    text: "Loop1 and Loop2 exercise every defined opcode with structured PASS/FAIL markers and independent expected side effects."
+    verification_method: loop1_directed_tb_and_loop2_uvm
+  - id: AC-LABEL-001
+    text: "Label memory write/read/set-all and RX label filtering pass for both receiver channels."
+    verification_method: loop1_directed_tb_and_loop2_uvm
+  - id: AC-PLABEL-001
+    text: "Priority-label match registers, mailboxes, mailbox read opcodes, and MB outputs pass for all three mailbox slots on both receivers."
+    verification_method: loop1_directed_tb_and_loop2_uvm
+  - id: AC-FLAGINT-001
+    text: "Flag and interrupt assignment modes are checked for FIFO and priority mailbox sources."
+    verification_method: loop1_directed_tb_and_loop2_uvm
+  - id: AC-TXRX-001
+    text: "TX parity/rate/TFLIP/HIZ/self-test and RX parity/SDI/RFLIP/RATE filtering have active scoreboard checks."
+    verification_method: loop1_directed_tb_and_loop2_uvm
+  - id: AC-PROTO-FULL-001
+    text: "Loop3 PS UART suite covers the expanded register/opcode surface that is observable through PS/PL digital prototype hooks; analog/full hardware claims remain deferred unless external evidence exists."
+    verification_method: loop3_ps_pl_prototype
+impact_analysis:
+  - requirements
+  - architecture
+  - register_map
+  - interface_contracts
+  - directed_tb
+  - uvm
+  - fpga_prototype_suite
+  - generated_docs
+  - claim_policy
+affected_artifacts:
+  - work/docparse/frontdoor/generated/active_srs.generated.yaml
+  - work/docparse/frontdoor/generated/active_design_intent.generated.yaml
+  - work/docparse/frontdoor/generated/active_verification_intent.generated.yaml
+  - work/docparse/frontdoor/generated/active_prototype_intent.generated.yaml
+  - work/docparse/frontdoor/generated/active_trace_matrix.generated.yaml
+  - work/docparse/structured_spec/register_map.yaml
+  - work/docparse/structured_spec/interface_spec.yaml
+  - work/docparse/structured_spec/test_intent.yaml
+  - work/docparse/architecture/module_plan.yaml
+  - work/docparse/verification/verification_plan.yaml
+  - output/rtl
+  - output/tb
+  - output/uvm
+  - output/fpga/vitis/src/hi3593_loop3_app.c
+reverification_required: true
+rollback_plan: "Reject or archive this intake and restore the previous reduced active baseline if the datasheet evidence is found not to apply to the requested digital implementation scope."
+risk_impact: "Moderate: larger SPI transfers, extra state, top-level pins, and expanded verification can invalidate prior Loop1/Loop2/Loop3 evidence."
+approval_status: approved
+merge_status: merged
+merged_at: "2026-06-26T22:48:00+08:00"

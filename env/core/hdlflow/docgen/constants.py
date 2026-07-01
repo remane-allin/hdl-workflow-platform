@@ -63,7 +63,7 @@ DOC_DEFINITIONS: tuple[DocDefinition, ...] = (
         template_rel="env/templates/docs/verification_plan.md.j2",
         marker_start="HDL-VERIF-DOC START",
         marker_end="HDL-VERIF-DOC END",
-        required_sections=("Test Matrix", "Coverage", "Assertions", "Exit Criteria"),
+        required_sections=("Test Matrix", "Coverage", "Assertions", "UVM Environment Plan", "Exit Criteria"),
     ),
     DocDefinition(
         doc_type="delivery_package",

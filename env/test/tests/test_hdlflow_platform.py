@@ -54,7 +54,10 @@ from hdlflow.gates import (
     _zero_count_check,
 )
 from hdlflow.requirements_frontend import (
+    FRONTDOOR_TEMPLATE_RELS,
     _check_module_plan_contract,
+    _frontdoor_governance_templates,
+    _frontdoor_template_contract_errors,
     check_requirements_frontend,
     initialize_requirements_frontend,
     required_frontend_paths,
@@ -69,6 +72,7 @@ from hdlflow.memory import (
     update_active_plan_step,
 )
 from hdlflow.plan_checks import check_plan
+from hdlflow.platform_governance import migrate_project_to_contract, run_platform_regression
 from hdlflow.report_checks import check_reports
 from hdlflow.reports.constants import BLOCKED_BANNER, FAIL_BANNER, LOOP1_REPORT, LOOP2_REPORT, PASS_BANNER
 from hdlflow.reports.loop1_report import generate_loop1_report
@@ -122,6 +126,98 @@ findings:
 
         self.assertEqual(data["findings"][0]["id"], "REV-001")
         self.assertEqual(data["findings"][0]["severity"], "high")
+
+
+class PlatformGovernanceTests(unittest.TestCase):
+    def test_platform_regression_accepts_declared_full_chain_change(self):
+        root = Path(__file__).resolve().parents[3]
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            shutil.copytree(root / "env" / "rule" / "platform_governance", workspace / "env" / "rule" / "platform_governance")
+
+            result = run_platform_regression(
+                workspace,
+                all_checks=True,
+                changed_files=[
+                    "env/core/hdlflow/requirements_frontend.py",
+                    "env/core/hdlflow/waveform_gate.py",
+                    "env/rule/scaffold/work/loop3_fpga_proto/board_tests/prototype_plan.yaml",
+                    "env/test/tests/test_hdlflow_platform.py",
+                ],
+                write_report=False,
+            )
+
+            self.assertTrue(result.ok, [f"{check.name}: {check.detail}" for check in result.checks])
+            self.assertIn("requirement_intake_refresh_project", result.required_fixtures)
+            self.assertIn("tb_pass_vcd_fail_project", result.required_fixtures)
+            self.assertIn("claim_overreach_block_project", result.required_fixtures)
+
+    def test_platform_regression_rejects_unscoped_gate_change(self):
+        root = Path(__file__).resolve().parents[3]
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            governance = workspace / "env" / "rule" / "platform_governance"
+            shutil.copytree(root / "env" / "rule" / "platform_governance", governance)
+            (governance / "platform_change_request.yaml").write_text(
+                "\n".join(
+                    [
+                        "platform_change_request:",
+                        "  id: PCR-TEST-001",
+                        "  title: incomplete platform change",
+                        "  status: accepted",
+                        "  change_type:",
+                        "    - rule_update",
+                        "  affected_stages:",
+                        "    - regression",
+                        "  affected_components:",
+                        "    rules:",
+                        "      - env/rule/project_default/project_config.yaml",
+                        "  acceptance_criteria:",
+                        "    - rules update is reviewed",
+                        "  required_regression_fixtures:",
+                        "    - full_contract_pass_project",
+                        "  arbtr_review:",
+                        "    decision: ACCEPT",
+                        "    checklist:",
+                        "      - PCR",
+                        "      - impact",
+                        "      - fixtures",
+                        "      - migration",
+                        "      - claims",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_platform_regression(
+                workspace,
+                changed_files=["env/core/hdlflow/gates.py"],
+                write_report=False,
+            )
+
+            self.assertFalse(result.ok)
+            impact = next(check for check in result.checks if check.name == "impact_completeness_gate")
+            self.assertEqual(impact.status, "FAIL")
+            self.assertIn("undeclared component", impact.detail)
+
+    def test_migrate_project_adds_frontdoor_contract_and_archives_legacy_questions(self):
+        root = Path(__file__).resolve().parents[3]
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "legacy"
+            frontdoor = project / "work" / "docparse" / "frontdoor"
+            frontdoor.mkdir(parents=True)
+            (frontdoor / "open_questions.md").write_text("# Old questions\n- What is the mode?\n", encoding="utf-8")
+
+            result = migrate_project_to_contract(root, project)
+
+            self.assertTrue(result.ok, result.errors)
+            contract = (frontdoor / "contract.yaml").read_text(encoding="utf-8")
+            self.assertIn("contract_version: frontdoor_contract_v2", contract)
+            self.assertIn("status: inactive", contract)
+            self.assertTrue((frontdoor / "history" / "baseline_snapshots" / "open_questions_legacy_archived.md").exists())
+            self.assertTrue((project / "work" / "docparse" / "verification" / "uvm_plan.yaml").exists())
+            self.assertTrue(result.manifest_path.exists())
 
 
 class ConfigValidationTests(unittest.TestCase):
@@ -364,16 +460,16 @@ class Loop2RiskGateTests(unittest.TestCase):
             self.assertEqual(check.status, "FAIL")
             self.assertIn("simulator_errors_nonzero", check.detail)
 
-    def test_loop1_waveform_report_is_advisory_not_hard_gate(self):
+    def test_loop1_waveform_report_is_blocking_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
 
             check = _check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, "develop")
 
-            self.assertEqual(check.status, "PASS")
-            self.assertEqual(check.name, "loop1_waveform_advisory")
-            self.assertIn("advisory waveform issue", check.detail)
+            self.assertEqual(check.status, "FAIL")
+            self.assertEqual(check.name, "loop1_waveform_blocking")
+            self.assertIn("blocking waveform issue", check.detail)
 
     def test_doc_sources_reject_mojibake_requirement_text(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -483,7 +579,7 @@ class Loop2RiskGateTests(unittest.TestCase):
 
             self.assertTrue(any("missing Loop1 waveform rule-engine report" in item for item in errors))
 
-    def test_loop1_waveform_rule_failure_stays_advisory_for_loop1_gate(self):
+    def test_loop1_waveform_rule_failure_blocks_loop1_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
             _create_minimal_project(project)
@@ -493,9 +589,9 @@ class Loop2RiskGateTests(unittest.TestCase):
                 result = run_loop1_waveform_gate(project)
 
             self.assertFalse(result.ok)
-            advisory = _check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, "develop")
-            self.assertEqual(advisory.status, "PASS")
-            self.assertIn("advisory waveform issue", advisory.detail)
+            blocking = _check_loop1_waveform_advisory_report(project, WAVEFORM_GATE_JSON_REL, "develop")
+            self.assertEqual(blocking.status, "FAIL")
+            self.assertIn("blocking waveform issue", blocking.detail)
 
     def test_loop1_waveform_query_gate_passes_manifest_top_ports(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -510,7 +606,7 @@ class Loop2RiskGateTests(unittest.TestCase):
             self.assertEqual(check_loop1_waveform_gate_report(project), [])
             payload = json.loads(result.json_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["result"], "PASS")
-            self.assertEqual(payload["gate_policy"], "advisory")
+            self.assertEqual(payload["gate_policy"], "blocking")
             self.assertEqual(payload["llm_decision_source"], False)
             self.assertEqual(payload["manifest"], "work/loop1_rtl_tb/config/top_wave_manifest.yaml")
             self.assertTrue((project / "output/reports/loop1/query_transcript.json").is_file())
@@ -1392,9 +1488,18 @@ class DocparsePolicyTests(unittest.TestCase):
 
 
 class PlatformTemplateContractTests(unittest.TestCase):
-    def test_platform_text_avoids_ambiguous_quick_check_label(self):
+    def test_platform_text_uses_formal_validation_language(self):
         root = Path(__file__).resolve().parents[3]
-        forbidden = "smo" + "ke"
+        forbidden_terms = [
+            "smo" + "ke",
+            "\u70df\u6d4b",
+            "san" + "ity run",
+            "quick " + "check",
+            "quick_" + "check",
+            "quick-" + "check",
+            "mi" + "ni_" + "pass_project",
+            "mi" + "ni_" + "project",
+        ]
         scanned_suffixes = {
             ".do",
             ".json",
@@ -1418,7 +1523,7 @@ class PlatformTemplateContractTests(unittest.TestCase):
                 if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
                     continue
                 text = path.read_text(encoding="utf-8", errors="ignore").lower()
-                if forbidden in text:
+                if any(term in text for term in forbidden_terms):
                     failures.append(str(path.relative_to(root)).replace("\\", "/"))
         self.assertEqual([], failures)
 
@@ -1496,7 +1601,8 @@ class PlatformTemplateContractTests(unittest.TestCase):
         uvm_skill = (root / "env" / "rule" / "skills" / "uvm-env-and-test-build" / "SKILL.md").read_text(encoding="utf-8")
         req_skill = (root / "env" / "rule" / "skills" / "requirements-frontdoor" / "SKILL.md").read_text(encoding="utf-8")
         mineru_skill = (root / "env" / "rule" / "skills" / "mineru-spec-normalizer" / "SKILL.md").read_text(encoding="utf-8")
-        all_text = "\n".join([template_config, orchestrator, rtl_skill, uvm_skill, req_skill, mineru_skill])
+        scaffold_marker = (root / "env" / "rule" / "scaffold" / "project_scaffold.yaml").read_text(encoding="utf-8")
+        all_text = "\n".join([template_config, scaffold_marker, orchestrator, rtl_skill, uvm_skill, req_skill, mineru_skill])
 
         required_markers = [
             "work/docparse/parsed/mineru_extract",
@@ -1522,7 +1628,17 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "Arbtr Agent",
             "review_no_open_defects",
             "arbtr_confirms_compliance",
-            "output/tb/full_function_test_plan.md",
+            "work/docparse/verification/verification_plan.yaml",
+            "work/docparse/frontdoor/contract.yaml",
+            "frontdoor/intake/",
+            "frontdoor/generated/active_*.generated.yaml",
+            "rtl_semantic_stub_absent",
+            "loop1_task_requirement_evidence",
+            "loop1_waveform_blocking",
+            "loop2_independent_oracle",
+            "loop2_code_coverage",
+            "loop3_validation_boundary_claim",
+            "final_claim_gate",
             "HDLFLOW|CHECK",
             "HDLFLOW|SUMMARY",
             "HDLFLOW_WAVE_BEGIN",
@@ -1568,10 +1684,149 @@ class PlatformTemplateContractTests(unittest.TestCase):
             "After a Loop2 gate baseline exists",
             "record the changed requirements",
             "enforce_all_extensions: true",
+            "platform_contract_version: 2026.06-contract-v2",
+            "migration_report: work/migration/migration_report.md",
         ]
 
         for marker in required_markers:
             self.assertIn(marker, all_text)
+
+    def test_frontdoor_intake_templates_are_actionable(self):
+        root = Path(__file__).resolve().parents[3]
+        template_dir = root / "env" / "rule" / "scaffold" / "work" / "docparse" / "frontdoor" / "templates"
+        generated_templates = _frontdoor_governance_templates("change_me", "DRAFT", [])
+        expected = {
+            "new_requirement.template.yaml": {
+                "required_fields": {
+                    "id",
+                    "request_type",
+                    "source_refs",
+                    "requirement_text",
+                    "rationale",
+                    "acceptance_criteria",
+                    "affected_modules",
+                    "affected_interfaces",
+                    "design_obligations",
+                    "verification_obligations",
+                    "prototype_obligations",
+                    "trace_links",
+                    "impacted_documents",
+                    "risk_impact",
+                    "approval_status",
+                    "merge_status",
+                },
+                "example_fields": {
+                    "id",
+                    "source_refs",
+                    "acceptance_criteria",
+                    "affected_modules",
+                    "affected_interfaces",
+                    "design_obligations",
+                    "verification_obligations",
+                    "prototype_obligations",
+                    "trace_links",
+                    "impacted_documents",
+                    "approval_status",
+                    "merge_status",
+                },
+                "merge_policy": True,
+            },
+            "requirement_change.template.yaml": {
+                "required_fields": {
+                    "change_id",
+                    "target_requirement_id",
+                    "old_text",
+                    "new_text",
+                    "reason",
+                    "impact_analysis",
+                    "affected_artifacts",
+                    "reverification_required",
+                    "rollback_plan",
+                    "approval_status",
+                    "merge_status",
+                },
+                "example_fields": {"change_id", "affected_artifacts", "reverification_required", "approval_status", "merge_status"},
+                "merge_policy": True,
+            },
+            "architecture_supplement.template.yaml": {
+                "required_fields": {
+                    "supplement_id",
+                    "source_requirement_ids",
+                    "rule_text",
+                    "applies_to",
+                    "module_plan_changes",
+                    "interface_contract_changes",
+                    "forbidden_design_impacts",
+                    "blocking",
+                    "documents_to_update",
+                    "gates_to_update",
+                    "approval_status",
+                },
+                "example_fields": {"supplement_id", "source_requirement_ids", "applies_to", "approval_status"},
+                "merge_policy": False,
+            },
+            "verification_supplement.template.yaml": {
+                "required_fields": {
+                    "supplement_id",
+                    "requirement_ids",
+                    "test_tasks",
+                    "task_packaging",
+                    "expected_model",
+                    "required_signals",
+                    "vcd_parser",
+                    "uvm_obligations",
+                    "coverage_obligations",
+                    "final_verdict_rule",
+                    "approval_status",
+                },
+                "example_fields": {"supplement_id", "requirement_ids", "test_tasks", "required_signals", "vcd_parser", "approval_status"},
+                "merge_policy": False,
+            },
+            "prototype_supplement.template.yaml": {
+                "required_fields": {
+                    "supplement_id",
+                    "requirement_ids",
+                    "external_interfaces",
+                    "database_queries",
+                    "fallback_mode",
+                    "validation_modes",
+                    "claim_policy",
+                    "pin_level_validation_status",
+                    "approval_status",
+                },
+                "example_fields": {"supplement_id", "requirement_ids", "external_interfaces", "database_queries", "claim_policy", "approval_status"},
+                "merge_policy": False,
+            },
+        }
+
+        for rel in FRONTDOOR_TEMPLATE_RELS:
+            name = Path(rel).name
+            scaffold_payload = parse_yaml((template_dir / name).read_text(encoding="utf-8"))
+            generated_payload = parse_yaml(generated_templates[rel])
+            self.assertEqual(scaffold_payload, generated_payload, name)
+            self.assertEqual(scaffold_payload["intake_target"], "work/docparse/frontdoor/intake/pending")
+            self.assertEqual(_frontdoor_template_contract_errors(rel, scaffold_payload), [])
+            if expected[name]["merge_policy"]:
+                self.assertTrue(scaffold_payload.get("merge_policy"))
+            required_fields = set(scaffold_payload["required_fields"])
+            self.assertTrue(expected[name]["required_fields"].issubset(required_fields), name)
+            example = scaffold_payload["example"]
+            for field in expected[name]["example_fields"]:
+                self.assertIn(field, example, f"{name} missing example.{field}")
+                self.assertNotIn(example[field], (None, "", [], {}), f"{name} empty example.{field}")
+
+    def test_frontdoor_template_contract_rejects_missing_trace_and_merge_fields(self):
+        payload = parse_yaml(
+            (Path(__file__).resolve().parents[3]
+             / "env" / "rule" / "scaffold" / "work" / "docparse" / "frontdoor" / "templates" / "new_requirement.template.yaml").read_text(encoding="utf-8")
+        )
+        payload["required_fields"].remove("trace_links")
+        payload["example"].pop("merge_status")
+
+        errors = _frontdoor_template_contract_errors("work/docparse/frontdoor/templates/new_requirement.template.yaml", payload)
+
+        self.assertTrue(any("trace_links" in error for error in errors))
+        self.assertTrue(any("merge_status" in error for error in errors))
 
     def test_platform_template_uses_strict_gate_evidence_contracts(self):
         root = Path(__file__).resolve().parents[3]
@@ -1598,7 +1853,7 @@ class PlatformTemplateContractTests(unittest.TestCase):
 
         self.assertIn("loop1-refresh-reports", rtl_functional)
         self.assertIn("loop1-waveform-gate", rtl_functional)
-        self.assertIn("Loop1 waveform advisory: FAIL", rtl_functional)
+        self.assertIn("Loop1 waveform blocking gate: FAIL", rtl_functional)
         self.assertIn("set wave_dir [file join $project_root output sim loop1 wave]", rtl_functional)
         self.assertIn("HDLFLOW_WAVE_GROUP", rtl_functional)
         self.assertIn("loop1_wave_extra_groups", rtl_functional)
@@ -1955,8 +2210,8 @@ class PlatformTemplateContractTests(unittest.TestCase):
             self.assertTrue(
                 any("document_analysis.yaml question_review.status must be" in error for error in result.errors)
             )
-            self.assertTrue(
-                any("work/docparse/frontdoor/open_questions.md review summary must contain '- question_review_status: REVIEWED'" in error for error in result.errors)
+            self.assertFalse(
+                any("work/docparse/frontdoor/open_questions.md review summary" in error for error in result.errors)
             )
             self.assertTrue(any("test_intent.yaml waveform_windows must be non-empty" in error for error in result.errors))
             self.assertTrue(any("verification_plan.yaml waveform_comparison must be non-empty" in error for error in result.errors))
@@ -2211,7 +2466,8 @@ class PlatformTemplateContractTests(unittest.TestCase):
             result = check_review_findings(project, level="develop")
 
             self.assertFalse(result.ok)
-            self.assertTrue(any("full_function_test_plan" in error for error in result.errors))
+            self.assertTrue(any("loop1_task_requirement_evidence" in error for error in result.errors))
+            self.assertTrue(any("loop1_waveform_blocking" in error or "waveform_gate.json" in error for error in result.errors))
             self.assertTrue(any("uvm-env-and-test-build" in error for error in result.errors))
 
     def test_rtl_skill_audit_rejects_monolithic_register_block(self):
@@ -3798,6 +4054,29 @@ class FinalOutputGateTests(unittest.TestCase):
             (project / "output" / "rtl").mkdir(parents=True, exist_ok=True)
             (project / "output" / "rtl" / "demo_top.v").write_text("module demo_top; endmodule\n", encoding="utf-8")
             _write_empty_review_findings(project)
+            (project / "work" / "gates").mkdir(parents=True, exist_ok=True)
+            (project / "work" / "gates" / "claim_policy.yaml").write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "project: demo",
+                        "owner_role: arbtr",
+                        "arbtr_decision: ACCEPT",
+                        "final_claims:",
+                        "  may_claim_requirements_complete: true",
+                        "  may_claim_rtl_semantic_signoff: true",
+                        "  may_claim_directed_tb_task_signoff: true",
+                        "  may_claim_uvm_independent_oracle: true",
+                        "  may_claim_fpga_bringup: true",
+                        "  may_claim_ps_pl_runtime_path: false",
+                        "  may_claim_external_pin_level_validation: false",
+                        "  may_claim_full_hardware_validation: false",
+                        "waivers: []",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
             _write_doc_templates(project)
             _write_docset_source_inputs(project)
             docset = generate_docset(project, allow_draft=True)
@@ -4497,13 +4776,24 @@ def _write_empty_review_findings(project: Path) -> Path:
     review_evidence = [
         "output/reports/loop1/rtl_skill_audit.md",
         "env/rule/skills/rtl-architecture-and-gen/SKILL.md",
+        "rtl_semantic_stub_absent",
+        "semantic signoff",
+        "prototype-preflight",
+        "validate-prototype-plan",
+        "loop3-refresh-reports",
+        "loop3_validation_boundary_claim",
+        "claim policy",
     ]
     if rtl_file_names:
         review_evidence.append(f"rtl files: {rtl_file_names}")
     if tb_file_names:
         review_evidence.extend(
             [
+                "output/docs/test/verification_plan.md",
                 "output/tb/full_function_test_plan.md",
+                "loop1_task_requirement_evidence",
+                "loop1_waveform_blocking",
+                "output/reports/loop1/waveform_gate.json",
                 "env/rule/skills/modelsim-run-triage-debug/SKILL.md",
                 f"tb files: {tb_file_names}",
             ]
@@ -4512,6 +4802,7 @@ def _write_empty_review_findings(project: Path) -> Path:
         review_evidence.extend(
             [
                 "env/rule/skills/uvm-env-and-test-build/SKILL.md",
+                "loop2_independent_oracle",
                 f"uvm files: {uvm_file_names}",
             ]
         )

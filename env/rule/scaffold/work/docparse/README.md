@@ -4,8 +4,8 @@ Owns the six-agent structured front door and the normalized design intent that
 feeds all three engineering evidence loops.
 
 - `architecture/` - ADD, RTL planning rules, module partition, interfaces, dataflow, state machines, timing model.
-- `frontdoor/` - generated SRS, acceptance criteria, forbidden design list, and reviewed open questions.
-- `verification/` - module/system verification plan, assertion intent, coverage intent.
+- `frontdoor/` - generated SRS, acceptance criteria, forbidden design list, intake templates, active generated baseline, and reviewed open questions through `document_analysis.yaml`.
+- `verification/` - module/system verification plan, UVM plan, assertion intent, coverage intent.
 - `prototype/` - FPGA feasibility, clocks, pins, resources, PS/PL boundary intent.
 - `structured_spec/` - compact machine-readable specs consumed by generators.
 - `req_decompose/` - decomposed features, tasks, and acceptance checks.
@@ -29,9 +29,12 @@ Chat-only requirements do not use MinerU. Capture the request under
 names: `source_documents[].source_ref`, `parser_output`, `document_type`,
 `analysis_units[].unit_id`, `source_ref`, `section`, `summary`, and either
 `extracted_requirements` or `evidence_refs`. `open_questions` entries are
-mappings, not bare IDs. DocParse trace files under `trace_matrix/` use `links`,
-not `mappings`, and must not claim RTL, UVM, assertion, coverage, or FPGA
-evidence before the matching loop produces it.
+mappings, not bare IDs. New or changed requirements must first enter
+`frontdoor/intake/`, then be approved and merged into
+`frontdoor/generated/active_*.generated.yaml`. DocParse trace files under
+`trace_matrix/` use `links`, not `mappings`, and must not claim RTL, UVM
+implementation, assertion, coverage, or FPGA evidence before the matching loop
+produces it.
 
 Run the front-door scaffold before broad RTL, UVM, or prototype work:
 

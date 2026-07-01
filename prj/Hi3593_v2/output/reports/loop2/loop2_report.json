@@ -1,0 +1,600 @@
+{
+  "change_id": null,
+  "failed_checks": [],
+  "generated_at": "2026-06-30T22:30:16",
+  "parser_errors": [],
+  "project": "Hi3593_v2",
+  "result": "PASS",
+  "schema": "hdlflow_loop2_report_v1",
+  "source": {
+    "cmd": "work/loop2_uvm/current/cmd/command.json",
+    "manifest": "work/loop2_uvm/current/manifest.json"
+  },
+  "stage": "loop2_uvm",
+  "summary": {
+    "coverage": "100.0",
+    "failed_checks": 0,
+    "result": "PASS",
+    "total_checks": 64,
+    "uvm_error": 0,
+    "uvm_fatal": 0
+  },
+  "transactions": [
+    {
+      "actual": "code_100",
+      "expected": "code_100",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "reset_mid_frame",
+      "txn_id": "txn_1"
+    },
+    {
+      "actual": "code_100",
+      "expected": "code_100",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "reset_mid_frame",
+      "txn_id": "txn_2"
+    },
+    {
+      "actual": "code_103",
+      "expected": "code_103",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "overflow_fifo_full_stress",
+      "txn_id": "txn_3"
+    },
+    {
+      "actual": "code_103",
+      "expected": "code_103",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "overflow_fifo_full_stress",
+      "txn_id": "txn_4"
+    },
+    {
+      "actual": "code_104",
+      "expected": "code_104",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_38",
+      "test_id": "baud_div_434",
+      "txn_id": "txn_5"
+    },
+    {
+      "actual": "code_104",
+      "expected": "code_104",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_38",
+      "test_id": "baud_div_434",
+      "txn_id": "txn_6"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_7"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_8"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_9"
+    },
+    {
+      "actual": "code_212",
+      "expected": "code_212",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_10"
+    },
+    {
+      "actual": "code_268",
+      "expected": "code_268",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_44",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_11"
+    },
+    {
+      "actual": "code_328",
+      "expected": "code_328",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_80",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_12"
+    },
+    {
+      "actual": "code_332",
+      "expected": "code_332",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_84",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_13"
+    },
+    {
+      "actual": "code_360",
+      "expected": "code_360",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_a0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_14"
+    },
+    {
+      "actual": "code_392",
+      "expected": "code_392",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_c0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_15"
+    },
+    {
+      "actual": "code_264",
+      "expected": "code_264",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_40",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_16"
+    },
+    {
+      "actual": "code_204",
+      "expected": "code_204",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_17"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_18"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_19"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_20"
+    },
+    {
+      "actual": "code_212",
+      "expected": "code_212",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_21"
+    },
+    {
+      "actual": "code_268",
+      "expected": "code_268",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_44",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_22"
+    },
+    {
+      "actual": "code_328",
+      "expected": "code_328",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_80",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_23"
+    },
+    {
+      "actual": "code_332",
+      "expected": "code_332",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_84",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_24"
+    },
+    {
+      "actual": "code_360",
+      "expected": "code_360",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_a0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_25"
+    },
+    {
+      "actual": "code_392",
+      "expected": "code_392",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_c0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_26"
+    },
+    {
+      "actual": "code_264",
+      "expected": "code_264",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_40",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_27"
+    },
+    {
+      "actual": "code_204",
+      "expected": "code_204",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_28"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_29"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_30"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_31"
+    },
+    {
+      "actual": "code_212",
+      "expected": "code_212",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_32"
+    },
+    {
+      "actual": "code_268",
+      "expected": "code_268",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_44",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_33"
+    },
+    {
+      "actual": "code_328",
+      "expected": "code_328",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_80",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_34"
+    },
+    {
+      "actual": "code_332",
+      "expected": "code_332",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_84",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_35"
+    },
+    {
+      "actual": "code_360",
+      "expected": "code_360",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_a0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_36"
+    },
+    {
+      "actual": "code_392",
+      "expected": "code_392",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_c0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_37"
+    },
+    {
+      "actual": "code_264",
+      "expected": "code_264",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_40",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_38"
+    },
+    {
+      "actual": "code_204",
+      "expected": "code_204",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_39"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_40"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_41"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_42"
+    },
+    {
+      "actual": "code_212",
+      "expected": "code_212",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_43"
+    },
+    {
+      "actual": "code_268",
+      "expected": "code_268",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_44",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_44"
+    },
+    {
+      "actual": "code_328",
+      "expected": "code_328",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_80",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_45"
+    },
+    {
+      "actual": "code_332",
+      "expected": "code_332",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_84",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_46"
+    },
+    {
+      "actual": "code_360",
+      "expected": "code_360",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_a0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_47"
+    },
+    {
+      "actual": "code_392",
+      "expected": "code_392",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_c0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_48"
+    },
+    {
+      "actual": "code_264",
+      "expected": "code_264",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_40",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_49"
+    },
+    {
+      "actual": "code_204",
+      "expected": "code_204",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_50"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_51"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_52"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_53"
+    },
+    {
+      "actual": "code_212",
+      "expected": "code_212",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_0c",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_54"
+    },
+    {
+      "actual": "code_268",
+      "expected": "code_268",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_44",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_55"
+    },
+    {
+      "actual": "code_328",
+      "expected": "code_328",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_80",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_56"
+    },
+    {
+      "actual": "code_332",
+      "expected": "code_332",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_84",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_57"
+    },
+    {
+      "actual": "code_360",
+      "expected": "code_360",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_a0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_58"
+    },
+    {
+      "actual": "code_392",
+      "expected": "code_392",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_c0",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_59"
+    },
+    {
+      "actual": "code_264",
+      "expected": "code_264",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_40",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_60"
+    },
+    {
+      "actual": "code_204",
+      "expected": "code_204",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_04",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_61"
+    },
+    {
+      "actual": "code_208",
+      "expected": "code_208",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_08",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_62"
+    },
+    {
+      "actual": "code_216",
+      "expected": "code_216",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_10",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_63"
+    },
+    {
+      "actual": "code_236",
+      "expected": "code_236",
+      "latency_cycles": 0,
+      "result": "PASS",
+      "sent": "opcode_24",
+      "test_id": "opcode_matrix",
+      "txn_id": "txn_64"
+    }
+  ]
+}

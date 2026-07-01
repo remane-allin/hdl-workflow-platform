@@ -1,0 +1,36 @@
+schema_version: 1
+project: Hi3593_v2
+template_type: requirement_change
+intake_target: work/docparse/frontdoor/intake/pending
+merge_policy: approved change must update generated active baselines and invalidate downstream stale gate evidence
+required_fields:
+  - change_id
+  - target_requirement_id
+  - old_text
+  - new_text
+  - reason
+  - impact_analysis
+  - affected_artifacts
+  - reverification_required
+  - rollback_plan
+  - approval_status
+  - merge_status
+example:
+  change_id: REQ-CHG-001
+  target_requirement_id: REQ-EXISTING-001
+  old_text: Previous approved requirement text.
+  new_text: Replacement requirement text.
+  reason: Why the previous baseline is wrong or incomplete.
+  impact_analysis:
+    - architecture
+    - directed_tb
+    - uvm
+    - claim_policy
+  affected_artifacts:
+    - work/docparse/frontdoor/generated/active_srs.generated.yaml
+    - work/docparse/architecture/module_plan.yaml
+    - work/docparse/verification/verification_plan.yaml
+  reverification_required: true
+  rollback_plan: Reject or archive this intake if evidence does not support the change.
+  approval_status: pending
+  merge_status: not_merged

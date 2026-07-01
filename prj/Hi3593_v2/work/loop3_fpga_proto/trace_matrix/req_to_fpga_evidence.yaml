@@ -1,0 +1,23 @@
+schema_version: 1
+project: Hi3593_v2
+stage: loop3
+target: fpga_evidence
+links:
+  - requirement_id: REQ-PROTO-001
+    design_intent: DI-PROTO-AXI-001
+    prototype_intent: PI-FPGA-WRAP-001
+    artifacts:
+      - output/fpga/vivado/src/hi3593_v2_proto_top.v
+      - work/loop3_fpga_proto/board_tests/prototype_plan.yaml
+      - output/fpga/vivado/scripts/generated_ps_pl_bd.tcl
+      - output/fpga/vivado/scripts/run_ps_pl_impl.tcl
+      - output/fpga/vitis/src/hi3593_loop3_app.c
+  - requirement_id: REQ-PROTO-001
+    prototype_intent: PI-FPGA-TOOLS-001
+    artifacts:
+      - env/rule/global/toolchains/toolchains.yaml
+      - env/tool/scripts/Invoke-HdlVivado.ps1
+      - env/tool/scripts/Invoke-HdlVitis.ps1
+claim_limits:
+  may_claim_external_pin_level_validation: false
+  may_claim_full_hardware_validation: false

@@ -56,6 +56,24 @@ transcripts. Hand-written lightweight PASS reports, or logs missing the
 ModelSim/UVM/coverage provenance markers, are rejected by the report refresh
 step instead of being accepted as gate evidence.
 
+## Platform Change Governance
+
+Changes under `env/` are platform changes, not project requirements. Keep the
+PCR, impact matrix, migration manifest, regression manifest, and Arbtr review
+under `env/rule/platform_governance/` synchronized with the diff, then run:
+
+```powershell
+$env:PYTHONPATH = "env/core"
+python -m hdlflow.cli platform-regression --workspace . --all
+```
+
+For legacy projects that predate the frontdoor contract model, use the platform
+migration command before applying new gates:
+
+```powershell
+python -m hdlflow.cli migrate-project --workspace . --project prj\<project_name> --to-contract 2026.06-contract-v2
+```
+
 ## Tool Invocation
 
 Launch ModelSim through the configured wrapper instead of relying on whatever

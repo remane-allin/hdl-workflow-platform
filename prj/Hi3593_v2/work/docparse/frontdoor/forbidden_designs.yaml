@@ -1,0 +1,15 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arbtr
+forbidden_designs:
+  - id: FD-REUSE-001
+    text: "Do not reuse old-project RTL, TB, UVM, reports, gates, parsed outputs, or final claims as evidence."
+  - id: FD-TOP-001
+    text: "Do not add any top-level reset input other than MR."
+  - id: FD-RTL-001
+    text: "Do not implement all SPI decode, register storage, FIFO storage, ARINC datapath, and status logic in one monolithic RTL FSM."
+  - id: FD-CLAIM-001
+    text: "Do not claim external pin-level or full hardware validation from simulation, IP generation, or PS/PL emulation alone."
+  - id: FD-ANALOG-001
+    text: "Do not model ARINC voltage thresholds, slew, DC/DC converter behavior, or lightning protection as signed-off synthesizable digital RTL."

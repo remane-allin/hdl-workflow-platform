@@ -1,0 +1,89 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: arch
+rtl_planning_policy_ref: work/docparse/architecture/rtl_planning_rules.yaml
+fsm_style_policy:
+  - three_process_fsm_when_applicable
+  - fsm_single_responsibility
+  - "Do not use one large FSM in a single file to own all command decode, field updates, FIFO operations, register behavior, datapath mutation, and control sequencing. Split these into owned stages, fields, blocks, or modules."
+  - separate_state_next_and_datapath_control
+  - illegal_state_default_recovery
+state_machines:
+  - name: spi_frame_fsm
+    owning_module: spi_slave_if
+    controlled_function: "SPI command/data byte framing"
+    state_register_owner: spi_slave_if
+    next_state_owner: spi_slave_if
+    output_control_owner: spi_slave_if
+    forbidden_responsibilities:
+      - register_storage
+      - fifo_storage
+  - name: register_command_fsm
+    owning_module: control_status_regs
+    controlled_function: "Command side effects and read mux scheduling"
+    state_register_owner: control_status_regs
+    next_state_owner: control_status_regs
+    output_control_owner: control_status_regs
+    forbidden_responsibilities:
+      - spi_bit_shift
+      - arinc_bit_timing
+  - name: spi_cdc_response_fsm
+    owning_module: spi_cmd_cdc
+    controlled_function: "SCK request capture, ACLK command pulse, readback capture, and SCK acknowledge toggle"
+    state_register_owner: spi_cmd_cdc
+    next_state_owner: spi_cmd_cdc
+    output_control_owner: spi_cmd_cdc
+    forbidden_responsibilities:
+      - spi_bit_shift
+      - register_storage
+      - fifo_storage
+  - name: arinc_tx_fsm
+    owning_module: arinc429_tx
+    controlled_function: "ARINC 429 bit cell and word gap sequencing"
+    state_register_owner: arinc429_tx
+    next_state_owner: arinc429_tx
+    output_control_owner: arinc429_tx
+    forbidden_responsibilities:
+      - register_storage
+      - fifo_storage
+  - name: arinc_rx_fsm
+    owning_module: arinc429_rx
+    controlled_function: "Decoded receiver state sampling and word completion"
+    state_register_owner: arinc429_rx
+    next_state_owner: arinc429_rx
+    output_control_owner: arinc429_rx
+    forbidden_responsibilities:
+      - register_storage
+      - fifo_storage
+state_machine_entry_requirements:
+  - name
+  - owning_module
+  - controlled_function
+  - state_register_owner
+  - next_state_owner
+  - output_control_owner
+  - forbidden_responsibilities
+forbidden_fsm_responsibilities:
+  - datapath mutation owned by datapath modules
+  - FIFO storage owned by FIFO modules
+  - register storage owned by register modules
+  - protocol field storage owned by field/datapath modules
+reset_states:
+  - fsm: spi_frame_fsm
+    state: IDLE
+  - fsm: register_command_fsm
+    state: IDLE
+  - fsm: spi_cdc_response_fsm
+    state: IDLE
+  - fsm: arinc_tx_fsm
+    state: IDLE
+  - fsm: arinc_rx_fsm
+    state: WAIT_ACTIVITY
+illegal_states:
+  - rule: "All FSM default branches return to reset or idle states."
+transition_requirements:
+  - id: TR-SPI-CS
+    rule: "CS inactive returns spi_frame_fsm to IDLE and discards incomplete byte."
+assumptions: []

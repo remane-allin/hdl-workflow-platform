@@ -1,0 +1,119 @@
+{
+  "change_id": null,
+  "doc_path": "output/docs/design/microarchitecture_spec.md",
+  "doc_sha256": "6ec60df56c6db1c40af6b11790dd5604ebdd1b1d9ad77fc2b2ed502015726e3d",
+  "doc_type": "microarchitecture_specification",
+  "generated_at": "2026-06-30T22:42:50",
+  "generator": "hdlflow.docgen.microarchitecture_specification",
+  "markers": [
+    "HDL-UARCH-DOC START",
+    "HDL-UARCH-DOC END"
+  ],
+  "projection_path": "work/docparse/doc_projection.yaml",
+  "projection_sha256": "37f76df9adb60b8530248cc9de5e34b3206c3f136ff523b28a6bb1c7998209f1",
+  "schema_version": 1,
+  "snapshot_path": "work/docgen/snapshots/microarchitecture_doc_snapshot.json",
+  "snapshot_sha256": "a5c307d045d64b82cb3e0324f245e27a9dbff8f57bdba14c7e7d69ab8e349eca",
+  "source_hashes": [
+    {
+      "path": "output/manifest.yaml",
+      "sha256": "adc5c9e3ea080692f36da0f39aa5ccc613e027de4332094aeb7f9a8192e7dd71"
+    },
+    {
+      "path": "work/config/project_config.yaml",
+      "sha256": "ef14a15075d80481b7be742e769d384c64a72dbceeec75044eae18101a441e90"
+    },
+    {
+      "path": "work/docparse/architecture/dataflow.yaml",
+      "sha256": "f91ae6a05cb03f33b421c20cb79cb8dc70371c87548fd18ca178cc4be835084a"
+    },
+    {
+      "path": "work/docparse/architecture/interface_contracts.yaml",
+      "sha256": "386fde3b9d0defca0e90f8e8c5040e12052ac14bfb09ada943ada29635666f38"
+    },
+    {
+      "path": "work/docparse/architecture/module_plan.yaml",
+      "sha256": "f4b0a67c714793be18109bf81b3052614a952723355c143c1d10bed202473cd9"
+    },
+    {
+      "path": "work/docparse/architecture/state_machines.yaml",
+      "sha256": "c52d2504858522130abdce116e2d2df7cbb91096442f2175c8cb95111c2bd357"
+    },
+    {
+      "path": "work/docparse/architecture/timing_model.yaml",
+      "sha256": "67b3c848cf06ee962b0ffb7c0c2cab309c279c1a13186af929527b399561d062"
+    },
+    {
+      "path": "work/docparse/doc_projection.yaml",
+      "sha256": "37f76df9adb60b8530248cc9de5e34b3206c3f136ff523b28a6bb1c7998209f1"
+    },
+    {
+      "path": "work/docparse/frontdoor/acceptance_criteria.yaml",
+      "sha256": "6fbea7948954a55c25a2c8c8458745709cac428f5e9794663f99dbb8ebe46536"
+    },
+    {
+      "path": "work/docparse/frontdoor/srs.yaml",
+      "sha256": "e819e708ed831d8e64203185ec4b76de28b17cbf92d2ded4ae90dd2ac3d30a42"
+    },
+    {
+      "path": "work/docparse/prototype/prototype_plan.yaml",
+      "sha256": "dd9953f0900837e23e404b0ef8a6136e125c58354201d3efb18997ef3af8caa9"
+    },
+    {
+      "path": "work/docparse/review/role_findings.yaml",
+      "sha256": "d2aa600ed205680a69b7acc3cf1eb22aab7a2f121a91996a3328eaa298034187"
+    },
+    {
+      "path": "work/docparse/structured_spec/interface_spec.yaml",
+      "sha256": "952537d9edd1d57077bd359512bd58f98e33fe3a5606bcb77ab3cf1f6cd24070"
+    },
+    {
+      "path": "work/docparse/structured_spec/register_map.yaml",
+      "sha256": "dca2a81aff64f75cca2de87939e185c2af77c92c0b55c68ee49f71145c69b29f"
+    },
+    {
+      "path": "work/docparse/structured_spec/test_intent.yaml",
+      "sha256": "2e282dcd2c7c52d24f78597172eff4b878338ba139771edf4b0130787f1ff61f"
+    },
+    {
+      "path": "work/docparse/trace_matrix/req_to_design_intent.yaml",
+      "sha256": "120b4140d04b8c02ef04e6c58413ef4dda2139f8b614b510b1a5f1bc988f304c"
+    },
+    {
+      "path": "work/docparse/trace_matrix/req_to_test_intent.yaml",
+      "sha256": "e6301ad1824c5b868e23e489eeb4ca629bacf19f2a1ce76ac284c76531b325ef"
+    },
+    {
+      "path": "work/docparse/trace_matrix/req_to_uvm_intent.yaml",
+      "sha256": "3c303548b5d1b2ff42394eb1f2b96365e580b0f12ead6543e11a017cbbaae35a"
+    },
+    {
+      "path": "work/docparse/verification/assertion_plan.yaml",
+      "sha256": "fd3520dbeda1300f415c196226fb88cd8b39322344ae4b8770d4c1a61ba95cd3"
+    },
+    {
+      "path": "work/docparse/verification/coverage_plan.yaml",
+      "sha256": "bc52a83d5f74e5349772b2b8e9fe0ad81996820b56f7b6233f413c3729768f1b"
+    },
+    {
+      "path": "work/docparse/verification/uvm_plan.yaml",
+      "sha256": "6bc0d9ae2809f5cfa6a74ba6942ab42011c7628e41a7f812779fc1a72545c415"
+    },
+    {
+      "path": "work/docparse/verification/verification_plan.yaml",
+      "sha256": "0813324b7042cc18f30e2d6fb0e60a1240bf575e08f1a1bb685c8334b4c62946"
+    },
+    {
+      "path": "work/gates/gate_status.json",
+      "sha256": "edbde8c891d430c96698c77e79935a09b19dc69ab77b83c783e936e5ba1147dd"
+    }
+  ],
+  "status": "DRAFT",
+  "template_path": "env/templates/docs/microarchitecture_spec.md.j2",
+  "template_sha256": "0c9f639711918b9703e2f618dfe78bed5692236f189be6db1be7e5e98019ea6b",
+  "validation": {
+    "has_required_sections": true,
+    "has_tbd": false,
+    "release_ready": true
+  }
+}

@@ -1,0 +1,54 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: arbtr
+contract_version: frontdoor_contract_v2
+active_contract: generated_active_baseline
+authoritative_baseline:
+  human_readable:
+    - output/docs/application/application_guide.md
+    - output/docs/design/microarchitecture_spec.md
+    - output/docs/test/verification_plan.md
+    - output/docs/delivery/delivery_package.md
+  machine_readable:
+    - work/docparse/frontdoor/generated/active_srs.generated.yaml
+    - work/docparse/frontdoor/generated/active_design_intent.generated.yaml
+    - work/docparse/frontdoor/generated/active_verification_intent.generated.yaml
+    - work/docparse/frontdoor/generated/active_prototype_intent.generated.yaml
+    - work/docparse/frontdoor/generated/active_trace_matrix.generated.yaml
+  hash_binding:
+    required: true
+    manifest: output/docs/manifests/docset_manifest.json
+derived_plans:
+  - work/docparse/architecture/module_plan.yaml
+  - work/docparse/verification/verification_plan.yaml
+  - work/docparse/verification/uvm_plan.yaml
+  - work/loop1_rtl_tb/config/top_wave_manifest.yaml
+  - work/loop3_fpga_proto/board_tests/prototype_plan.yaml
+legacy_contracts:
+  work/docparse/frontdoor/open_questions.md:
+    status: inactive
+    replacement: work/docparse/structured_spec/document_analysis.yaml
+    reason: Open questions are tracked in document_analysis.yaml question_review and open_questions mappings.
+execution_lock:
+  pending_intake_blocks_execution: true
+  approved_intake_must_merge_before_execution: true
+  derived_plans_must_not_add_design_intent: true
+reuse_restrictions:
+  copied_from_old_project:
+    - input/spec
+  may_reference:
+    - input/spec
+    - old_project_design_documents
+    - old_project_toolchain_launcher_paths
+    - old_project_fpga_configuration_scripts
+  forbidden_reference:
+    - old_project_rtl
+    - old_project_tb
+    - old_project_uvm
+    - old_project_reports
+    - old_project_gates
+    - old_project_parsed_outputs
+    - old_project_bitstreams
+    - old_project_xsa
+    - old_project_elf_or_boot_images

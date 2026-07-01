@@ -62,6 +62,10 @@ documents:
         path: work/docparse/verification/verification_plan.yaml
         required: true
       -
+        id: uvm_plan
+        path: work/docparse/verification/uvm_plan.yaml
+        required: true
+      -
         id: assertion_plan
         path: work/docparse/verification/assertion_plan.yaml
         required: true
@@ -72,6 +76,10 @@ documents:
       -
         id: trace_req_to_test_intent
         path: work/docparse/trace_matrix/req_to_test_intent.yaml
+        required: true
+      -
+        id: trace_req_to_uvm_intent
+        path: work/docparse/trace_matrix/req_to_uvm_intent.yaml
         required: true
   delivery_package:
     output: output/docs/delivery/delivery_package.md

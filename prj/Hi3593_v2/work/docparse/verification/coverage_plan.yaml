@@ -1,0 +1,45 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+generated_at: "2026-06-26T20:45:00+08:00"
+owner_role: sim
+functional_coverage:
+  - id: COV-SPI-OPCODES
+    bins:
+      - opcode_04
+      - opcode_08
+      - opcode_0C
+      - opcode_10
+      - opcode_24
+      - opcode_40
+      - opcode_44
+      - opcode_80
+      - opcode_84
+      - opcode_A0
+      - opcode_C0
+  - id: COV-RESET-MODES
+    bins:
+      - MR
+      - opcode_04
+      - opcode_44
+  - id: COV-FIFO-LEVELS
+    bins:
+      - empty
+      - half
+      - full
+      - overflow_policy
+code_coverage_targets:
+  - control_fsm
+  - fifo_policies
+  - arinc_tx_rx_paths
+cross_coverage:
+  - opcode_group_x_access_direction
+  - fifo_level_x_policy
+illegal_bins:
+  - command_only_opcode_crossed_with_read_payload
+  - pin_level_external_claim_without_board_evidence
+closure_thresholds:
+  - functional_coverage_min: 80
+  - checked_transactions_min: 64
+assumptions:
+  - "Coverage gain is valid only with scoreboard checks enabled."

@@ -1,0 +1,17 @@
+platform_contract:
+  schema_version: 1
+  version: 2026.06-contract-v2
+  active_frontdoor_schema: frontdoor_contract_v2
+  active_baseline_schema: generated_active_baseline
+  active_tb_log_schema: tb_log_schema_v1
+  active_vcd_analysis_schema: vcd_analysis_schema_v1
+  active_claim_policy: claim_policy_v1
+  platform_change_governance:
+    pcr_required: true
+    impact_matrix_required: true
+    migration_manifest_required: true
+    regression_manifest_required: true
+    arbtr_platform_review_required: true
+  project_contract:
+    project_field: platform_contract_version
+    migration_command: python -m hdlflow.cli migrate-project --project <project> --to-contract 2026.06-contract-v2

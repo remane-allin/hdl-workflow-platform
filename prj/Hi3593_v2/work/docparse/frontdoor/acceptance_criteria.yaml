@@ -1,0 +1,33 @@
+schema_version: 1
+project: Hi3593_v2
+status: READY
+owner_role: spec
+criteria:
+  - id: AC-SPI-001
+    requirement_id: REQ-SPI-001
+    method: loop1_directed_tb
+    text: "SPI write/read transactions complete only on byte boundaries while CS is active low, and partial transfers are discarded."
+  - id: AC-RST-001
+    requirement_id: REQ-RST-001
+    method: rtl_audit_and_loop1
+    text: "Top RTL exposes MR and has no hard_reset, soft_reset, or sw_reset top-level input; opcode 0x04 clears architectural state through reset_ctrl."
+  - id: AC-RST-002
+    requirement_id: REQ-RST-002
+    method: loop1_directed_tb
+    text: "Opcode 0x44 clears TX/RX FIFO counters and priority mailboxes while retaining control register values."
+  - id: AC-FIFO-001
+    requirement_id: REQ-FIFO-001
+    method: loop1_directed_tb
+    text: "TX full ignores the 33rd write; RX full accepts the 33rd word by overwriting the 32nd storage location."
+  - id: AC-ARINC-001
+    requirement_id: REQ-ARINC-001
+    method: waveform_gate
+    text: "VCD windows show reset release, SPI command activity, TX driver-control response, and receiver FIFO/status response with no X/Z on required top ports except SO high-Z policy modeled as idle zero in FPGA RTL."
+  - id: AC-UVM-001
+    requirement_id: REQ-RX-001
+    method: loop2_uvm
+    text: "UVM scoreboard checks legal label/parity/SDI/FIFO scenarios from a spec reference model, not from DUT behavior."
+  - id: AC-PROTO-001
+    requirement_id: REQ-PROTO-001
+    method: loop3_preflight
+    text: "Loop3 reports classify IP-level, PS/PL emulation, external pin-level, and full hardware claims under claim_policy."
