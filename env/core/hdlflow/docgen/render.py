@@ -74,6 +74,8 @@ def _application_doc(definition: DocDefinition, snapshot: dict[str, Any], data: 
             _operation_sequence_table(data),
             "## 8. Acceptance Criteria",
             _items_table(_list_from(data.get("acceptance"), "criteria", "acceptance_criteria"), ("Criteria", "Evidence")),
+            "## 9. Active Requirement Baseline",
+            _active_requirements_table(data),
             f"<!-- {definition.marker_end} -->",
         ]
     )
@@ -90,24 +92,34 @@ def _uarch_doc(definition: DocDefinition, snapshot: dict[str, Any], data: dict[s
             _status_table(definition, snapshot),
             "## 1. Design Overview",
             _design_overview(data),
-            "## 2. Logic Level Design",
+            "## 2. Requirement-to-Architecture Summary",
+            _design_routing_table(data.get("design_routing")),
+            "## 3. Functional Domain Model",
+            _functional_domain_table(data.get("functional_domain_model")),
+            "## 4. Module Ownership Matrix",
+            _module_ownership_table(data.get("module_ownership_matrix")),
+            "## 5. Logic Level Design",
             _lld_contract_table(data.get("module_plan")),
-            "## 3. Implementation Order / Granularity",
+            "## 6. Implementation Order / Granularity",
             _implementation_order_table(data.get("module_plan")),
-            "## 4. Storage / FIFO / Counter Plan",
+            "## 7. Storage / FIFO / Counter Plan",
             _storage_counter_table(data.get("module_plan")),
-            "## 5. State Machines",
+            "## 8. State Machines",
             _state_machine_table(data.get("state_machines")),
-            "## 6. Module Topology",
+            "## 9. Module Topology",
             _modules_table(data.get("module_plan"), data.get("rtl_modules")),
-            "## 7. Interfaces",
+            "## 10. Interfaces",
             _interfaces_table(data),
-            "## 8. Clocks and Resets",
+            "## 11. Interface Contract",
+            _interface_contract_table(data.get("interface_contract")),
+            "## 12. Clocks and Resets",
             _generic_yaml_table(data.get("timing_model") or data.get("timing_rules")),
-            "## 9. Dataflow",
+            "## 13. Dataflow",
             _generic_yaml_table(data.get("dataflow")),
-            "## 10. State / Registers",
+            "## 14. State / Registers",
             _register_table(data.get("register_map")),
+            "## 15. Operation Model Hooks",
+            _operation_model_table(data.get("operation_model")),
             f"<!-- {definition.marker_end} -->",
         ]
     )
@@ -124,21 +136,31 @@ def _verification_doc(definition: DocDefinition, snapshot: dict[str, Any], data:
             _status_table(definition, snapshot),
             "## 1. Verification Goals",
             _verification_goals_table(data.get("verification_plan")),
-            "## 2. Test Matrix",
+            "## 2. Operation Model",
+            _operation_model_table(data.get("operation_model")),
+            "## 3. Directed TB Obligations",
+            _tb_obligation_table(data.get("tb_obligations")),
+            "## 4. VCD Semantic Windows",
+            _wave_semantic_table(data.get("wave_semantic_manifest")),
+            "## 5. Test Matrix",
             _verification_test_matrix(data.get("verification_plan")),
-            "## 3. Coverage",
+            "## 6. Coverage",
             _generic_yaml_table(data.get("coverage_plan")),
-            "## 4. Assertions",
+            "## 7. Assertions",
             _generic_yaml_table(data.get("assertion_plan")),
-            "## 5. Waveform Secondary Check Plan",
+            "## 8. Waveform Secondary Check Plan",
             _waveform_table(data),
-            "## 6. Directed TB Log / Waveform Artifact Contract",
+            "## 9. Directed TB Log / Waveform Artifact Contract",
             _directed_tb_contract_table(data.get("verification_plan")),
-            "## 7. UVM Environment Plan",
+            "## 10. UVM Environment Plan",
             _uvm_environment_table(data.get("uvm_plan")),
-            "## 8. UVM Tests / Scoreboards / Coverage",
+            "## 11. UVM Tests / Scoreboards / Coverage",
             _uvm_tests_table(data.get("uvm_plan"), data.get("trace_req_to_uvm_intent")),
-            "## 9. Exit Criteria",
+            "## 12. UVM Multi-Scenario Obligations",
+            _uvm_obligation_table(data.get("uvm_obligations")),
+            "## 13. FPGA Validation Matrix",
+            _fpga_matrix_table(data.get("fpga_validation_matrix")),
+            "## 14. Exit Criteria",
             _items_table(_list_from(data.get("acceptance"), "criteria", "acceptance_criteria"), ("Criteria", "Evidence")),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -162,13 +184,19 @@ def _delivery_doc(definition: DocDefinition, snapshot: dict[str, Any], data: dic
             _artifact_table(data),
             "## 4. Gate Status Summary",
             _generic_yaml_table(data.get("gate_status")),
-            "## 5. Verification Evidence",
+            "## 5. Semantic Gate Status",
+            _semantic_gate_status_table(data.get("semantic_gate_status")),
+            "## 6. Release State",
+            _release_state_table(data.get("release_state")),
+            "## 7. Verification Evidence",
             _verification_evidence_table(data),
-            "## 6. Prototype / Board Validation Plan",
+            "## 8. Prototype / Board Validation Plan",
             _prototype_validation_table(data.get("prototype_plan")),
-            "## 7. Change Control Summary",
+            "## 9. FPGA Validation Matrix",
+            _fpga_matrix_table(data.get("fpga_validation_matrix")),
+            "## 10. Change Control Summary",
             _generic_yaml_table(data.get("output_manifest")),
-            "## 8. Signoff Checklist",
+            "## 11. Signoff Checklist",
             _signoff_table(),
             f"<!-- {definition.marker_end} -->",
         ]
@@ -208,8 +236,241 @@ def _design_overview(data: dict[str, Any]) -> str:
     return _paragraph(_first(data.get("requirements"), "purpose", "objective", "goal", "description"))
 
 
+def _active_requirements_table(data: dict[str, Any]) -> str:
+    rows = []
+    for item in _list_from(data.get("active_requirements"), "requirements"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "requirement_id", default="requirement"),
+                    _first_present(item, "functional_domain", default="unassigned"),
+                    _first_present(item, "title", "full_text", default="requirement text not recorded"),
+                    _first_present(item, "lifecycle_state", "status", default="state not recorded"),
+                )
+            )
+    return _table(
+        ("Requirement", "Domain", "Title / Text", "Lifecycle"),
+        rows or [("no active requirement", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _functional_domain_table(model: Any) -> str:
+    rows = []
+    for item in _named_list(model, "domains"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "domain", "name", default="domain"),
+                    _first_present(item, "requirement_ids", default="requirements not recorded"),
+                    _first_present(item, "owner_modules", default="modules not recorded"),
+                    _first_present(item, "primary_interfaces", default="interfaces not recorded"),
+                    _first_present(item, "verification_focus", default="verification focus not recorded"),
+                )
+            )
+    return _table(
+        ("Domain", "Requirements", "Owner Modules", "Interfaces", "Verification Focus"),
+        rows or [("no domain", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _design_routing_table(routing: Any) -> str:
+    rows = []
+    for item in _named_list(routing, "routes"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "requirement_id", default="requirement"),
+                    _first_present(item, "functional_domain", default="domain not recorded"),
+                    _first_present(item, "design_doc_sections", default="sections not recorded"),
+                    _first_present(item, "affected_modules", default="modules not recorded"),
+                    _first_present(item, "verification_hooks", default="hooks not recorded"),
+                )
+            )
+    return _table(
+        ("Requirement", "Domain", "Design Sections", "Affected Modules", "Verification Hooks"),
+        rows or [("no route", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _module_ownership_table(matrix: Any) -> str:
+    rows = []
+    for item in _named_list(matrix, "owners"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "requirement_id", default="requirement"),
+                    _first_present(item, "functional_domain", default="domain not recorded"),
+                    _first_present(item, "rtl_owner_module", default="rtl owner not recorded"),
+                    _first_present(item, "interface_owner", default="interface owner not recorded"),
+                    _first_present(item, "verification_owner", default="verification owner not recorded"),
+                )
+            )
+    return _table(
+        ("Requirement", "Domain", "RTL Owner", "Interface Owner", "Verification Owner"),
+        rows or [("no owner", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _interface_contract_table(contract: Any) -> str:
+    rows = []
+    for item in _named_list(contract, "interfaces"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "name", "interface_name", default="interface"),
+                    _first_present(item, "protocol", default="protocol not recorded"),
+                    _first_present(item, "top_module", default="top module not recorded"),
+                    _first_present(item, "ports", default="ports not recorded"),
+                    _first_present(item, "observability", default="observability not recorded"),
+                )
+            )
+    return _table(
+        ("Interface", "Protocol", "Top Module", "Ports", "Observability"),
+        rows or [("no interface", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _operation_model_table(model: Any) -> str:
+    rows = []
+    for item in _named_list(model, "operations"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "operation_id", default="operation"),
+                    _first_present(item, "requirement_ids", default="requirements not recorded"),
+                    _first_present(item, "operation_type", default="type not recorded"),
+                    _first_present(item, "interface_name", default="interface not recorded"),
+                    _first_present(item, "expected_response", default="expected response not recorded"),
+                    _first_present(item, "coverage_bins", default="coverage bins not recorded"),
+                )
+            )
+    return _table(
+        ("Operation", "Requirements", "Type", "Interface", "Expected Response", "Coverage Bins"),
+        rows or [("no operation", "not recorded", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _tb_obligation_table(obligations: Any) -> str:
+    rows = []
+    for item in _named_list(obligations, "obligations"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "test_id", default="test"),
+                    _first_present(item, "requirement_id", default="requirement"),
+                    _first_present(item, "operation_id", default="operation"),
+                    _first_present(item, "observed_interface", default="interface not recorded"),
+                    _first_present(item, "evidence_type", default="evidence type not recorded"),
+                    _first_present(item, "status", default="status not recorded"),
+                )
+            )
+    return _table(
+        ("TB Test", "Requirement", "Operation", "Observed Interface", "Evidence Type", "Status"),
+        rows or [("no TB obligation", "not recorded", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _wave_semantic_table(manifest: Any) -> str:
+    rows = []
+    for item in _named_list(manifest, "windows"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "window_id", default="window"),
+                    _first_present(item, "operation_id", default="operation"),
+                    _first_present(item, "interface_name", default="interface not recorded"),
+                    _first_present(item, "decoder", default="decoder not recorded"),
+                    _first_present(item, "evidence_level", default="evidence level not recorded"),
+                    _first_present(item, "expected_events", default="expected events not recorded"),
+                )
+            )
+    return _table(
+        ("Window", "Operation", "Interface", "Decoder", "Evidence Level", "Expected Events"),
+        rows or [("no semantic window", "not recorded", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _uvm_obligation_table(obligations: Any) -> str:
+    rows = []
+    for item in _named_list(obligations, "obligations"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "sequence_id", default="sequence"),
+                    _first_present(item, "operation_id", default="operation"),
+                    _first_present(item, "coverage_bins", default="coverage bins not recorded"),
+                    _first_present(item, "scoreboard_model", default="scoreboard not recorded"),
+                    _first_present(item, "assertions", default="assertions not recorded"),
+                    _first_present(item, "status", default="status not recorded"),
+                )
+            )
+    return _table(
+        ("Sequence", "Operation", "Coverage Bins", "Scoreboard", "Assertions", "Status"),
+        rows or [("no UVM obligation", "not recorded", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _fpga_matrix_table(matrix: Any) -> str:
+    rows = []
+    for item in _named_list(matrix, "tests"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "test_id", default="test"),
+                    _first_present(item, "requirement_id", default="requirement"),
+                    _first_present(item, "validation_mode", default="mode not recorded"),
+                    _first_present(item, "claim_level", default="claim level not recorded"),
+                    _first_present(item, "evidence_level", default="evidence level not recorded"),
+                    _first_present(item, "status", default="status not recorded"),
+                )
+            )
+    return _table(
+        ("FPGA Test", "Requirement", "Mode", "Claim Level", "Evidence Level", "Status"),
+        rows or [("no FPGA validation", "not recorded", "not recorded", "not recorded", "not recorded", "not recorded")],
+    )
+
+
+def _semantic_gate_status_table(status: Any) -> str:
+    rows = []
+    for item in _named_list(status, "gates"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "name", default="gate"),
+                    _first_present(item, "mode", default="mode not recorded"),
+                    _first_present(item, "status", default="status not recorded"),
+                    _first_present(item, "issue_count", default="0"),
+                )
+            )
+    if isinstance(status, dict) and not rows and status:
+        return _generic_yaml_table(status)
+    return _table(("Gate", "Mode", "Status", "Issue Count"), rows or [("no semantic gate", "not recorded", "not recorded", "not recorded")])
+
+
+def _release_state_table(state: Any) -> str:
+    if not isinstance(state, dict):
+        return _table(("Field", "Value"), [("release_state", "not recorded")])
+    return _table(
+        ("Field", "Value"),
+        [
+            ("state", state.get("state", "not recorded")),
+            ("ok", state.get("ok", "not recorded")),
+            ("blockers", _compact(state.get("blockers", []))),
+            ("warnings", _compact(state.get("warnings", []))),
+        ],
+    )
+
+
 def _operation_sequence_table(data: dict[str, Any]) -> str:
     rows = []
+    for item in _named_list(data.get("operation_model"), "operations"):
+        if isinstance(item, dict):
+            rows.append(
+                (
+                    _first_present(item, "operation_id", default="operation"),
+                    _first_present(item, "expected_response", "readback_rule", default="operation evidence not recorded"),
+                )
+            )
     for item in _list_from(data.get("test_intent"), "operation_sequence", "scenarios", "tests"):
         if isinstance(item, dict):
             rows.append(
@@ -232,7 +493,7 @@ def _operation_sequence_table(data: dict[str, Any]) -> str:
 
 def _interfaces_table(data: dict[str, Any]) -> str:
     rows = []
-    for root in (data.get("interface_spec"), data.get("interface_contracts")):
+    for root in (data.get("interface_spec"), data.get("interface_contracts"), data.get("interface_contract")):
         for item in _named_list(root, "interfaces"):
             protocol = _first_present(item, "type", "protocol", default="interface_contract")
             description = _first_present(item, "description", "summary", "contract", "signals", "pins", default="defined by source interface")
@@ -242,7 +503,11 @@ def _interfaces_table(data: dict[str, Any]) -> str:
 
 def _ports_table(data: dict[str, Any]) -> str:
     rows = []
-    for root, owner in ((data.get("interface_spec"), "interface_spec"), (data.get("interface_contracts"), "interface_contracts")):
+    for root, owner in (
+        (data.get("interface_spec"), "interface_spec"),
+        (data.get("interface_contracts"), "interface_contracts"),
+        (data.get("interface_contract"), "semantic_interface_contract"),
+    ):
         for port in _named_list(root, "ports"):
             rows.append(
                 (

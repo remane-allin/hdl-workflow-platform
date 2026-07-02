@@ -4,12 +4,12 @@ project: Hi3593_v2
 ip_name: hi3593_v2_top
 version: DRAFT
 status: DRAFT
-generated_at: 2026-06-30T22:42:49
+generated_at: 2026-07-02T15:57:20
 generator: hdlflow.docgen.application_guide
 source_manifest: output/docs/manifests/application_doc_manifest.json
 owner_agent: Spec
 review_agents: [Arch, Review, Arbtr]
-change_id: null
+change_id: CR-20260702155634-forbid-directed-tb-markdown-sidecar
 ---
 
 # hi3593_v2_top Application Guide
@@ -24,8 +24,8 @@ change_id: null
 | Status | DRAFT |
 | Owner Agent | Spec |
 | Review Agents | Arch, Review, Arbtr |
-| Generated At | 2026-06-30T22:42:49 |
-| Change ID | null |
+| Generated At | 2026-07-02T15:57:20 |
+| Change ID | CR-20260702155634-forbid-directed-tb-markdown-sidecar |
 
 ## 1. Black Box View
 not recorded
@@ -57,6 +57,7 @@ not recorded
 | tx_word_if | TX engine pops words when TMODE or opcode_40 permits transmission. | TX pop only when FIFO not empty. |
 | rx_word_if | RX engine writes accepted words to RX FIFO with overwrite-on-full policy. | Accepted RX word is not dropped solely because count is full. |
 | arinc_driver_logic | HI-8592 digital driver control. | TX1IN/TX0IN both zero mean NULL; both one request Hi-Z only in external driver contexts. |
+| spi_host | spi | defined by source interface |
 
 ## 4. Interfaces
 | Port | Direction | Width | Owner |
@@ -342,43 +343,27 @@ not recorded
 ## 7. Operation Sequence
 | Step | Expected Result |
 | --- | --- |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
-| opcode command | execute documented command behavior |
+| OP_ASM_BOUNDARY_001 | observable functional response satisfies requirement: ASM-BOUNDARY-001 |
+| OP_BASELINE_SEED_001 | observable functional response satisfies requirement: BASELINE-SEED-001 |
+| OP_REQ_ACLK_001 | observable read response satisfies requirement: REQ-ACLK-001 |
+| OP_REQ_ARINC_001 | observable stream response satisfies requirement: REQ-ARINC-001 |
+| OP_REQ_FIFO_001 | observable write response satisfies requirement: REQ-FIFO-001 |
+| OP_REQ_FLAGINT_001 | observable read response satisfies requirement: REQ-FLAGINT-001 |
+| OP_REQ_INST_001 | observable write response satisfies requirement: REQ-INST-001 |
+| OP_REQ_LABEL_001 | observable read response satisfies requirement: REQ-LABEL-001 |
+| OP_REQ_MAILBOX_001 | observable read response satisfies requirement: REQ-MAILBOX-001 |
+| OP_REQ_MB_PINS_001 | observable read response satisfies requirement: REQ-MB-PINS-001 |
+| OP_REQ_PLABEL_001 | observable reset response satisfies requirement: REQ-PLABEL-001 |
+| OP_REQ_PROTO_001 | observable read response satisfies requirement: REQ-PROTO-001 |
+| OP_REQ_RST_001 | observable functional response satisfies requirement: REQ-RST-001 |
+| OP_REQ_RST_002 | observable read response satisfies requirement: REQ-RST-002 |
+| OP_REQ_RX_001 | observable stream response satisfies requirement: REQ-RX-001 |
+| OP_REQ_RX_FILTER_001 | observable stream response satisfies requirement: REQ-RX-FILTER-001 |
+| OP_REQ_SPI_001 | observable functional response satisfies requirement: REQ-SPI-001 |
+| OP_REQ_SPI_002 | observable write response satisfies requirement: REQ-SPI-002 |
+| OP_REQ_STATUS_001 | observable read response satisfies requirement: REQ-STATUS-001 |
+| OP_REQ_TX_001 | observable write response satisfies requirement: REQ-TX-001 |
+| OP_REQ_TX_FULL_001 | observable stream response satisfies requirement: REQ-TX-FULL-001 |
 
 ## 8. Acceptance Criteria
 | Criteria | Evidence |
@@ -390,5 +375,30 @@ not recorded
 | AC-ARINC-001 | VCD windows show reset release, SPI command activity, TX driver-control response, and receiver FIFO/status response with no X/Z on required top ports except SO high-Z policy modeled as idle zero in FPGA RTL. |
 | AC-UVM-001 | UVM scoreboard checks legal label/parity/SDI/FIFO scenarios from a spec reference model, not from DUT behavior. |
 | AC-PROTO-001 | Loop3 reports classify IP-level, PS/PL emulation, external pin-level, and full hardware claims under claim_policy. |
+
+## 9. Active Requirement Baseline
+| Requirement | Domain | Title / Text | Lifecycle |
+| --- | --- | --- | --- |
+| ASM-BOUNDARY-001 | unassigned | ASM-BOUNDARY-001 | proposed |
+| BASELINE-SEED-001 | unassigned | BASELINE-SEED-001 | proposed |
+| REQ-ACLK-001 | unassigned | REQ-ACLK-001 | proposed |
+| REQ-ARINC-001 | unassigned | REQ-ARINC-001 | proposed |
+| REQ-FIFO-001 | unassigned | REQ-FIFO-001 | proposed |
+| REQ-FLAGINT-001 | unassigned | REQ-FLAGINT-001 | proposed |
+| REQ-INST-001 | unassigned | REQ-INST-001 | proposed |
+| REQ-LABEL-001 | unassigned | REQ-LABEL-001 | proposed |
+| REQ-MAILBOX-001 | unassigned | REQ-MAILBOX-001 | proposed |
+| REQ-MB-PINS-001 | unassigned | REQ-MB-PINS-001 | proposed |
+| REQ-PLABEL-001 | unassigned | REQ-PLABEL-001 | proposed |
+| REQ-PROTO-001 | unassigned | REQ-PROTO-001 | proposed |
+| REQ-RST-001 | unassigned | REQ-RST-001 | proposed |
+| REQ-RST-002 | unassigned | REQ-RST-002 | proposed |
+| REQ-RX-001 | unassigned | REQ-RX-001 | proposed |
+| REQ-RX-FILTER-001 | unassigned | REQ-RX-FILTER-001 | proposed |
+| REQ-SPI-001 | unassigned | REQ-SPI-001 | proposed |
+| REQ-SPI-002 | unassigned | REQ-SPI-002 | proposed |
+| REQ-STATUS-001 | unassigned | REQ-STATUS-001 | proposed |
+| REQ-TX-001 | unassigned | REQ-TX-001 | proposed |
+| REQ-TX-FULL-001 | unassigned | REQ-TX-FULL-001 | proposed |
 
 <!-- HDL-APP-DOC END -->

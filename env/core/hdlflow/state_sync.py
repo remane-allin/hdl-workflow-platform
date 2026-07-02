@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .gate_invalidation import pass_evidence_invalidated
 from .layout import project_gates_path, project_memory_path
 from .project import require_project_instance
 
@@ -92,17 +93,20 @@ def sync_project_state(project_path: Path) -> StateSyncResult:
 def _node_statuses(project: Path) -> dict[str, str]:
     statuses: dict[str, str] = {}
     for node in NODE_ORDER:
-        has_manifest = _has_gate_manifest(project, node)
         manifest_path = _latest_manifest(project, node)
-        pass_path = manifest_path or (None if has_manifest else _latest_pass_report(project, node))
+        pass_path = manifest_path
         latest_report = _latest_gate_report(project, node)
         if latest_report:
             report_path, result = latest_report
-            if has_manifest and not manifest_path and result.lower() == "pass":
+            normalized = result.lower()
+            if normalized == "pass" and not pass_path:
                 statuses[node] = "pending"
                 continue
-            if not pass_path or report_path.stat().st_mtime >= pass_path.stat().st_mtime:
-                statuses[node] = result.lower()
+            if normalized == "fail" and (not pass_path or report_path.stat().st_mtime >= pass_path.stat().st_mtime):
+                statuses[node] = normalized
+                continue
+            if normalized == "pass" and pass_path and report_path.stat().st_mtime >= pass_path.stat().st_mtime:
+                statuses[node] = normalized
                 continue
         statuses[node] = "pass" if pass_path else "pending"
     return statuses
@@ -126,11 +130,6 @@ def _latest_manifest(project: Path, node: str) -> Path | None:
     return None
 
 
-def _has_gate_manifest(project: Path, node: str) -> bool:
-    root = project_memory_path(project) / "recovery" / "rollback_manifests"
-    return bool(_node_file_matches(root, node, ".json"))
-
-
 def _valid_gate_manifest(project: Path, node: str, path: Path) -> bool:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -142,7 +141,10 @@ def _valid_gate_manifest(project: Path, node: str, path: Path) -> bool:
         return False
     if data.get("project") != project.name or data.get("node") != node:
         return False
-    if not data.get("created_at") or not data.get("gate_report"):
+    created_at = str(data.get("created_at") or "")
+    if not created_at or not data.get("gate_report"):
+        return False
+    if pass_evidence_invalidated(project, path, created_at=created_at):
         return False
     gate_report = project / str(data.get("gate_report"))
     try:
@@ -160,20 +162,12 @@ def _valid_gate_manifest(project: Path, node: str, path: Path) -> bool:
     return True
 
 
-def _latest_pass_report(project: Path, node: str) -> Path | None:
-    root = project / "output" / "reports" / "gates"
-    matches = _node_file_matches(root, node, ".md")
-    for path in reversed(matches):
-        text = path.read_text(encoding="utf-8", errors="ignore")
-        if re.search(r"^- result:\s*PASS\s*$", text, flags=re.MULTILINE):
-            return path
-    return None
-
-
 def _latest_gate_report(project: Path, node: str) -> tuple[Path, str] | None:
     root = project / "output" / "reports" / "gates"
     matches = _node_file_matches(root, node, ".md")
     for path in reversed(matches):
+        if pass_evidence_invalidated(project, path):
+            continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         match = re.search(r"^- result:\s*(PASS|FAIL)\s*$", text, flags=re.MULTILINE)
         if match:

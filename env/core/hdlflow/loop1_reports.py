@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .reports.loop1_report import generate_loop1_report
+from .waveform_semantic import WAVE_SEMANTIC_MANIFEST_REL, write_waveform_semantic_report
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,9 @@ def refresh_loop1_reports(project_path: Path) -> Loop1ReportResult:
     """Overwrite the unified Loop1 report artifacts from current structured log."""
 
     report_paths, payload = generate_loop1_report(project_path)
+    project = Path(project_path)
+    if (project / WAVE_SEMANTIC_MANIFEST_REL).exists():
+        report_paths.append(write_waveform_semantic_report(project))
     summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
     parser_errors = payload.get("parser_errors", []) if isinstance(payload.get("parser_errors"), list) else []
     return Loop1ReportResult(

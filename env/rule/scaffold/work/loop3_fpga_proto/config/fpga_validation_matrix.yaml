@@ -1,0 +1,14 @@
+schema_version: 1
+claim_levels:
+  level_0: Build / Implementation
+  level_1: Wrapper / PS-PL Connectivity
+  level_2: Protocol Bring-up / Connectivity Validation
+  level_3: Requirement-Mapped FPGA Validation
+  level_4: External Pin / Hardware Boundary
+tests: []
+timing_cdc_issues: []
+hash_manifest:
+  bitstream: []
+  xsa: []
+  elf: []
+  boot_bin: []

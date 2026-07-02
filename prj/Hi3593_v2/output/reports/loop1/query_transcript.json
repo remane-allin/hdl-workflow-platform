@@ -1,7 +1,7 @@
 {
   "backend": "pywellen",
   "extractor": "pywellen_query_backend",
-  "generated_at": "2026-06-30T22:29:08",
+  "generated_at": "2026-07-02T15:08:13",
   "project": "Hi3593_v2",
   "queries": [
     {

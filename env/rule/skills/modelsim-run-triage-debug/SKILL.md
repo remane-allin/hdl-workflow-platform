@@ -24,7 +24,7 @@ Use this skill for evidence-driven simulation work under `work/loop1_rtl_tb/sim/
 2. Run the selected ModelSim/Questa `.do` script from the owning Loop directory.
 3. Read the generated runtime log and the corresponding report under `output/reports/loop1/` or `output/reports/loop2/`.
 4. Treat the simulator log as the report source. Loop1 reports must be regenerated from `HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|...` plus `HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|...`; Loop2 reports must be regenerated from `HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|...` plus `HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|...`. Do not hand-edit generated reports.
-   For Loop1, `rtl_functional.do` must also record WLF/VCD evidence under `output/sim/loop1/wave`, emit `HDLFLOW_WAVE_GROUP` scope markers, pass `work/loop1_rtl_tb/config/top_wave_manifest.yaml`, and run `loop1-waveform-gate` after `loop1-refresh-reports`.
+   For Loop1, `rtl_functional.do` must also record WLF/VCD evidence under `output/sim/loop1/wave`, emit `HDLFLOW_WAVE_GROUP` scope markers, pass `work/loop1_rtl_tb/config/top_wave_manifest.yaml`, and run `loop1-waveform-gate` plus `loop1-waveform-semantic` after `loop1-refresh-reports` when `work/loop1_rtl_tb/config/wave_semantic_manifest.yaml` defines verification windows. `loop1-waveform-semantic` must decode the manifest's event list or VCD signal windows into transactions in `output/reports/loop1/waveform_semantic_report.json`; waveform activity alone is not requirement closure.
 5. Classify the result:
    - compile issue
    - elaboration or setup issue

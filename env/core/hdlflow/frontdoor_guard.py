@@ -67,7 +67,9 @@ WRITE_INTENT_PATTERNS = (
     r"\bgenerate-ps-pl-bd\b",
     r"\bgenerate-vitis-boot\b",
     r"\bloop1-refresh-reports\b",
+    r"\bsemantic-compile\b",
     r"\bloop1-waveform-gate\b",
+    r"\bloop1-waveform-semantic\b",
     r"\bloop2-refresh-reports\b",
     r"\bloop2-build-bindings\b",
     r"\bloop2-database-preflight\b",
@@ -171,6 +173,7 @@ FRONTDOOR_GENERATOR_COMMAND_PATTERNS = (
     r"\bgenerate-uarch-doc\b",
     r"\bgenerate-verification-doc\b",
     r"\bgenerate-delivery-doc\b",
+    r"\bsemantic-compile\b",
     r"\bcheck-docset\b",
 )
 
@@ -788,7 +791,12 @@ def _is_controlled_prototype_command(command: str) -> bool:
 
 def _controlled_command_stage_gate(project_path: Path, command: str) -> FrontdoorGuardResult:
     normalized = _normalize_text_paths(command)
-    if _modelsim_loop(normalized) == "loop1" or "loop1-refresh-reports" in normalized or "loop1-waveform-gate" in normalized:
+    if (
+        _modelsim_loop(normalized) == "loop1"
+        or "loop1-refresh-reports" in normalized
+        or "loop1-waveform-gate" in normalized
+        or "loop1-waveform-semantic" in normalized
+    ):
         return require_stage_ready(project_path, "loop1", "Loop1 tool entry")
     if (
         _modelsim_loop(normalized) == "loop2"

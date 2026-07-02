@@ -15,6 +15,7 @@ from .change_control import validate_change_bundle
 from .config import load_project
 from .docgen import check_docset
 from .docgen.constants import DOC_DEFINITIONS, DOCSET_MANIFEST_REL, DOCSET_REPORT_REL
+from .gate_invalidation import invalidation_detail, pass_evidence_invalidated
 from .layout import find_workspace_root, project_memory_path
 from .loop1_reports import refresh_loop1_reports
 from .loop2_reports import refresh_loop2_reports
@@ -41,7 +42,9 @@ from .requirements_frontend import (
 )
 from .review import check_review_findings
 from .rtl_skill_audit import run_rtl_skill_audit
+from .release_state import update_release_state
 from .simple_yaml import load_yaml
+from .semantic_gates import gate_check_summaries
 from .waveform import LOOP1_WAVE_DIR_REL
 from .waveform_gate import (
     QUERY_TRANSCRIPT_JSON_REL,
@@ -259,6 +262,10 @@ def run_gate(project_path: Path, node: str, level: str = "develop", change_id: s
     checks.extend(_check_skill_manifest_drift(project, normalized_node, change_id))
     checks.extend(_check_protected_gate_manifest_drift(project, normalized_node, change_id))
     checks.extend(_check_evidence_freshness(project, source_paths, evidence_paths))
+    checks.extend(
+        GateCheck(item["name"], item["status"], item["detail"])
+        for item in gate_check_summaries(project, level=level, gate_names=_semantic_gate_names_for_node(normalized_node))
+    )
     ok = all(check.status == "PASS" for check in checks)
 
     report_path = _write_gate_report(project, normalized_node, level, ok, checks, change_id)
@@ -268,8 +275,8 @@ def run_gate(project_path: Path, node: str, level: str = "develop", change_id: s
     return GateRunResult(normalized_node, level, ok, report_path, checks, manifest_path)
 
 
-def run_final_audit(project_path: Path, level: str = "release") -> GateRunResult:
-    return run_gate(project_path, "output", level=level)
+def run_final_audit(project_path: Path, level: str = "release", change_id: str | None = None) -> GateRunResult:
+    return run_gate(project_path, "output", level=level, change_id=change_id)
 
 
 def _refresh_reports_for_gate(project: Path, node: str) -> list[GateCheck]:
@@ -339,6 +346,24 @@ def _normalize_node(node: str) -> str:
         "05": "output",
     }
     return aliases.get(node.lower(), node)
+
+
+def _semantic_gate_names_for_node(node: str) -> list[str]:
+    staged = [
+        "requirements_consistency_gate",
+        "architecture_impact_gate",
+        "design_routing_gate",
+        "microarchitecture_completeness_gate",
+    ]
+    if node in {"work/loop1_rtl_tb", "work/loop2_uvm", "work/loop3_fpga_proto", "output"}:
+        staged.extend(["rtl_obligation_gate", "tb_blackbox_obligation_gate", "waveform_semantic_gate"])
+    if node in {"work/loop2_uvm", "work/loop3_fpga_proto", "output"}:
+        staged.append("uvm_obligation_gate")
+    if node in {"work/loop3_fpga_proto", "output"}:
+        staged.append("fpga_validation_obligation_gate")
+    if node == "output":
+        staged.append("release_truth_gate")
+    return staged
 
 
 def _check_project_scaffold(project: Path) -> list[GateCheck]:
@@ -709,7 +734,7 @@ def _check_loop1(project: Path, level: str) -> list[GateCheck]:
         "work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml",
     ]
     checks.extend(_path_checks(project, required_paths))
-    freshness_rels = _stage_report_required_rels(LOOP1_REPORT)
+    freshness_rels = _stage_report_evidence_rels(LOOP1_REPORT)
     checks.extend(_check_skill_policy_freshness(project, "work/loop1_rtl_tb", _files(project, freshness_rels)))
     checks.append(_check_rtl_skill_audit_freshness(project))
     checks.append(_check_report_pass("loop1_report_pass", report_payload))
@@ -748,7 +773,7 @@ def _check_loop2(project: Path, level: str) -> list[GateCheck]:
             "work/loop2_uvm/trace_matrix/req_to_coverage.yaml",
         ],
     ))
-    checks.extend(_check_skill_policy_freshness(project, "work/loop2_uvm", _files(project, _stage_report_required_rels(LOOP2_REPORT) + [database_rel])))
+    checks.extend(_check_skill_policy_freshness(project, "work/loop2_uvm", _files(project, _stage_report_evidence_rels(LOOP2_REPORT) + [database_rel])))
     checks.append(_check_report_pass("loop2_report_pass", report_payload))
     checks.append(_check_report_parser_clean("loop2_report_parser_clean", report_payload))
     checks.append(_check_report_transactions("loop2_transaction_contract", report_payload))
@@ -1396,6 +1421,14 @@ def _stage_report_required_rels(definition: StageReportDefinition) -> list[str]:
     ]
 
 
+def _stage_report_evidence_rels(definition: StageReportDefinition) -> list[str]:
+    return [
+        definition.report_md,
+        definition.report_json,
+        definition.report_manifest,
+    ]
+
+
 def _check_stage_report_contract(project: Path, definition: StageReportDefinition) -> tuple[list[GateCheck], dict[str, Any]]:
     checks = _path_checks(project, _stage_report_required_rels(definition))
     payload = _load_json_mapping(project / definition.report_json)
@@ -1602,7 +1635,9 @@ def _report_payload_evidence_text(payload: dict[str, Any]) -> str:
 def _check_prerequisite_gate(project: Path, node: str, detail: str) -> list[GateCheck]:
     manifest = _latest_gate_manifest(project, node)
     if not manifest:
-        return [GateCheck(f"prerequisite:{node}", "FAIL", f"{detail}; missing passed gate manifest for {node}")]
+        invalidated = invalidation_detail(project)
+        suffix = f"; {invalidated}" if invalidated else ""
+        return [GateCheck(f"prerequisite:{node}", "FAIL", f"{detail}; missing current passed gate manifest for {node}{suffix}")]
     return [GateCheck(f"prerequisite:{node}", "PASS", str(manifest.relative_to(project)))]
 
 
@@ -1972,6 +2007,8 @@ def _check_no_ad_hoc_analysis_artifacts(project: Path) -> GateCheck:
                 continue
             if _is_parsed_extract_markdown(rel_posix):
                 continue
+            if _is_generated_semantic_closure_markdown(path):
+                continue
             if _is_generated_design_report_markdown(rel_posix):
                 continue
             forbidden_reason = (
@@ -2032,6 +2069,19 @@ def _is_parsed_extract_markdown(rel_posix: str) -> bool:
 
 def _is_generated_design_report_markdown(rel_posix: str) -> bool:
     return rel_posix in DESIGN_REPORT_ALLOWED_MARKDOWN
+
+
+def _is_generated_semantic_closure_markdown(path: Path) -> bool:
+    rel = path.as_posix()
+    if "/work/docparse/change/" not in rel and "\\work\\docparse\\change\\" not in str(path):
+        return False
+    if path.name not in {"design_replanning_record.md", "verification_replanning_record.md"}:
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+    return "generated_by: hdlflow.semantic_closure" in text
 
 
 def _check_rtl_skill_audit_freshness(project: Path) -> GateCheck:
@@ -2915,14 +2965,14 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
         return (_docparse_source_files(project), _files(project, evidence_rels))
     if node == "work/loop1_rtl_tb":
         evidence_rels = [
-            *_stage_report_required_rels(LOOP1_REPORT),
+            *_stage_report_evidence_rels(LOOP1_REPORT),
             WAVEFORM_QUERY_REPORT_REL,
             WAVEFORM_GATE_JSON_REL,
             QUERY_TRANSCRIPT_JSON_REL,
+            "output/reports/loop1/waveform_semantic_report.json",
+            "output/reports/loop1/waveform_semantic_report.md",
             "output/reports/loop1/rtl_skill_audit.md",
         ]
-        wave_files = _glob_project_files(project, f"{LOOP1_WAVE_DIR_REL}/*.vcd")
-        wave_files.extend(_glob_project_files(project, f"{LOOP1_WAVE_DIR_REL}/*.wlf"))
         return (
             _source_files_by_suffix(
                 project,
@@ -2934,7 +2984,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
                     "work/docparse/trace_matrix": {".yaml", ".yml", ".json"},
                 },
             ),
-            sorted(set(_files(project, evidence_rels) + wave_files)),
+            sorted(set(_files(project, evidence_rels))),
         )
     if node == "work/loop2_uvm":
         return (
@@ -2950,7 +3000,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
             _files(
                 project,
                 [
-                    *_stage_report_required_rels(LOOP2_REPORT),
+                    *_stage_report_evidence_rels(LOOP2_REPORT),
                     "work/loop2_uvm/_runtime/loop2_bindings.sqlite",
                 ],
             ),
@@ -2958,6 +3008,25 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
     if node == "work/loop3_fpga_proto":
         evidence = _node_evidence(project, node)
         bitstream_glob = _evidence_str(evidence, "globs", "bitstreams", "output/fpga/vivado/bitstream/*.bit")
+        freshness_evidence_rels = _evidence_report_paths_except(
+            evidence,
+            [
+                "output/fpga/vivado/reports/post_impl_timing_summary.rpt",
+                "output/fpga/vivado/reports/post_impl_drc.rpt",
+                "output/reports/loop3/serial/latest_serial_text.log",
+                "output/reports/loop3/serial/latest_serial_validation_report.md",
+                "output/reports/loop3/vivado_implementation_report.md",
+                "output/reports/loop3/vitis_boot_report.md",
+                "output/reports/loop3/board_validation_report.md",
+                "output/reports/loop3/loop3_exit_report.md",
+            ],
+            {
+                "database_preflight",
+                "prototype_plan_check",
+                "output/reports/loop3/preflight/database_preflight.md",
+                "output/reports/loop3/preflight/prototype_plan_check.md",
+            },
+        )
         return (
             _files(
                 project,
@@ -2969,18 +3038,7 @@ def _gate_paths(project: Path, node: str) -> tuple[list[Path], list[Path]]:
                     "work/loop3_fpga_proto/scripts",
                 ],
             ),
-            _files(project, _evidence_report_paths(evidence, [
-                "output/reports/loop3/preflight/database_preflight.md",
-                "output/reports/loop3/preflight/prototype_plan_check.md",
-                "output/fpga/vivado/reports/post_impl_timing_summary.rpt",
-                "output/fpga/vivado/reports/post_impl_drc.rpt",
-                "output/reports/loop3/serial/latest_serial_text.log",
-                "output/reports/loop3/serial/latest_serial_validation_report.md",
-                "output/reports/loop3/vivado_implementation_report.md",
-                "output/reports/loop3/vitis_boot_report.md",
-                "output/reports/loop3/board_validation_report.md",
-                "output/reports/loop3/loop3_exit_report.md",
-            ])) + _glob_project_files(project, bitstream_glob),
+            _files(project, freshness_evidence_rels) + _glob_project_files(project, bitstream_glob),
         )
     if node == "output":
         return ([], _files(project, ["output/manifest.yaml", "output/reports/final_audit_report.md", *_docset_evidence_rels()]))
@@ -3107,7 +3165,9 @@ def _check_source_policy(project: Path, node: str) -> list[GateCheck]:
         allowed = _extension_set(section.get("allowed_extensions", []))
         forbidden = _extension_set(section.get("forbidden_extensions", []))
         template_exts = _extension_set(section.get("template_extensions", []))
-        enforce_all_extensions = _policy_bool(section, "enforce_all_extensions", False)
+        strict_source_roots = {"output/rtl", "output/tb"}
+        normalized_root_rel = root_rel.replace("\\", "/").rstrip("/")
+        enforce_all_extensions = _policy_bool(section, "enforce_all_extensions", normalized_root_rel in strict_source_roots)
         if not root.exists():
             checks.append(GateCheck(f"source_policy:{section_name}", "PASS", f"{root_rel} does not exist yet"))
             continue
@@ -3362,6 +3422,22 @@ def _evidence_report_paths(evidence: dict[str, Any], defaults: list[str]) -> lis
     return paths or defaults
 
 
+def _evidence_report_paths_except(evidence: dict[str, Any], defaults: list[str], excluded_keys_or_paths: set[str]) -> list[str]:
+    reports = evidence.get("reports", {})
+    if not isinstance(reports, dict):
+        return defaults
+    paths: list[str] = []
+    excluded = {item.replace("\\", "/") for item in excluded_keys_or_paths}
+    for key, value in reports.items():
+        if not isinstance(value, str) or not value.strip():
+            continue
+        rel = value.strip().replace("\\", "/")
+        if str(key) in excluded or rel in excluded:
+            continue
+        paths.append(value.strip())
+    return paths or defaults
+
+
 def _project_path(project: Path, rel: str) -> Path:
     path = (project / rel).resolve()
     try:
@@ -3409,10 +3485,11 @@ def _write_gate_report(project: Path, node: str, level: str, ok: bool, checks: l
     for check in checks:
         lines.append(f"| {check.name} | {check.status} | {_escape_md(check.detail)} |")
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    if node == "output" and ok:
+    if node == "output":
         final_path = project / "output" / "reports" / "final_audit_report.md"
         final_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        _sync_output_manifest(project, level=level, final_gate="PASS", final_report=final_path)
+        _sync_output_manifest(project, level=level, final_gate="PASS" if ok else "FAIL", final_report=final_path)
+        update_release_state(project, level=level)
     return report_path
 
 
@@ -3543,7 +3620,17 @@ def _latest_gate_manifest(project: Path, node: str, level: str | None = None) ->
             pattern = f"{stem}_{level}_*.json" if level else f"{stem}_*.json"
             matches.extend(manifest_dir.glob(pattern))
     matches = sorted(set(matches))
-    return matches[-1] if matches else None
+    for path in reversed(matches):
+        created_at = None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8-sig"))
+            if isinstance(payload, dict):
+                created_at = str(payload.get("created_at") or "")
+        except Exception:
+            created_at = None
+        if not pass_evidence_invalidated(project, path, created_at=created_at):
+            return path
+    return None
 
 
 def _node_file_stem(node: str) -> str:

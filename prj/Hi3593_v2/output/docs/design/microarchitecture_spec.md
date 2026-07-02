@@ -4,12 +4,12 @@ project: Hi3593_v2
 ip_name: hi3593_v2_top
 version: DRAFT
 status: DRAFT
-generated_at: 2026-06-30T22:42:49
+generated_at: 2026-07-02T15:57:21
 generator: hdlflow.docgen.microarchitecture_specification
 source_manifest: output/docs/manifests/microarchitecture_doc_manifest.json
 owner_agent: Arch
 review_agents: [Exec, Sim, Review, Arbtr]
-change_id: null
+change_id: CR-20260702155634-forbid-directed-tb-markdown-sidecar
 ---
 
 # hi3593_v2_top Microarchitecture Specification
@@ -24,12 +24,67 @@ change_id: null
 | Status | DRAFT |
 | Owner Agent | Arch |
 | Review Agents | Exec, Sim, Review, Arbtr |
-| Generated At | 2026-06-30T22:42:49 |
-| Change ID | null |
+| Generated At | 2026-07-02T15:57:21 |
+| Change ID | CR-20260702155634-forbid-directed-tb-markdown-sidecar |
 
 ## 1. Design Overview
 hierarchy_only_top
-## 2. Logic Level Design
+## 2. Requirement-to-Architecture Summary
+| Requirement | Domain | Design Sections | Affected Modules | Verification Hooks |
+| --- | --- | --- | --- | --- |
+| ASM-BOUNDARY-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_ASM_BOUNDARY_001, vcd=OP_ASM_BOUNDARY_001, uvm=OP_ASM_BOUNDARY_001, fpga=ASM-BOUNDARY-001 |
+| BASELINE-SEED-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_BASELINE_SEED_001, vcd=OP_BASELINE_SEED_001, uvm=OP_BASELINE_SEED_001, fpga=BASELINE-SEED-001 |
+| REQ-ACLK-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_ACLK_001, vcd=OP_REQ_ACLK_001, uvm=OP_REQ_ACLK_001, fpga=REQ-ACLK-001 |
+| REQ-ARINC-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_ARINC_001, vcd=OP_REQ_ARINC_001, uvm=OP_REQ_ARINC_001, fpga=REQ-ARINC-001 |
+| REQ-FIFO-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_FIFO_001, vcd=OP_REQ_FIFO_001, uvm=OP_REQ_FIFO_001, fpga=REQ-FIFO-001 |
+| REQ-FLAGINT-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_FLAGINT_001, vcd=OP_REQ_FLAGINT_001, uvm=OP_REQ_FLAGINT_001, fpga=REQ-FLAGINT-001 |
+| REQ-INST-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_INST_001, vcd=OP_REQ_INST_001, uvm=OP_REQ_INST_001, fpga=REQ-INST-001 |
+| REQ-LABEL-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_LABEL_001, vcd=OP_REQ_LABEL_001, uvm=OP_REQ_LABEL_001, fpga=REQ-LABEL-001 |
+| REQ-MAILBOX-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_MAILBOX_001, vcd=OP_REQ_MAILBOX_001, uvm=OP_REQ_MAILBOX_001, fpga=REQ-MAILBOX-001 |
+| REQ-MB-PINS-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_MB_PINS_001, vcd=OP_REQ_MB_PINS_001, uvm=OP_REQ_MB_PINS_001, fpga=REQ-MB-PINS-001 |
+| REQ-PLABEL-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_PLABEL_001, vcd=OP_REQ_PLABEL_001, uvm=OP_REQ_PLABEL_001, fpga=REQ-PLABEL-001 |
+| REQ-PROTO-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_PROTO_001, vcd=OP_REQ_PROTO_001, uvm=OP_REQ_PROTO_001, fpga=REQ-PROTO-001 |
+| REQ-RST-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_RST_001, vcd=OP_REQ_RST_001, uvm=OP_REQ_RST_001, fpga=REQ-RST-001 |
+| REQ-RST-002 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_RST_002, vcd=OP_REQ_RST_002, uvm=OP_REQ_RST_002, fpga=REQ-RST-002 |
+| REQ-RX-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_RX_001, vcd=OP_REQ_RX_001, uvm=OP_REQ_RX_001, fpga=REQ-RX-001 |
+| REQ-RX-FILTER-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_RX_FILTER_001, vcd=OP_REQ_RX_FILTER_001, uvm=OP_REQ_RX_FILTER_001, fpga=REQ-RX-FILTER-001 |
+| REQ-SPI-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_SPI_001, vcd=OP_REQ_SPI_001, uvm=OP_REQ_SPI_001, fpga=REQ-SPI-001 |
+| REQ-SPI-002 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_SPI_002, vcd=OP_REQ_SPI_002, uvm=OP_REQ_SPI_002, fpga=REQ-SPI-002 |
+| REQ-STATUS-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_STATUS_001, vcd=OP_REQ_STATUS_001, uvm=OP_REQ_STATUS_001, fpga=REQ-STATUS-001 |
+| REQ-TX-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_TX_001, vcd=OP_REQ_TX_001, uvm=OP_REQ_TX_001, fpga=REQ-TX-001 |
+| REQ-TX-FULL-001 | unassigned | Microarchitecture Specification / Requirement-to-Architecture Summary, Microarchitecture Specification / Module Ownership Matrix, Verification Plan / Operation Model, Verification Plan / TB VCD UVM FPGA Semantic Obligations | hi3593_v2_top | tb=OP_REQ_TX_FULL_001, vcd=OP_REQ_TX_FULL_001, uvm=OP_REQ_TX_FULL_001, fpga=REQ-TX-FULL-001 |
+
+## 3. Functional Domain Model
+| Domain | Requirements | Owner Modules | Interfaces | Verification Focus |
+| --- | --- | --- | --- | --- |
+| unassigned | ASM-BOUNDARY-001, BASELINE-SEED-001, REQ-ACLK-001, REQ-ARINC-001, REQ-FIFO-001, REQ-FLAGINT-001, REQ-INST-001, REQ-LABEL-001, REQ-MAILBOX-001, REQ-MB-PINS-001, REQ-PLABEL-001, REQ-PROTO-001, REQ-RST-001, REQ-RST-002, REQ-RX-001, REQ-RX-FILTER-001, REQ-SPI-001, REQ-SPI-002, REQ-STATUS-001, REQ-TX-001, REQ-TX-FULL-001 | hi3593_v2_top | spi_host | directed_tb, waveform_semantic, uvm, fpga |
+
+## 4. Module Ownership Matrix
+| Requirement | Domain | RTL Owner | Interface Owner | Verification Owner |
+| --- | --- | --- | --- | --- |
+| ASM-BOUNDARY-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_ASM_BOUNDARY_001, vcd=OP_ASM_BOUNDARY_001, uvm=OP_ASM_BOUNDARY_001, fpga=ASM-BOUNDARY-001 |
+| BASELINE-SEED-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_BASELINE_SEED_001, vcd=OP_BASELINE_SEED_001, uvm=OP_BASELINE_SEED_001, fpga=BASELINE-SEED-001 |
+| REQ-ACLK-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_ACLK_001, vcd=OP_REQ_ACLK_001, uvm=OP_REQ_ACLK_001, fpga=REQ-ACLK-001 |
+| REQ-ARINC-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_ARINC_001, vcd=OP_REQ_ARINC_001, uvm=OP_REQ_ARINC_001, fpga=REQ-ARINC-001 |
+| REQ-FIFO-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_FIFO_001, vcd=OP_REQ_FIFO_001, uvm=OP_REQ_FIFO_001, fpga=REQ-FIFO-001 |
+| REQ-FLAGINT-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_FLAGINT_001, vcd=OP_REQ_FLAGINT_001, uvm=OP_REQ_FLAGINT_001, fpga=REQ-FLAGINT-001 |
+| REQ-INST-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_INST_001, vcd=OP_REQ_INST_001, uvm=OP_REQ_INST_001, fpga=REQ-INST-001 |
+| REQ-LABEL-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_LABEL_001, vcd=OP_REQ_LABEL_001, uvm=OP_REQ_LABEL_001, fpga=REQ-LABEL-001 |
+| REQ-MAILBOX-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_MAILBOX_001, vcd=OP_REQ_MAILBOX_001, uvm=OP_REQ_MAILBOX_001, fpga=REQ-MAILBOX-001 |
+| REQ-MB-PINS-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_MB_PINS_001, vcd=OP_REQ_MB_PINS_001, uvm=OP_REQ_MB_PINS_001, fpga=REQ-MB-PINS-001 |
+| REQ-PLABEL-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_PLABEL_001, vcd=OP_REQ_PLABEL_001, uvm=OP_REQ_PLABEL_001, fpga=REQ-PLABEL-001 |
+| REQ-PROTO-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_PROTO_001, vcd=OP_REQ_PROTO_001, uvm=OP_REQ_PROTO_001, fpga=REQ-PROTO-001 |
+| REQ-RST-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_RST_001, vcd=OP_REQ_RST_001, uvm=OP_REQ_RST_001, fpga=REQ-RST-001 |
+| REQ-RST-002 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_RST_002, vcd=OP_REQ_RST_002, uvm=OP_REQ_RST_002, fpga=REQ-RST-002 |
+| REQ-RX-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_RX_001, vcd=OP_REQ_RX_001, uvm=OP_REQ_RX_001, fpga=REQ-RX-001 |
+| REQ-RX-FILTER-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_RX_FILTER_001, vcd=OP_REQ_RX_FILTER_001, uvm=OP_REQ_RX_FILTER_001, fpga=REQ-RX-FILTER-001 |
+| REQ-SPI-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_SPI_001, vcd=OP_REQ_SPI_001, uvm=OP_REQ_SPI_001, fpga=REQ-SPI-001 |
+| REQ-SPI-002 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_SPI_002, vcd=OP_REQ_SPI_002, uvm=OP_REQ_SPI_002, fpga=REQ-SPI-002 |
+| REQ-STATUS-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_STATUS_001, vcd=OP_REQ_STATUS_001, uvm=OP_REQ_STATUS_001, fpga=REQ-STATUS-001 |
+| REQ-TX-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_TX_001, vcd=OP_REQ_TX_001, uvm=OP_REQ_TX_001, fpga=REQ-TX-001 |
+| REQ-TX-FULL-001 | unassigned | hi3593_v2_top | spi_host | tb=OP_REQ_TX_FULL_001, vcd=OP_REQ_TX_FULL_001, uvm=OP_REQ_TX_FULL_001, fpga=REQ-TX-FULL-001 |
+
+## 5. Logic Level Design
 | Module | Clock / Reset | Owned State | Internal Subblocks | Coding Behavior | Verification Hooks |
 | --- | --- | --- | --- | --- | --- |
 | hi3593_v2_top | ACLK / MR | registers=none; register_fields=none; fsms=none; fifos=none; memories=none; counters=none; arbiters=none; error_flags=none | none | Hierarchy-only top that exposes MR, SPI, status, and digital ARINC driver/receiver boundary ports. | tests=T-MR-SHARED; assertions=A-TOP-NO-SECOND-RESET; coverage=COV-TOP-PORTS |
@@ -42,7 +97,7 @@ hierarchy_only_top
 | arinc429_tx | ACLK / MR | registers=none; register_fields=none; fsms=arinc_tx_fsm; fifos=none; memories=none; counters=tx_bit_count, tx_cell_count, tx_gap_count; arbiters=none; error_flags=none | none | Own TX FIFO pop scheduling, optional parity generation, ARINC bit-cell sequencing, and HI-8592 digital driver controls TX1IN/TX0IN/SLP. | tests=selftest_null_driver, parity_odd_even; assertions=A-TX-NULL-GAP; coverage=COV-TX-RATE-PARITY |
 | arinc429_rx | ACLK / MR | registers=none; register_fields=none; fsms=arinc_rx_fsm; fifos=none; memories=none; counters=rx_bit_count, rx_gap_count; arbiters=none; error_flags=parity_error, label_reject | none | Own decoded OUTA/OUTB sampling, ARINC word assembly, parity/SDI/label filtering, and accepted RX word handoff. | tests=label_filtering, parity_odd_even; assertions=A-RX-FILTER; coverage=COV-RX-FILTERS |
 
-## 3. Implementation Order / Granularity
+## 6. Implementation Order / Granularity
 | Order | Item | Detail |
 | --- | --- | --- |
 | 1 | sync_fifo | sync_fifo.v |
@@ -60,7 +115,7 @@ hierarchy_only_top
 | policy | keep_inside_parent_when | the logic is only a small decode, mux, counter, bit-order, parity, or pulse-generation subblock, the subblock has no independent interface contract, the subblock is only meaningful inside one protocol engine |
 | policy | naming_rule | Protocol-facing modules use official or industry names such as spi_slave_if, arinc429_tx, or arinc429_rx. |
 
-## 4. Storage / FIFO / Counter Plan
+## 7. Storage / FIFO / Counter Plan
 | Module | Source File | Storage / Counter Ownership | Reset Rule |
 | --- | --- | --- | --- |
 | reset_ctrl | reset_ctrl.v | counters: mr_sync_chain | MR |
@@ -71,7 +126,7 @@ hierarchy_only_top
 | arinc429_tx | arinc429_tx.v | counters: tx_bit_count, tx_cell_count, tx_gap_count | MR |
 | arinc429_rx | arinc429_rx.v | counters: rx_bit_count, rx_gap_count; error_flags: parity_error, label_reject | MR |
 
-## 5. State Machines
+## 8. State Machines
 | FSM | Owning Module | Reset State | States | Transitions | Illegal State Behavior |
 | --- | --- | --- | --- | --- | --- |
 | spi_frame_fsm | spi_slave_if | reset state not specified | states not specified | transitions not specified | illegal-state behavior not specified |
@@ -80,7 +135,7 @@ hierarchy_only_top
 | arinc_tx_fsm | arinc429_tx | reset state not specified | states not specified | transitions not specified | illegal-state behavior not specified |
 | arinc_rx_fsm | arinc429_rx | reset state not specified | states not specified | transitions not specified | illegal-state behavior not specified |
 
-## 6. Module Topology
+## 9. Module Topology
 | Module | Role | Description / Source |
 | --- | --- | --- |
 | hi3593_v2_top | top integration | hierarchy_only_top |
@@ -105,7 +160,7 @@ hierarchy_only_top
 | spi_slave_if | RTL source | output/rtl/spi_slave_if.v |
 | sync_fifo | RTL source | output/rtl/sync_fifo.v |
 
-## 7. Interfaces
+## 10. Interfaces
 | Interface | Type / Protocol | Description |
 | --- | --- | --- |
 | spi_mode0 | SPI mode 0 half-duplex | CS, SCK, SI, SO |
@@ -119,8 +174,14 @@ hierarchy_only_top
 | tx_word_if | TX engine pops words when TMODE or opcode_40 permits transmission. | TX pop only when FIFO not empty. |
 | rx_word_if | RX engine writes accepted words to RX FIFO with overwrite-on-full policy. | Accepted RX word is not dropped solely because count is full. |
 | arinc_driver_logic | HI-8592 digital driver control. | TX1IN/TX0IN both zero mean NULL; both one request Hi-Z only in external driver contexts. |
+| spi_host | spi | defined by source interface |
 
-## 8. Clocks and Resets
+## 11. Interface Contract
+| Interface | Protocol | Top Module | Ports | Observability |
+| --- | --- | --- | --- | --- |
+| spi_host | spi | hi3593_v2_top | name=ACLK; direction=input; width=1, name=MR; direction=input; width=1, name=CS; direction=input; width=1, name=SCK; direction=input; width=1, name=SI; direction=input; width=1, name=SO; direction=output; width=1, name=OUT1A; direction=input; width=1, name=OUT1B; direction=input; width=1, name=OUT2A; direction=input; width=1, name=OUT2B; direction=input; width=1, name=TX1IN; direction=output; width=1, name=TX0IN; direction=output; width=1, name=SLP; direction=output; width=1, name=TEMPTY; direction=output; width=1, name=TFULL; direction=output; width=1, name=R1FLAG; direction=output; width=1, name=R2FLAG; direction=output; width=1, name=R1INT; direction=output; width=1, name=R2INT; direction=output; width=1, name=MB1_1; direction=output; width=1, name=MB1_2; direction=output; width=1, name=MB1_3; direction=output; width=1, name=MB2_1; direction=output; width=1, name=MB2_2; direction=output; width=1, name=MB2_3; direction=output; width=1 | TB, waveform, UVM monitor, and FPGA evidence must observe this boundary |
+
+## 12. Clocks and Resets
 | Field | Value |
 | --- | --- |
 | clock_domains | name=ACLK; source=top_port, name=SCK; source=top_port |
@@ -130,7 +191,7 @@ hierarchy_only_top
 | timing_constraints | id=TC-SCK; interface=spi_cmd_req; min_period_ns=100 |
 | assumptions | not recorded |
 
-## 9. Dataflow
+## 13. Dataflow
 | Field | Value |
 | --- | --- |
 | flows | id=DF-SPI-REG; name=spi_command_to_registers; producer_module=spi_slave_if; consumer_module=control_status_regs; path=SI, spi_slave_if, spi_cmd_req, spi_cmd_cdc, aclk_cmd_valid, control_status_regs; payload=opcode_and_data; control=CS_active_low_and_byte_complete; latency=synchronizer_handshake; req_ids=REQ-SPI-001, REQ-SPI-002, id=DF-TX; name=tx_fifo_to_driver_logic; producer_module=sync_fifo; consumer_module=arinc429_tx; path=tx_fifo_rdata, arinc429_tx, TX1IN, TX0IN, SLP; payload=arinc429_word; control=TMODE_or_opcode_40; latency=selected_arinc_bit_timing; req_ids=REQ-TX-001, id=DF-RX; name=receiver_logic_to_rx_fifo; producer_module=arinc429_rx; consumer_module=sync_fifo; path=OUTA_OUTB, arinc429_rx, rx_word_if, rx_fifo; payload=accepted_arinc429_word; control=label_sdi_parity_filter; latency=one_aclk_after_word_accept; req_ids=REQ-RX-001, id=DF-RX-MAILBOX; name=receiver_logic_to_mailbox_status; producer_module=arinc429_rx; consumer_module=rx_mailbox_status; path=OUTA_OUTB, arinc429_rx, rx_word_if, rx_mailbox_status, MB_valid_pins, R1_R2_flags; payload=accepted_priority_arinc429_word; control=priority_label_match_and_read_clear_pulse; latency=one_aclk_after_word_accept; req_ids=REQ-MAILBOX-001, REQ-MB-PINS-001, REQ-FLAGINT-001 |
@@ -139,7 +200,7 @@ hierarchy_only_top
 | backpressure | id=BP-TX-FULL; rule=TX full ignores new writes., id=BP-RX-FULL; rule=RX full overwrites location 32 for accepted words. |
 | assumptions | not recorded |
 
-## 10. State / Registers
+## 14. State / Registers
 | Offset / Opcode | Register / Command | Access / Width | Reset | Description |
 | --- | --- | --- | --- | --- |
 | address assigned by opcode map | tx_control | 8 | 0x00 | [HIZ, TFLIP, TMODE, SELFTEST, ODDEVEN, TPARITY, X, RATE] |
@@ -189,5 +250,30 @@ hierarchy_only_top
 | opcode not specified | unnamed_command | command | not applicable: opcode row | command behavior defined by opcode name |
 | opcode not specified | unnamed_command | command | not applicable: opcode row | command behavior defined by opcode name |
 | opcode not specified | unnamed_command | command | not applicable: opcode row | command behavior defined by opcode name |
+
+## 15. Operation Model Hooks
+| Operation | Requirements | Type | Interface | Expected Response | Coverage Bins |
+| --- | --- | --- | --- | --- | --- |
+| OP_ASM_BOUNDARY_001 | ASM-BOUNDARY-001 | functional | spi_host | observable functional response satisfies requirement: ASM-BOUNDARY-001 | op_asm_boundary_001_nominal, op_asm_boundary_001_reset_interaction, op_asm_boundary_001_negative_or_boundary |
+| OP_BASELINE_SEED_001 | BASELINE-SEED-001 | functional | spi_host | observable functional response satisfies requirement: BASELINE-SEED-001 | op_baseline_seed_001_nominal, op_baseline_seed_001_reset_interaction, op_baseline_seed_001_negative_or_boundary |
+| OP_REQ_ACLK_001 | REQ-ACLK-001 | read | spi_host | observable read response satisfies requirement: REQ-ACLK-001 | op_req_aclk_001_nominal, op_req_aclk_001_reset_interaction, op_req_aclk_001_negative_or_boundary |
+| OP_REQ_ARINC_001 | REQ-ARINC-001 | stream | spi_host | observable stream response satisfies requirement: REQ-ARINC-001 | op_req_arinc_001_nominal, op_req_arinc_001_reset_interaction, op_req_arinc_001_negative_or_boundary |
+| OP_REQ_FIFO_001 | REQ-FIFO-001 | write | spi_host | observable write response satisfies requirement: REQ-FIFO-001 | op_req_fifo_001_nominal, op_req_fifo_001_reset_interaction, op_req_fifo_001_negative_or_boundary |
+| OP_REQ_FLAGINT_001 | REQ-FLAGINT-001 | read | spi_host | observable read response satisfies requirement: REQ-FLAGINT-001 | op_req_flagint_001_nominal, op_req_flagint_001_reset_interaction, op_req_flagint_001_negative_or_boundary |
+| OP_REQ_INST_001 | REQ-INST-001 | write | spi_host | observable write response satisfies requirement: REQ-INST-001 | op_req_inst_001_nominal, op_req_inst_001_reset_interaction, op_req_inst_001_negative_or_boundary |
+| OP_REQ_LABEL_001 | REQ-LABEL-001 | read | spi_host | observable read response satisfies requirement: REQ-LABEL-001 | op_req_label_001_nominal, op_req_label_001_reset_interaction, op_req_label_001_negative_or_boundary |
+| OP_REQ_MAILBOX_001 | REQ-MAILBOX-001 | read | spi_host | observable read response satisfies requirement: REQ-MAILBOX-001 | op_req_mailbox_001_nominal, op_req_mailbox_001_reset_interaction, op_req_mailbox_001_negative_or_boundary |
+| OP_REQ_MB_PINS_001 | REQ-MB-PINS-001 | read | spi_host | observable read response satisfies requirement: REQ-MB-PINS-001 | op_req_mb_pins_001_nominal, op_req_mb_pins_001_reset_interaction, op_req_mb_pins_001_negative_or_boundary |
+| OP_REQ_PLABEL_001 | REQ-PLABEL-001 | reset | spi_host | observable reset response satisfies requirement: REQ-PLABEL-001 | op_req_plabel_001_nominal, op_req_plabel_001_reset_interaction, op_req_plabel_001_negative_or_boundary |
+| OP_REQ_PROTO_001 | REQ-PROTO-001 | read | spi_host | observable read response satisfies requirement: REQ-PROTO-001 | op_req_proto_001_nominal, op_req_proto_001_reset_interaction, op_req_proto_001_negative_or_boundary |
+| OP_REQ_RST_001 | REQ-RST-001 | functional | spi_host | observable functional response satisfies requirement: REQ-RST-001 | op_req_rst_001_nominal, op_req_rst_001_reset_interaction, op_req_rst_001_negative_or_boundary |
+| OP_REQ_RST_002 | REQ-RST-002 | read | spi_host | observable read response satisfies requirement: REQ-RST-002 | op_req_rst_002_nominal, op_req_rst_002_reset_interaction, op_req_rst_002_negative_or_boundary |
+| OP_REQ_RX_001 | REQ-RX-001 | stream | spi_host | observable stream response satisfies requirement: REQ-RX-001 | op_req_rx_001_nominal, op_req_rx_001_reset_interaction, op_req_rx_001_negative_or_boundary |
+| OP_REQ_RX_FILTER_001 | REQ-RX-FILTER-001 | stream | spi_host | observable stream response satisfies requirement: REQ-RX-FILTER-001 | op_req_rx_filter_001_nominal, op_req_rx_filter_001_reset_interaction, op_req_rx_filter_001_negative_or_boundary |
+| OP_REQ_SPI_001 | REQ-SPI-001 | functional | spi_host | observable functional response satisfies requirement: REQ-SPI-001 | op_req_spi_001_nominal, op_req_spi_001_reset_interaction, op_req_spi_001_negative_or_boundary |
+| OP_REQ_SPI_002 | REQ-SPI-002 | write | spi_host | observable write response satisfies requirement: REQ-SPI-002 | op_req_spi_002_nominal, op_req_spi_002_reset_interaction, op_req_spi_002_negative_or_boundary |
+| OP_REQ_STATUS_001 | REQ-STATUS-001 | read | spi_host | observable read response satisfies requirement: REQ-STATUS-001 | op_req_status_001_nominal, op_req_status_001_reset_interaction, op_req_status_001_negative_or_boundary |
+| OP_REQ_TX_001 | REQ-TX-001 | write | spi_host | observable write response satisfies requirement: REQ-TX-001 | op_req_tx_001_nominal, op_req_tx_001_reset_interaction, op_req_tx_001_negative_or_boundary |
+| OP_REQ_TX_FULL_001 | REQ-TX-FULL-001 | stream | spi_host | observable stream response satisfies requirement: REQ-TX-FULL-001 | op_req_tx_full_001_nominal, op_req_tx_full_001_reset_interaction, op_req_tx_full_001_negative_or_boundary |
 
 <!-- HDL-UARCH-DOC END -->

@@ -1,0 +1,29 @@
+schema_version: 1
+project: change_me
+profile_status: draft
+functional_domain_catalog: []
+design_doc_sections:
+  - Product Scope and Claims
+  - Requirement-to-Architecture Summary
+  - Functional Domain Model
+  - Module Ownership Matrix
+  - Interface Contract
+  - Operation / Register / Command / Packet Model
+  - Reset and Clock Architecture
+  - Datapath Architecture
+  - Control Path Architecture
+  - State Machines
+  - Storage / FIFO / Buffer / Memory Architecture
+  - Status / Error / Interrupt Behavior
+  - CDC Strategy
+  - Timing Strategy
+  - Verification Hooks
+  - FPGA Prototype Hooks
+  - Open Issues / Assumptions / Deferred Scope
+  - Requirement Coverage Appendix
+fpga_claim_levels:
+  level_0: Build / Implementation
+  level_1: Wrapper / PS-PL Connectivity
+  level_2: Protocol Bring-up / Connectivity Validation
+  level_3: Requirement-Mapped FPGA Validation
+  level_4: External Pin / Hardware Boundary

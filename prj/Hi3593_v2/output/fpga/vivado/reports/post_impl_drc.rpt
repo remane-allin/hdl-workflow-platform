@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
-| Date         : Mon Jun 29 23:31:03 2026
+| Date         : Thu Jul  2 15:35:50 2026
 | Host         : DESKTOP-ADCQ3LG running 64-bit major release  (build 9200)
 | Command      : report_drc -file G:/Codex_Workflow/Test_new/prj/Hi3593_v2/output/fpga/vivado/reports/post_impl_drc.rpt
 | Design       : ps_pl_system_wrapper
@@ -24,12 +24,21 @@ Table of Contents
       Design limits: <entire design considered>
            Ruledeck: default
              Max checks: <unlimited>
-             Checks found: 0
-+------+----------+-------------+--------+
-| Rule | Severity | Description | Checks |
-+------+----------+-------------+--------+
-+------+----------+-------------+--------+
+             Checks found: 2
++----------+----------+-------------------+--------+
+| Rule     | Severity | Description       | Checks |
++----------+----------+-------------------+--------+
+| PDRC-153 | Warning  | Gated clock check | 2      |
++----------+----------+-------------------+--------+
 
 2. REPORT DETAILS
 -----------------
+PDRC-153#1 Warning
+Gated clock check
+Net ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_cmd_cdc/control_reg_reg[1]_0 is a gated clock net sourced by a combinational pin ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_cmd_cdc/spi_cmd_ack_q_reg_LDC_i_1/O, cell ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_cmd_cdc/spi_cmd_ack_q_reg_LDC_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
 
+PDRC-153#2 Warning
+Gated clock check
+Net ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_if/read_phase_reg_LDC_i_1_n_0 is a gated clock net sourced by a combinational pin ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_if/read_phase_reg_LDC_i_1/O, cell ps_pl_system_i/hi3593_v2_proto_top_0/inst/u_hi3593_v2_top/u_spi_if/read_phase_reg_LDC_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>

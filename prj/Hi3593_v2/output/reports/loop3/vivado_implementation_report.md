@@ -1,7 +1,7 @@
 # Loop3 Vivado Implementation Report
 
 - project: Hi3593_v2
-- generated_at: 2026-06-30T20:58:25
+- generated_at: 2026-07-02T15:45:50
 - mode: ps_pl
 - top_module: hi3593_v2_proto_top
 - bitstream: output/fpga/vivado/bitstream/hi3593_v2_ps_pl.bit

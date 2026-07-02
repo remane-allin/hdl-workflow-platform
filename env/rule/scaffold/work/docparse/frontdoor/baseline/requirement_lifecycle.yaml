@@ -1,0 +1,13 @@
+schema_version: 1
+allowed_states:
+  - proposed
+  - analyzed
+  - designed
+  - implementation_ready
+  - verified
+  - released
+  - ambiguous
+  - assumption_backed
+  - deferred
+  - out_of_scope
+requirements: []

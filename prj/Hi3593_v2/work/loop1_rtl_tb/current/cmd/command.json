@@ -7,7 +7,7 @@
     "work/loop1_rtl_tb/sim/rtl_functional.do"
   ],
   "cwd": "G:\\Codex_Workflow\\Test_new\\prj\\Hi3593_v2",
-  "end_time": "2026-06-30T22:43:20",
+  "end_time": "2026-07-02T15:59:22",
   "exit_code": 0,
   "inputs": [
     "work/loop1_rtl_tb/current/log/modelsim.log"
@@ -19,6 +19,6 @@
   "project": "Hi3593_v2",
   "schema": "hdlflow_command_v1",
   "stage": "loop1_rtl_tb",
-  "start_time": "2026-06-30T22:43:20",
+  "start_time": "2026-07-02T15:59:22",
   "tool": "modelsim"
 }

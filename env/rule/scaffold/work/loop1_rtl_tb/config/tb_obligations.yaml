@@ -1,0 +1,27 @@
+schema_version: 1
+required_fields:
+  - requirement_id
+  - operation_id
+  - test_id
+  - stimulus
+  - expected_top_interface_response
+  - expected_readback
+  - expected_side_effect
+  - required_blackbox_check
+  - allowed_whitebox_debug
+  - observed_interface
+  - evidence_type
+  - status
+obligations: []
+summary:
+  active_requirements_count: 0
+  covered_requirements_count: 0
+  operation_model_entry_count: 0
+  covered_operation_count: 0
+  readback_checked_count: 0
+  side_effect_checked_count: 0
+  blackbox_check_count: 0
+  whitebox_debug_check_count: 0
+  whitebox_only_check_count: 0
+  missing_tb_obligations: []
+  partial_tb_obligations: []

@@ -7,7 +7,7 @@
     "work/loop2_uvm/sim/uvm_full_functional.do"
   ],
   "cwd": "G:\\Codex_Workflow\\Test_new\\prj\\Hi3593_v2",
-  "end_time": "2026-06-30T22:30:16",
+  "end_time": "2026-07-02T15:59:22",
   "exit_code": 0,
   "inputs": [
     "work/loop2_uvm/current/log/modelsim.log"
@@ -19,6 +19,6 @@
   "project": "Hi3593_v2",
   "schema": "hdlflow_command_v1",
   "stage": "loop2_uvm",
-  "start_time": "2026-06-30T22:30:16",
+  "start_time": "2026-07-02T15:59:22",
   "tool": "modelsim"
 }

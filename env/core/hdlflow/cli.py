@@ -78,15 +78,20 @@ from .report_checks import check_reports
 from .requirements_frontend import check_requirements_frontend, initialize_requirements_frontend
 from .ralph_loop import ralph_check, ralph_status, ralph_step
 from .release import release_preflight
+from .release_state import update_release_state
 from .repair import apply_repair_ticket, diagnose_repairs
+from .requirements_compiler import compile_requirements
 from .review import check_review_findings
 from .rtl_skill_audit import run_rtl_skill_audit
 from .sandbox import add_exploration_note, promote_exploration, start_exploration
 from .scaffold import create_project
 from .schema_contracts import schema_check
+from .semantic_closure import compile_semantic_closure
+from .semantic_gates import GATE_NAMES, run_semantic_gates
 from .state_sync import sync_project_state
 from .validate import validate_project
 from .waveform_gate import run_loop1_waveform_gate
+from .waveform_semantic import write_waveform_semantic_report
 from .workflow_advisor import advise_next_action
 
 
@@ -163,9 +168,43 @@ def build_parser() -> argparse.ArgumentParser:
     gate_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
     gate_parser.add_argument("--change-id", help="Approved change request ID to bind to this gate run.")
 
+    requirements_compile_parser = subparsers.add_parser(
+        "requirements-compile",
+        help="Compile the single active requirement baseline and semantic support indexes.",
+    )
+    requirements_compile_parser.add_argument("--project", required=True, help="Project path.")
+
+    semantic_compile_parser = subparsers.add_parser(
+        "semantic-compile",
+        help="Compile architecture, RTL, TB, waveform, UVM, and FPGA semantic obligation artifacts.",
+    )
+    semantic_compile_parser.add_argument("--project", required=True, help="Project path.")
+    semantic_compile_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing generated semantic artifacts. User-authored non-empty files are preserved by default.",
+    )
+
+    semantic_gate_parser = subparsers.add_parser(
+        "semantic-gate",
+        help="Run requirement/design/verification semantic gates and write semantic_gate_status.json.",
+    )
+    semantic_gate_parser.add_argument("--project", required=True, help="Project path.")
+    semantic_gate_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
+    semantic_gate_parser.add_argument("--gate", action="append", choices=GATE_NAMES, help="Run only the named semantic gate. Repeatable.")
+    semantic_gate_parser.add_argument("--no-compile", action="store_true", help="Do not refresh active requirement baselines before running.")
+
+    release_state_parser = subparsers.add_parser(
+        "release-state-check",
+        help="Evaluate and write the single release state adapter file.",
+    )
+    release_state_parser.add_argument("--project", required=True, help="Project path.")
+    release_state_parser.add_argument("--level", choices=["debug", "develop", "release"], default="develop")
+
     final_audit_parser = subparsers.add_parser("final-audit", help="Run the strict final release gate and write final audit evidence.")
     final_audit_parser.add_argument("--project", required=True, help="Project path.")
     final_audit_parser.add_argument("--level", choices=["debug", "develop", "release"], default="release")
+    final_audit_parser.add_argument("--change-id", help="Approved change request ID to bind to the final audit.")
 
     sync_parser = subparsers.add_parser("sync-project-state", help="Synchronize loop runtime JSON state from passed gate evidence.")
     sync_parser.add_argument("--project", required=True, help="Project path.")
@@ -476,6 +515,12 @@ def build_parser() -> argparse.ArgumentParser:
     loop1_waveform_parser.add_argument("--log", help="Optional ModelSim log path. Defaults to work/loop1_rtl_tb/current/log/modelsim.log.")
     loop1_waveform_parser.add_argument("--manifest", help="Optional top waveform manifest path.")
 
+    loop1_waveform_semantic_parser = subparsers.add_parser(
+        "loop1-waveform-semantic",
+        help="Decode Loop1 verification-level waveform semantic windows and write semantic evidence.",
+    )
+    loop1_waveform_semantic_parser.add_argument("--project", required=True, help="Project path.")
+
     loop2_report_parser = subparsers.add_parser(
         "loop2-refresh-reports",
         help="Overwrite the unified Loop2 report from the current structured UVM log.",
@@ -686,8 +731,56 @@ def main(argv: list[str] | None = None) -> int:
             if sync.failed_nodes:
                 print("failed_nodes: " + ", ".join(sync.failed_nodes))
             return 1
+        if args.command == "requirements-compile":
+            result = compile_requirements(Path(args.project))
+            for path in result.written:
+                print(f"written: {path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            print(f"requirements: {result.requirement_count}")
+            print(f"acceptance_criteria: {result.acceptance_count}")
+            print(f"evidence: {result.evidence_count}")
+            print("requirements compile: PASS" if result.ok else "requirements compile: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "semantic-compile":
+            result = compile_semantic_closure(Path(args.project), overwrite=args.overwrite)
+            for path in result.written:
+                print(f"written: {path}")
+            for path in result.skipped:
+                print(f"skipped: {path}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            print(f"requirements: {result.requirement_count}")
+            print(f"operations: {result.operation_count}")
+            print("semantic compile: PASS" if result.ok else "semantic compile: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "semantic-gate":
+            result = run_semantic_gates(
+                Path(args.project),
+                level=args.level,
+                gate_names=args.gate,
+                compile_active=not args.no_compile,
+                write_status=True,
+            )
+            print(f"semantic_gate_status: {result.status_path}")
+            for gate in result.gates:
+                print(f"{gate.status}: {gate.name} mode={gate.mode} issues={len(gate.issues)}")
+                for issue in gate.issues[:10]:
+                    print(f"  {issue.severity}: {issue.message}")
+            print("semantic gate: PASS" if result.ok else "semantic gate: FAIL")
+            return 0 if result.ok else 1
+        if args.command == "release-state-check":
+            result = update_release_state(Path(args.project), level=args.level)
+            print(f"release_state: {result.path}")
+            print(f"state: {result.state}")
+            for blocker in result.blockers:
+                print(f"blocker: {blocker}")
+            for warning in result.warnings:
+                print(f"warning: {warning}")
+            print("release state: PASS" if result.ok else "release state: FAIL")
+            return 0 if result.ok else 1
         if args.command == "final-audit":
-            result = run_final_audit(Path(args.project), level=args.level)
+            result = run_final_audit(Path(args.project), level=args.level, change_id=args.change_id)
             print(f"report: {result.report_path}")
             for check in result.checks:
                 print(f"{check.status}: {check.name} - {check.detail}")
@@ -1350,6 +1443,23 @@ def main(argv: list[str] | None = None) -> int:
             for item in gate_result.warnings[:20]:
                 print(f"warning: {item}")
             return 0 if gate_result.ok else 1
+        if args.command == "loop1-waveform-semantic":
+            guard = require_stage_ready(Path(args.project), "loop1", "loop1-waveform-semantic")
+            if not guard.ok:
+                print(f"error: {guard.reason}")
+                return 1
+            json_path = write_waveform_semantic_report(Path(args.project))
+            try:
+                import json
+
+                payload = json.loads(json_path.read_text(encoding="utf-8"))
+            except Exception:
+                payload = {"result": "FAIL", "failures": ["semantic report could not be read"]}
+            print(f"waveform_semantic_report: {json_path}")
+            print(f"result: {payload.get('result', 'FAIL')}")
+            for item in payload.get("failures", [])[:20] if isinstance(payload.get("failures"), list) else []:
+                print(f"error: {item}")
+            return 0 if str(payload.get("result", "")).upper() == "PASS" else 1
         if args.command == "loop2-refresh-reports":
             guard = require_stage_ready(Path(args.project), "loop2", "loop2-refresh-reports")
             if not guard.ok:

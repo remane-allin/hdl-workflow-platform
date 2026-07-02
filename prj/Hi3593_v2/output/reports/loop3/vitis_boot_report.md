@@ -1,7 +1,7 @@
 # Loop3 Vitis Boot And PS App Report
 
 - project: Hi3593_v2
-- generated_at: 2026-06-30T20:58:25
+- generated_at: 2026-07-02T15:45:50
 - mode: ps_pl
 - required: yes
 - result: PASS

@@ -46,6 +46,7 @@ from hdlflow.gates import (
     _loop3_serial_echo_check,
     _gate_paths,
     _rel as _gate_rel,
+    _semantic_gate_names_for_node,
     _check_project_root_tool_logs,
     _check_rtl_comment_headers,
     _check_rtl_task_usage,
@@ -77,21 +78,27 @@ from hdlflow.report_checks import check_reports
 from hdlflow.reports.constants import BLOCKED_BANNER, FAIL_BANNER, LOOP1_REPORT, LOOP2_REPORT, PASS_BANNER
 from hdlflow.reports.loop1_report import generate_loop1_report
 from hdlflow.reports.parser_hdlflow_events import parse_loop1_events, parse_loop2_events
+from hdlflow.reports.report_semantics import enrich_loop1_payload
 from hdlflow.reports.render_report import build_report_payload, render_report_markdown
 from hdlflow.ralph_loop import ralph_check, ralph_status, ralph_step
 from hdlflow.release import release_preflight
+from hdlflow.release_state import update_release_state
 from hdlflow.repair import apply_repair_ticket, diagnose_repairs
+from hdlflow.requirements_compiler import compile_requirements
 from hdlflow.prototype import refresh_loop3_reports
 from hdlflow.review import check_review_findings
 from hdlflow.rtl_skill_audit import run_rtl_skill_audit
 from hdlflow.sandbox import add_exploration_note, promote_exploration, start_exploration
 from hdlflow.schema_contracts import schema_check
-from hdlflow.prototype import _check_prototype_mode_intent, _is_placeholder, generate_vitis_boot_files
+from hdlflow.semantic_closure import compile_semantic_closure
+from hdlflow.semantic_gates import run_semantic_gates, _trace_requirement_ids
+from hdlflow.prototype import _check_prototype_mode_intent, _is_placeholder, _signal_aliases_from_plan, generate_vitis_boot_files
 from hdlflow.scaffold import PROJECT_CREATE_ENTRYPOINT_ENV, create_project
 from hdlflow.simple_yaml import parse_yaml
 from hdlflow.state_sync import sync_project_state
 from hdlflow.validate import REQUIRED_PATHS, validate_project
 from hdlflow.waveform_gate import WAVEFORM_GATE_JSON_REL, check_loop1_waveform_gate_report, run_loop1_waveform_gate
+from hdlflow.waveform_semantic import write_waveform_semantic_report
 
 
 class SimpleYamlTests(unittest.TestCase):
@@ -126,6 +133,446 @@ findings:
 
         self.assertEqual(data["findings"][0]["id"], "REV-001")
         self.assertEqual(data["findings"][0]["severity"], "high")
+
+
+class SemanticClosureTests(unittest.TestCase):
+    def test_requirements_compiler_writes_active_baselines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            source = project / "input/spec/source.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("REQ-001 source evidence\n", encoding="utf-8")
+            srs = project / "work/docparse/frontdoor/srs.yaml"
+            srs.parent.mkdir(parents=True, exist_ok=True)
+            srs.write_text(
+                "\n".join(
+                    [
+                        "requirements:",
+                        "  -",
+                        "    requirement_id: REQ-001",
+                        "    title: Command response",
+                        "    full_text: Top interface returns a command response",
+                        "    source_refs:",
+                        "      -",
+                        "        path: input/spec/source.md",
+                        "    status: analyzed",
+                        "    lifecycle_state: analyzed",
+                        "    functional_domain: command_plane",
+                        "    acceptance_criteria:",
+                        "      - Top interface response is observed",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = compile_requirements(project)
+
+            self.assertTrue(result.ok)
+            self.assertEqual(result.requirement_count, 1)
+            active = parse_yaml((project / "work/docparse/frontdoor/baseline/active_requirements.yaml").read_text(encoding="utf-8"))
+            evidence = parse_yaml((project / "work/docparse/frontdoor/baseline/evidence_index.yaml").read_text(encoding="utf-8"))
+            acceptance = parse_yaml((project / "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml").read_text(encoding="utf-8"))
+            self.assertEqual(active["requirements"][0]["requirement_id"], "REQ-001")
+            self.assertEqual(evidence["evidence"][0]["source_path"], "input/spec/source.md")
+            self.assertEqual(evidence["evidence"][0]["parsed_path"], "")
+            self.assertEqual(acceptance["criteria"][0]["requirement_id"], "REQ-001")
+
+    def test_requirements_compiler_accepts_frontdoor_id_text_evidence_refs_shape(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            source = project / "input/spec/source.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("REQ-001 source\n", encoding="utf-8")
+            srs = project / "work/docparse/frontdoor/srs.yaml"
+            srs.parent.mkdir(parents=True, exist_ok=True)
+            srs.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "requirements:",
+                        "  - id: REQ-001",
+                        "    priority: must",
+                        "    text: Frontdoor SRS text row",
+                        "    evidence_refs:",
+                        "      - input/spec/source.md:7",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            acceptance = project / "work/docparse/frontdoor/acceptance_criteria.yaml"
+            acceptance.parent.mkdir(parents=True, exist_ok=True)
+            acceptance.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "criteria:",
+                        "  - id: AC-001",
+                        "    requirement_id: REQ-001",
+                        "    method: loop1_directed_tb",
+                        "    text: Response is observed",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = compile_requirements(project)
+
+            self.assertTrue(result.ok)
+            active = parse_yaml((project / "work/docparse/frontdoor/baseline/active_requirements.yaml").read_text(encoding="utf-8"))
+            evidence = parse_yaml((project / "work/docparse/frontdoor/baseline/evidence_index.yaml").read_text(encoding="utf-8"))
+            criteria = parse_yaml((project / "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml").read_text(encoding="utf-8"))
+            self.assertEqual(active["requirements"][0]["requirement_id"], "REQ-001")
+            self.assertEqual(active["requirements"][0]["full_text"], "Frontdoor SRS text row")
+            self.assertEqual(evidence["evidence"][0]["source_path"], "input/spec/source.md")
+            self.assertEqual(evidence["evidence"][0]["source_page_or_section"], "line 7")
+            self.assertEqual(criteria["criteria"][0]["criterion_id"], "AC-001")
+            self.assertEqual(criteria["criteria"][0]["verification_methods"][0], "loop1_directed_tb")
+
+    def test_requirements_compiler_resolves_mineru_extract_alias_to_existing_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            actual = project / "work/docparse/parsed/mineru_extract/ARINC-429.md"
+            actual.parent.mkdir(parents=True, exist_ok=True)
+            actual.write_text("parsed source\n", encoding="utf-8")
+            srs = project / "work/docparse/frontdoor/srs.yaml"
+            srs.parent.mkdir(parents=True, exist_ok=True)
+            srs.write_text(
+                "\n".join(
+                    [
+                        "requirements:",
+                        "  - id: REQ-001",
+                        "    text: Requirement with parsed source alias",
+                        "    evidence_refs:",
+                        "      - work/docparse/parsed/mineru_extract/ARINC-429_protocol_spec.md:3",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            compile_requirements(project)
+
+            evidence = parse_yaml((project / "work/docparse/frontdoor/baseline/evidence_index.yaml").read_text(encoding="utf-8"))
+            self.assertEqual(evidence["evidence"][0]["source_path"], "work/docparse/parsed/mineru_extract/ARINC-429.md")
+
+    def test_requirements_compiler_does_not_promote_acceptance_ids_from_intake(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            intake = project / "work/docparse/frontdoor/intake/merged/change.yaml"
+            intake.parent.mkdir(parents=True, exist_ok=True)
+            intake.write_text(
+                "\n".join(
+                    [
+                        "requirements:",
+                        "  - id: REQ-001",
+                        "    text: Real requirement",
+                        "acceptance_criteria:",
+                        "  - id: AC-001",
+                        "    requirement_id: REQ-001",
+                        "    text: Acceptance text must not become a requirement",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            compile_requirements(project)
+
+            active = parse_yaml((project / "work/docparse/frontdoor/baseline/active_requirements.yaml").read_text(encoding="utf-8"))
+            req_ids = [row["requirement_id"] for row in active["requirements"]]
+            self.assertEqual(req_ids, ["REQ-001"])
+
+            acceptance = parse_yaml((project / "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml").read_text(encoding="utf-8"))
+            self.assertEqual([row["requirement_id"] for row in acceptance["criteria"]], ["REQ-001"])
+            self.assertTrue(acceptance["criteria"][0]["generated_from_requirement_text"])
+
+    def test_semantic_gate_fails_develop_when_advisory_gate_has_errors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+
+            result = run_semantic_gates(project, level="develop", compile_active=False)
+
+            self.assertFalse(result.ok)
+            self.assertTrue((project / "work/gates/semantic_gate_status.json").exists())
+            statuses = {gate.name: gate.status for gate in result.gates}
+            self.assertEqual(statuses["requirements_consistency_gate"], "FAIL")
+
+    def test_semantic_gate_blocks_release_when_policy_is_blocking(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            policy = project / "work/config/semantic_gate_policy.yaml"
+            policy.parent.mkdir(parents=True, exist_ok=True)
+            policy.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "default_mode: advisory",
+                        "gates:",
+                        "  requirements_consistency_gate:",
+                        "    mode: blocking",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_semantic_gates(project, level="release", gate_names=["requirements_consistency_gate"], compile_active=False)
+
+            self.assertFalse(result.ok)
+            self.assertEqual(result.gates[0].status, "FAIL")
+
+    def test_semantic_gate_release_default_blocks_advisory_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            policy = project / "work/config/semantic_gate_policy.yaml"
+            policy.parent.mkdir(parents=True, exist_ok=True)
+            policy.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "default_mode: advisory",
+                        "release_default_mode: blocking",
+                        "gates:",
+                        "  requirements_consistency_gate:",
+                        "    mode: advisory",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_semantic_gates(project, level="release", gate_names=["requirements_consistency_gate"], compile_active=False)
+
+            self.assertFalse(result.ok)
+            self.assertEqual(result.gates[0].mode, "blocking")
+            self.assertEqual(result.gates[0].status, "FAIL")
+
+    def test_executable_gates_use_stage_scoped_semantic_checks(self):
+        self.assertEqual(
+            _semantic_gate_names_for_node("input"),
+            [
+                "requirements_consistency_gate",
+                "architecture_impact_gate",
+                "design_routing_gate",
+                "microarchitecture_completeness_gate",
+            ],
+        )
+        self.assertIn("uvm_obligation_gate", _semantic_gate_names_for_node("work/loop2_uvm"))
+        self.assertNotIn("fpga_validation_obligation_gate", _semantic_gate_names_for_node("work/loop2_uvm"))
+        self.assertIn("release_truth_gate", _semantic_gate_names_for_node("output"))
+
+    def test_trace_requirement_ids_include_non_req_prefixes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            trace = project / "work/docparse/trace_matrix/req_to_design_intent.yaml"
+            trace.parent.mkdir(parents=True, exist_ok=True)
+            trace.write_text(
+                "\n".join(
+                    [
+                        "links:",
+                        "  - requirement_id: ASM-BOUNDARY-001",
+                        "    design_intent: DI-001",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertIn("ASM-BOUNDARY-001", _trace_requirement_ids(project))
+
+    def test_release_state_detects_final_pass_release_fail_conflict(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            manifest = project / "output/manifest.yaml"
+            manifest.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "project: demo",
+                        "verification:",
+                        "  loop1_gate: PASS",
+                        "  loop2_gate: PASS",
+                        "  loop3_gate: PASS",
+                        "  final_gate: PASS",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            final = project / "output/reports/final_audit_report.md"
+            final.parent.mkdir(parents=True, exist_ok=True)
+            final.write_text("- result: PASS\n", encoding="utf-8")
+            release = project / "output/reports/gates/output_release_20260701000000.md"
+            release.parent.mkdir(parents=True, exist_ok=True)
+            release.write_text("- result: FAIL\n", encoding="utf-8")
+
+            result = update_release_state(project, level="release")
+
+            self.assertEqual(result.state, "RELEASE_FAIL")
+            self.assertTrue(any("final audit PASS conflicts" in blocker for blocker in result.blockers))
+
+    def test_scaffold_contains_semantic_closure_templates(self):
+        root = Path(__file__).resolve().parents[3]
+        required = [
+            "env/rule/scaffold/work/config/semantic_gate_policy.yaml",
+            "env/rule/scaffold/work/config/project_profile.yaml",
+            "env/rule/scaffold/work/docparse/frontdoor/baseline/active_requirements.yaml",
+            "env/rule/scaffold/work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml",
+            "env/rule/scaffold/work/docparse/frontdoor/baseline/evidence_index.yaml",
+            "env/rule/scaffold/work/docparse/architecture/functional_domain_model.yaml",
+            "env/rule/scaffold/work/docparse/architecture/module_ownership_matrix.yaml",
+            "env/rule/scaffold/work/docparse/architecture/design_routing.yaml",
+            "env/rule/scaffold/work/docparse/verification/operation_model.yaml",
+            "env/rule/scaffold/work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml",
+            "env/rule/scaffold/work/loop1_rtl_tb/config/tb_obligations.yaml",
+            "env/rule/scaffold/work/loop1_rtl_tb/config/wave_semantic_manifest.yaml",
+            "env/rule/scaffold/work/loop2_uvm/config/uvm_obligations.yaml",
+            "env/rule/scaffold/work/loop3_fpga_proto/config/fpga_validation_matrix.yaml",
+            "env/rule/scaffold/work/gates/release_state.json",
+            "env/rule/scaffold/work/gates/semantic_gate_status.json",
+        ]
+        for rel in required:
+            self.assertTrue((root / rel).exists(), rel)
+
+    def test_semantic_closure_compiles_p1_to_p4_obligation_artifacts_without_fake_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            source = project / "input/spec/source.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("REQ-001 command response source\n", encoding="utf-8")
+            rtl = project / "output/rtl/demo_top.v"
+            rtl.parent.mkdir(parents=True, exist_ok=True)
+            rtl.write_text(
+                "\n".join(
+                    [
+                        "module demo_top(",
+                        "  input wire clk,",
+                        "  input wire rst_n,",
+                        "  input wire spi_sclk,",
+                        "  output wire spi_miso",
+                        ");",
+                        "endmodule",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            srs = project / "work/docparse/frontdoor/srs.yaml"
+            srs.parent.mkdir(parents=True, exist_ok=True)
+            srs.write_text(
+                "\n".join(
+                    [
+                        "requirements:",
+                        "  -",
+                        "    requirement_id: REQ-001",
+                        "    title: SPI command response",
+                        "    full_text: SPI command read shall return observable status",
+                        "    functional_domain: spi_command",
+                        "    status: analyzed",
+                        "    lifecycle_state: analyzed",
+                        "    source_refs:",
+                        "      -",
+                        "        path: input/spec/source.md",
+                        "    acceptance_criteria:",
+                        "      - SPI response is visible at the top interface",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            _write_change_request(project, "open", timestamp=1.0)
+            _write_semantic_policy(project, "rtl_obligation_gate")
+
+            result = compile_semantic_closure(project)
+
+            self.assertTrue(result.ok)
+            self.assertEqual(result.operation_count, 1)
+            for rel in [
+                "work/docparse/architecture/functional_domain_model.yaml",
+                "work/docparse/architecture/design_routing.yaml",
+                "work/docparse/architecture/module_ownership_matrix.yaml",
+                "work/docparse/verification/operation_model.yaml",
+                "work/docparse/trace_matrix/req_to_design_intent.yaml",
+                "work/docparse/trace_matrix/req_to_test_intent.yaml",
+                "work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml",
+                "work/loop1_rtl_tb/config/interface_contract.yaml",
+                "work/loop1_rtl_tb/config/tb_obligations.yaml",
+                "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml",
+                "work/loop2_uvm/config/uvm_obligations.yaml",
+                "work/loop3_fpga_proto/config/fpga_validation_matrix.yaml",
+                "work/docparse/change/CR-20260523120000-demo/architecture_impact_review.yaml",
+                "work/docparse/change/CR-20260523120000-demo/design_replanning_record.md",
+                "work/docparse/change/CR-20260523120000-demo/verification_replanning_record.md",
+            ]:
+                self.assertTrue((project / rel).exists(), rel)
+
+            impl = parse_yaml((project / "work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml").read_text(encoding="utf-8"))
+            tb = parse_yaml((project / "work/loop1_rtl_tb/config/tb_obligations.yaml").read_text(encoding="utf-8"))
+            self.assertEqual(impl["implementations"][0]["implementation_status"], "planned")
+            self.assertEqual(tb["obligations"][0]["status"], "planned")
+            self.assertIn("REQ-001", _trace_requirement_ids(project))
+
+            gate = run_semantic_gates(
+                project,
+                level="release",
+                gate_names=["rtl_obligation_gate", "tb_blackbox_obligation_gate", "uvm_obligation_gate", "fpga_validation_obligation_gate"],
+                compile_active=False,
+            )
+            messages = "\n".join(issue.message for item in gate.gates for issue in item.issues)
+            self.assertFalse(gate.ok)
+            self.assertIn("RTL implementation status is planned", messages)
+            self.assertIn("TB obligation status is planned", messages)
+            self.assertIn("UVM obligation status is planned", messages)
+            self.assertIn("FPGA validation status is planned", messages)
+            self.assertNotIn("has no RTL implementation entry", messages)
+            self.assertNotIn("has no TB obligation", messages)
+
+    def test_docgen_renders_semantic_architecture_and_verification_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            source = project / "input/spec/source.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("REQ-001 source\n", encoding="utf-8")
+            srs = project / "work/docparse/frontdoor/srs.yaml"
+            srs.parent.mkdir(parents=True, exist_ok=True)
+            srs.write_text(
+                "\n".join(
+                    [
+                        "requirements:",
+                        "  -",
+                        "    requirement_id: REQ-001",
+                        "    title: SPI command response",
+                        "    full_text: SPI command read shall return status",
+                        "    functional_domain: spi_command",
+                        "    source_refs:",
+                        "      -",
+                        "        path: input/spec/source.md",
+                        "    acceptance_criteria:",
+                        "      - SPI response is observed",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            compile_semantic_closure(project)
+
+            generate_single_doc(project, "microarchitecture_specification", change_id="CR-001")
+            generate_single_doc(project, "verification_plan", change_id="CR-001")
+            uarch = (project / "output/docs/design/microarchitecture_spec.md").read_text(encoding="utf-8")
+            verification = (project / "output/docs/test/verification_plan.md").read_text(encoding="utf-8")
+
+            self.assertIn("Requirement-to-Architecture Summary", uarch)
+            self.assertIn("Functional Domain Model", uarch)
+            self.assertIn("Module Ownership Matrix", uarch)
+            self.assertIn("Operation Model Hooks", uarch)
+            self.assertIn("Directed TB Obligations", verification)
+            self.assertIn("VCD Semantic Windows", verification)
+            self.assertIn("UVM Multi-Scenario Obligations", verification)
+            self.assertIn("FPGA Validation Matrix", verification)
+            self.assertIn("OP_REQ_001", verification)
 
 
 class PlatformGovernanceTests(unittest.TestCase):
@@ -304,6 +751,30 @@ class PrototypePlanTests(unittest.TestCase):
 
             self.assertTrue(any("mode conflict" in item for item in errors))
 
+    def test_external_boundary_fallback_signals_are_plan_aliases(self):
+        plan = {
+            "external_boundary": {
+                "required_external_interfaces": [
+                    {
+                        "name": "HI8592_driver_logic",
+                        "pins": ["TX1IN", "TX0IN", "SLP"],
+                        "fallback_mode": "pl_sampler_readback",
+                    }
+                ]
+            },
+            "pl_port_assignments": {
+                "pl_led0": "PL_LED0",
+                "sys_clk": "PL_GCLK_50MHZ",
+                "uart_rx": "UART3_RX",
+                "uart_tx": "UART3_TX",
+            },
+        }
+
+        aliases = _signal_aliases_from_plan(plan, "TX1IN")
+
+        self.assertEqual([item[0] for item in aliases], ["UART3_TX", "UART3_RX", "PL_LED0"])
+        self.assertIn("fallback_mode=pl_sampler_readback", aliases[0][1])
+
 
 class Loop2RiskGateTests(unittest.TestCase):
     def test_loop2_gate_report_refresh_waits_for_loop1_manifest(self):
@@ -332,6 +803,87 @@ class Loop2RiskGateTests(unittest.TestCase):
         self.assertIn("| opcode_00 | txn_0001 | spi_cmd_00 | status_clear | status_clear | 3 | PASS |", report)
         self.assertIn(PASS_BANNER, report)
         self.assertNotIn("## Evidence", report)
+
+    def test_loop1_report_records_interface_semantic_coverage(self):
+        log = (
+            "HDLFLOW|TEST_BEGIN|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=read_status|scope=top\n"
+            "HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|test_id=read_status|txn_id=txn_0001|requirement_id=REQ-001|operation_id=OP_READ_STATUS|observed_interface=spi_host|evidence_type=blackbox|readback_checked=true|sent=read_status|expected=0x55|actual=0x55|latency_cycles=3|result=PASS\n"
+            "HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|total_tests=1|passed_tests=1|failed_tests=0|total_checks=1|passed_checks=1|failed_checks=0|active_requirements_count=1|operation_model_entry_count=1|result=PASS\n"
+        )
+        parsed = parse_loop1_events(log)
+        payload = build_report_payload(LOOP1_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP1_REPORT, payload)
+
+        self.assertEqual(parsed["semantic_summary"]["blackbox_check_count"], 1)
+        self.assertEqual(parsed["semantic_summary"]["whitebox_only_check_count"], 0)
+        self.assertEqual(parsed["semantic_summary"]["missing_observed_interface_count"], 0)
+        self.assertIn("## 2.1 Semantic Coverage", report)
+        self.assertIn("| Blackbox Check Count | 1 |", report)
+
+    def test_loop1_semantic_enrichment_covers_every_pass_transaction(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            op_path = project / "work" / "docparse" / "verification" / "operation_model.yaml"
+            op_path.parent.mkdir(parents=True)
+            op_path.write_text(
+                "\n".join(
+                    [
+                        "operations:",
+                        "  - operation_id: OP_REQ_001",
+                        "    requirement_ids:",
+                        "      - REQ-001",
+                        "    interface_name: spi_host",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            payload = {
+                "transactions": [
+                    {"txn_id": "txn_0001", "result": "PASS"},
+                    {"txn_id": "txn_0002", "result": "PASS"},
+                ]
+            }
+
+            enrich_loop1_payload(project, payload)
+
+            self.assertEqual([item["observed_interface"] for item in payload["transactions"]], ["spi_host", "spi_host"])
+            self.assertEqual([item["evidence_type"] for item in payload["transactions"]], ["blackbox", "blackbox"])
+            self.assertEqual(payload["semantic_summary"]["blackbox_check_count"], 2)
+            self.assertEqual(payload["semantic_summary"]["missing_observed_interface_count"], 0)
+
+    def test_loop1_freshness_evidence_uses_reports_not_raw_run_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            rels = [
+                "work/loop1_rtl_tb/current/cmd/command.json",
+                "work/loop1_rtl_tb/current/cmd/command.md",
+                "work/loop1_rtl_tb/current/log/modelsim.log",
+                "work/loop1_rtl_tb/current/manifest.json",
+                "output/reports/loop1/loop1_report.md",
+                "output/reports/loop1/loop1_report.json",
+                "output/reports/loop1/loop1_report_manifest.json",
+                "output/reports/loop1/waveform_query_report.md",
+                "output/reports/loop1/waveform_gate.json",
+                "output/reports/loop1/query_transcript.json",
+                "output/reports/loop1/waveform_semantic_report.json",
+                "output/reports/loop1/waveform_semantic_report.md",
+                "output/reports/loop1/rtl_skill_audit.md",
+                "output/sim/loop1/wave/top.vcd",
+            ]
+            for rel in rels:
+                path = project / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("x\n", encoding="utf-8")
+
+            _, evidence_paths = _gate_paths(project, "work/loop1_rtl_tb")
+            evidence_rels = {path.relative_to(project).as_posix() for path in evidence_paths}
+
+            self.assertIn("output/reports/loop1/loop1_report.json", evidence_rels)
+            self.assertIn("output/reports/loop1/waveform_semantic_report.json", evidence_rels)
+            self.assertIn("output/reports/loop1/rtl_skill_audit.md", evidence_rels)
+            self.assertNotIn("work/loop1_rtl_tb/current/log/modelsim.log", evidence_rels)
+            self.assertNotIn("work/loop1_rtl_tb/current/manifest.json", evidence_rels)
+            self.assertNotIn("output/sim/loop1/wave/top.vcd", evidence_rels)
 
     def test_loop1_missing_summary_blocks_report(self):
         parsed = parse_loop1_events(
@@ -369,6 +921,22 @@ class Loop2RiskGateTests(unittest.TestCase):
         self.assertIn(PASS_BANNER, report)
         self.assertNotIn("## Evidence", report)
 
+    def test_loop2_report_records_uvm_semantic_coverage(self):
+        log = (
+            "HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=random_read|txn_id=txn_0001|requirement_id=REQ-001|operation_id=OP_READ_STATUS|scenario_id=scn_random|scenario_kind=randomized|coverage_bins=read_status_bin|cross_coverage=op_x_reset|scoreboard_model=ref_model|observation_source=monitor_transaction|assertion_id=assert_read|sent=read_status|expected=scoreboard_match|actual=scoreboard_match|result=PASS\n"
+            "HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=negative_write|txn_id=txn_0002|requirement_id=REQ-001|operation_id=OP_READ_STATUS|scenario_id=scn_negative|scenario_kind=negative|coverage_bins=write_reject_bin|cross_coverage=op_x_error|scoreboard_model=ref_model|observation_source=monitor_transaction|assertion_id=assert_error|sent=bad_write|expected=scoreboard_match|actual=scoreboard_match|result=PASS\n"
+            "HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=0|uvm_fatal=0|total_checks=2|failed_checks=0|coverage=91.5|coverage_source=coverage_collector|result=PASS\n"
+        )
+        parsed = parse_loop2_events(log)
+        payload = build_report_payload(LOOP2_REPORT, "demo", parsed, change_id=None)
+        report = render_report_markdown(LOOP2_REPORT, payload)
+
+        self.assertEqual(parsed["semantic_summary"]["scenario_kind_count"], 2)
+        self.assertEqual(parsed["semantic_summary"]["reference_model_check_count"], 2)
+        self.assertEqual(parsed["semantic_summary"]["monitor_observed_check_count"], 2)
+        self.assertEqual(parsed["semantic_summary"]["coverage_source"], "coverage_collector")
+        self.assertIn("## 2.1 Semantic Coverage", report)
+
     def test_loop2_failed_check_sets_fail_banner(self):
         parsed = parse_loop2_events(
             "HDLFLOW|UVM_CHECK|schema=hdlflow_event_v1|version=1|stage=loop2|test_id=stress_fifo|txn_id=txn_0064|sent=burst_write_and_read|expected=scoreboard_match|actual=mismatch|result=FAIL|reason=scoreboard_mismatch\n"
@@ -380,6 +948,289 @@ class Loop2RiskGateTests(unittest.TestCase):
         self.assertEqual(parsed["result"], "FAIL")
         self.assertIn(FAIL_BANNER, report)
         self.assertIn("scoreboard_mismatch", report)
+
+    def test_tb_semantic_gate_rejects_whitebox_only_loop1_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "tb_blackbox_obligation_gate")
+            (project / "work/docparse/verification").mkdir(parents=True, exist_ok=True)
+            (project / "work/docparse/verification/operation_model.yaml").write_text(
+                "schema_version: 1\noperations:\n  - operation_id: OP_READ_STATUS\n",
+                encoding="utf-8",
+            )
+            (project / "work/loop1_rtl_tb/config").mkdir(parents=True, exist_ok=True)
+            (project / "work/loop1_rtl_tb/config/interface_contract.yaml").write_text(
+                "schema_version: 1\ninterfaces:\n  - name: spi_host\n",
+                encoding="utf-8",
+            )
+            (project / "work/loop1_rtl_tb/config/tb_obligations.yaml").write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "obligations:",
+                        "  - requirement_id: REQ-001",
+                        "    operation_id: OP_READ_STATUS",
+                        "    test_id: read_status",
+                        "    observed_interface: spi_host",
+                        "    evidence_type: blackbox",
+                        "    required_blackbox_check: true",
+                        "    status: verified",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            report = project / "output/reports/loop1/loop1_report.json"
+            report.parent.mkdir(parents=True, exist_ok=True)
+            report.write_text(
+                json.dumps(
+                    {
+                        "result": "PASS",
+                        "transactions": [
+                            {
+                                "test_id": "read_status",
+                                "txn_id": "txn_0001",
+                                "operation_id": "OP_READ_STATUS",
+                                "observed_interface": "",
+                                "evidence_type": "whitebox",
+                                "result": "PASS",
+                            }
+                        ],
+                        "semantic_summary": {
+                            "covered_operation_count": 1,
+                            "whitebox_only_check_count": 1,
+                            "missing_observed_interface_count": 1,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = run_semantic_gates(project, level="release", gate_names=["tb_blackbox_obligation_gate"], compile_active=False)
+
+            self.assertFalse(result.ok)
+            messages = "\n".join(issue.message for issue in result.gates[0].issues)
+            self.assertIn("non-blackbox evidence_type", messages)
+            self.assertIn("whitebox-only", messages)
+
+    def test_waveform_semantic_report_rejects_unsupported_decoder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "waveform_semantic_gate")
+            manifest = project / "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "windows:",
+                        "  - window_id: read_status_window",
+                        "    interface_name: spi_host",
+                        "    decoder: spi_decoder",
+                        "    evidence_level: verification",
+                        "    expected_events:",
+                        "      - operation: OP_READ_STATUS",
+                        "        response: 0x55",
+                        "        status: PASS",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report_path = write_waveform_semantic_report(project)
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            result = run_semantic_gates(project, level="release", gate_names=["waveform_semantic_gate"], compile_active=False)
+
+            self.assertEqual(payload["result"], "FAIL")
+            self.assertFalse(result.ok)
+            self.assertTrue(any("unsupported" in issue.message.lower() for issue in result.gates[0].issues))
+
+    def test_waveform_semantic_report_accepts_event_list_decoder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "waveform_semantic_gate")
+            manifest = project / "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "windows:",
+                        "  - window_id: read_status_window",
+                        "    interface_name: spi_host",
+                        "    decoder: event_list_decoder",
+                        "    evidence_level: verification",
+                        "    observed_events:",
+                        "      - event_id: evt_1",
+                        "        interface: spi_host",
+                        "        operation: OP_READ_STATUS",
+                        "        payload: read_status",
+                        "        response: 0x55",
+                        "        status: PASS",
+                        "    expected_events:",
+                        "      - operation: OP_READ_STATUS",
+                        "        response: 0x55",
+                        "        status: PASS",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report_path = write_waveform_semantic_report(project)
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            result = run_semantic_gates(project, level="release", gate_names=["waveform_semantic_gate"], compile_active=False)
+
+            self.assertEqual(payload["result"], "PASS")
+            self.assertTrue(result.ok)
+
+    def test_waveform_semantic_report_decodes_vcd_signal_window(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "waveform_semantic_gate")
+            wave = project / "output/sim/loop1/wave/top.vcd"
+            wave.parent.mkdir(parents=True, exist_ok=True)
+            wave.write_text(
+                "\n".join(
+                    [
+                        "$date 2026-07-02 $end",
+                        "$timescale 1ns $end",
+                        "$scope module tb $end",
+                        "$var wire 1 ! valid $end",
+                        "$var wire 8 # data [7:0] $end",
+                        "$enddefinitions $end",
+                        "#0",
+                        "0!",
+                        "b00000000 #",
+                        "#10",
+                        "b10101010 #",
+                        "1!",
+                        "#20",
+                        "0!",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            manifest = project / "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "windows:",
+                        "  - window_id: stream_window",
+                        "    interface_name: stream_if",
+                        "    operation_id: OP_STREAM",
+                        "    decoder: stream_decoder",
+                        "    evidence_level: verification",
+                        "    vcd_path: output/sim/loop1/wave/top.vcd",
+                        "    signal_map:",
+                        "      valid: valid",
+                        "      response: data",
+                        "    expected_events:",
+                        "      - operation: OP_STREAM",
+                        "        response: 0xAA",
+                        "        status: PASS",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report_path = write_waveform_semantic_report(project)
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            result = run_semantic_gates(project, level="release", gate_names=["waveform_semantic_gate"], compile_active=False)
+
+            self.assertEqual(payload["result"], "PASS")
+            self.assertEqual(payload["decoded_transactions"][0]["response"], "0xAA")
+            self.assertTrue(result.ok)
+
+    def test_uvm_semantic_gate_rejects_hardcoded_or_single_scenario_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "uvm_obligation_gate")
+            (project / "work/docparse/verification").mkdir(parents=True, exist_ok=True)
+            (project / "work/docparse/verification/operation_model.yaml").write_text(
+                "schema_version: 1\noperations:\n  - operation_id: OP_READ_STATUS\n",
+                encoding="utf-8",
+            )
+            (project / "work/loop2_uvm/config").mkdir(parents=True, exist_ok=True)
+            (project / "work/loop2_uvm/config/uvm_obligations.yaml").write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "obligations:",
+                        "  - requirement_id: REQ-001",
+                        "    operation_id: OP_READ_STATUS",
+                        "    sequence_id: read_status_seq",
+                        "    coverage_bins:",
+                        "      - read_status_bin",
+                        "    cross_coverage:",
+                        "      - op_x_reset",
+                        "    scoreboard_model: ref_model",
+                        "    assertions:",
+                        "      - assert_read_status",
+                        "    randomized_tests:",
+                        "      - random_read_status",
+                        "    status: planned",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            report = project / "output/reports/loop2/loop2_report.json"
+            report.parent.mkdir(parents=True, exist_ok=True)
+            report.write_text(
+                json.dumps(
+                    {
+                        "result": "PASS",
+                        "summary": {"coverage": "100", "coverage_source": "hardcoded"},
+                        "semantic_summary": {
+                            "coverage_source": "hardcoded",
+                            "scenario_kind_count": 1,
+                            "reference_model_check_count": 0,
+                            "monitor_observed_check_count": 0,
+                            "covered_operation_count": 1,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = run_semantic_gates(project, level="release", gate_names=["uvm_obligation_gate"], compile_active=False)
+
+            self.assertFalse(result.ok)
+            messages = "\n".join(issue.message for issue in result.gates[0].issues)
+            self.assertIn("coverage source", messages)
+            self.assertIn("multi-scenario", messages)
+
+    def test_fpga_semantic_gate_requires_matrix_for_active_requirements(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = _minimal_project(Path(tmp), "demo")
+            _write_semantic_policy(project, "fpga_validation_obligation_gate")
+            baseline = project / "work/docparse/frontdoor/baseline/active_requirements.yaml"
+            baseline.parent.mkdir(parents=True, exist_ok=True)
+            baseline.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "requirements:",
+                        "  - requirement_id: REQ-001",
+                        "    title: FPGA mapped requirement",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_semantic_gates(project, level="release", gate_names=["fpga_validation_obligation_gate"], compile_active=False)
+
+            self.assertFalse(result.ok)
+            self.assertIn("no FPGA validation matrix", result.gates[0].issues[0].message)
 
     def test_loop1_full_function_matrix_uses_source_bound_opcodes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1433,6 +2284,30 @@ class DocparsePolicyTests(unittest.TestCase):
 
             self.assertEqual(check.status, "PASS")
 
+    def test_docparse_allows_generated_semantic_closure_replanning_records(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            change_dir = project / "work/docparse/change/CR-UNIT"
+            change_dir.mkdir(parents=True, exist_ok=True)
+            for name in ("design_replanning_record.md", "verification_replanning_record.md"):
+                (change_dir / name).write_text(
+                    "\n".join(
+                        [
+                            f"# {name}",
+                            "",
+                            "- generated_by: hdlflow.semantic_closure",
+                            "- status: analysis_required",
+                            "",
+                        ]
+                    ),
+                    encoding="utf-8",
+                )
+
+            check = _check_no_ad_hoc_analysis_artifacts(project)
+
+            self.assertEqual(check.status, "PASS")
+
     def test_formal_artifacts_reject_forbidden_workflow_vocabulary(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
@@ -1878,6 +2753,42 @@ class PlatformTemplateContractTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("schema_version must be 2" in message for message in result.messages))
 
+    def test_source_policy_rejects_markdown_sidecar_under_directed_tb(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            config = project / "work" / "config" / "project_config.yaml"
+            config.parent.mkdir(parents=True, exist_ok=True)
+            config.write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "project:",
+                        "  name: demo",
+                        "nodes:",
+                        "  work/loop1_rtl_tb:",
+                        "    source_policy:",
+                        "      directed_tb:",
+                        "        language: Verilog-2001",
+                        "        root: output/tb",
+                        "        allowed_extensions:",
+                        "          - .v",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            tb_dir = project / "output" / "tb"
+            tb_dir.mkdir(parents=True, exist_ok=True)
+            (tb_dir / "loop1_tb.v").write_text("module loop1_tb; endmodule\n", encoding="utf-8")
+            (tb_dir / "full_function_test_plan.md").write_text("# stale sidecar\n", encoding="utf-8")
+
+            checks = _check_source_policy(project, "work/loop1_rtl_tb")
+            directed_tb = next(check for check in checks if check.name == "source_policy:directed_tb")
+
+            self.assertEqual(directed_tb.status, "FAIL")
+            self.assertIn("output/tb/full_function_test_plan.md", directed_tb.detail)
+
     def test_platform_contract_removes_rejected_comment_density_rule(self):
         root = Path(__file__).resolve().parents[3]
         text = "\n".join(
@@ -1963,6 +2874,22 @@ class PlatformTemplateContractTests(unittest.TestCase):
             self.assertIn("$bootgenArgs = @('-image', $Bif, '-arch', 'zynq', '-o', $Output, '-w')", script)
             self.assertIn("-ToolArgs $bootgenArgs", script)
             self.assertNotIn("& $Bootgen", script)
+
+    def test_loop3_deterministic_generators_do_not_rewrite_unchanged_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            result = generate_vitis_boot_files(project)
+            bif = result.path / "boot_image.bif"
+            ps1 = result.path / "Build-BootImage.ps1"
+            fixed_time = 1_700_000_000
+            os.utime(bif, (fixed_time, fixed_time))
+            os.utime(ps1, (fixed_time, fixed_time))
+
+            generate_vitis_boot_files(project)
+
+            self.assertEqual(int(bif.stat().st_mtime), fixed_time)
+            self.assertEqual(int(ps1.stat().st_mtime), fixed_time)
 
     def test_loop3_board_verify_is_platform_tool_not_opcode_sweep(self):
         root = Path(__file__).resolve().parents[3]
@@ -3807,6 +4734,20 @@ class Loop3RiskGateTests(unittest.TestCase):
                 self.assertTrue(path.exists(), path)
                 self.assertIn("- result: PASS", path.read_text(encoding="utf-8"))
 
+    def test_loop3_freshness_evidence_excludes_preflight_reports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_loop3_signoff_evidence(project, mode="ps_pl")
+
+            _, evidence_paths = _gate_paths(project, "work/loop3_fpga_proto")
+            evidence_rels = {_gate_rel(project, path) for path in evidence_paths}
+
+            self.assertNotIn("output/reports/loop3/preflight/database_preflight.md", evidence_rels)
+            self.assertNotIn("output/reports/loop3/preflight/prototype_plan_check.md", evidence_rels)
+            self.assertIn("output/fpga/vivado/reports/post_impl_timing_summary.rpt", evidence_rels)
+            self.assertIn("output/reports/loop3/serial/latest_serial_validation_report.md", evidence_rels)
+
     def test_loop3_serial_stress_is_skipped_without_project_policy(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "demo"
@@ -4079,6 +5020,8 @@ class FinalOutputGateTests(unittest.TestCase):
             )
             _write_doc_templates(project)
             _write_docset_source_inputs(project)
+            compile_requirements(project)
+            compile_semantic_closure(project, overwrite=True)
             docset = generate_docset(project, allow_draft=True)
             self.assertTrue(docset.ok, docset.check_result.errors)
 
@@ -4092,6 +5035,89 @@ class FinalOutputGateTests(unittest.TestCase):
             self.assertIn("output/rtl/demo_top.v", manifest)
             self.assertIn("final_gate: PASS", manifest)
             self.assertTrue((project / "output" / "reports" / "final_audit_report.md").exists())
+
+    def test_failed_final_audit_overwrites_stale_pass_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / "env/rule/global").mkdir(parents=True, exist_ok=True)
+            (workspace / "env/rule/global/workspace_config.yaml").write_text("schema_version: 1\n", encoding="utf-8")
+            project = _minimal_project(workspace / "prj", "demo")
+            final = project / "output/reports/final_audit_report.md"
+            final.parent.mkdir(parents=True, exist_ok=True)
+            final.write_text("# Final Audit\n\n- result: PASS\n", encoding="utf-8")
+
+            result = run_final_audit(project, level="release")
+
+            self.assertFalse(result.ok)
+            final_text = final.read_text(encoding="utf-8")
+            self.assertIn("- result: FAIL", final_text)
+            state = update_release_state(project, level="release")
+            self.assertFalse(any("final audit PASS conflicts" in blocker for blocker in state.blockers))
+
+    def test_develop_release_truth_ignores_stale_final_gate_fail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / "env/rule/global").mkdir(parents=True, exist_ok=True)
+            (workspace / "env/rule/global/workspace_config.yaml").write_text("schema_version: 1\n", encoding="utf-8")
+            project = workspace / "prj" / "demo"
+            _create_minimal_project(project)
+            _write_valid_state_manifest(project, "input")
+            _write_valid_state_manifest(project, "work/docparse")
+            _write_valid_state_manifest(project, "work/loop1_rtl_tb")
+            _write_valid_state_manifest(project, "work/loop2_uvm")
+            _write_valid_state_manifest(project, "work/loop3_fpga_proto")
+            (project / "output" / "rtl").mkdir(parents=True, exist_ok=True)
+            (project / "output" / "rtl" / "demo_top.v").write_text("module demo_top; endmodule\n", encoding="utf-8")
+            _write_empty_review_findings(project)
+            (project / "work" / "gates").mkdir(parents=True, exist_ok=True)
+            (project / "work" / "gates" / "gate_status.json").write_text(
+                json.dumps(
+                    {
+                        "project": "demo",
+                        "spec_exit": "pass",
+                        "loop1_exit": "pass",
+                        "loop2_exit": "pass",
+                        "loop3_exit": "pass",
+                        "final_gate": "fail",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (project / "work" / "gates" / "claim_policy.yaml").write_text(
+                "\n".join(
+                    [
+                        "schema_version: 1",
+                        "project: demo",
+                        "owner_role: arbtr",
+                        "arbtr_decision: ACCEPT",
+                        "final_claims:",
+                        "  may_claim_requirements_complete: true",
+                        "  may_claim_rtl_semantic_signoff: true",
+                        "  may_claim_directed_tb_task_signoff: true",
+                        "  may_claim_uvm_independent_oracle: true",
+                        "  may_claim_fpga_bringup: true",
+                        "  may_claim_ps_pl_runtime_path: false",
+                        "  may_claim_external_pin_level_validation: false",
+                        "  may_claim_full_hardware_validation: false",
+                        "waivers: []",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+            compile_requirements(project)
+            compile_semantic_closure(project, overwrite=True)
+            docset = generate_docset(project, allow_draft=True)
+            self.assertTrue(docset.ok, docset.check_result.errors)
+            (project / "output/reports/final_audit_report.md").write_text("# Final Audit\n\n- result: FAIL\n", encoding="utf-8")
+
+            result = run_final_audit(project, level="develop")
+            release_truth = next(check for check in result.checks if check.name == "release_truth_gate")
+
+            self.assertEqual(release_truth.status, "PASS")
+            self.assertNotIn("work/gates/gate_status.json records final gate fail", release_truth.detail)
 
 
 class DocsetTests(unittest.TestCase):
@@ -4201,6 +5227,22 @@ class DocsetTests(unittest.TestCase):
 
             self.assertFalse(check.ok)
             self.assertTrue(any("source drift" in error for error in check.errors))
+
+    def test_docset_source_hashes_exclude_runtime_output_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_doc_templates(project)
+            _write_docset_source_inputs(project)
+            (project / "output/manifest.yaml").write_text("schema_version: 1\nverification:\n  final_gate: PENDING\n", encoding="utf-8")
+
+            result = generate_docset(project, allow_draft=True)
+
+            self.assertTrue(result.ok, result.check_result.errors)
+            for manifest_path in result.manifest_paths:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                sources = {item["path"] for item in manifest.get("source_hashes", [])}
+                self.assertNotIn("output/manifest.yaml", sources)
 
     def test_release_check_blocks_placeholders(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -4451,6 +5493,33 @@ class StateSyncTests(unittest.TestCase):
             self.assertEqual(result.current_loop, "loop3")
             gate_status = json.loads((project / "work" / "gates" / "gate_status.json").read_text(encoding="utf-8"))
             self.assertEqual(gate_status["loop2_exit"], "pass")
+
+    def test_sync_rejects_pass_manifests_before_invalidation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "demo"
+            _create_minimal_project(project)
+            _write_valid_state_manifest(project, "input")
+            _write_valid_state_manifest(project, "work/docparse")
+            invalidation = project / "work" / "gates" / "pass_invalidation.json"
+            invalidation.parent.mkdir(parents=True, exist_ok=True)
+            invalidation.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "project": "demo",
+                        "invalidated_at": "2026-07-02T14:29:01+08:00",
+                        "reason": "test invalidation",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = sync_project_state(project)
+
+            self.assertEqual(result.overall_status, "pending")
+            self.assertEqual(result.passed_nodes, [])
+            gate_status = json.loads((project / "work" / "gates" / "gate_status.json").read_text(encoding="utf-8"))
+            self.assertEqual(gate_status["spec_exit"], "pending")
 
     def test_latest_failed_gate_overrides_older_pass_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -4790,7 +5859,6 @@ def _write_empty_review_findings(project: Path) -> Path:
         review_evidence.extend(
             [
                 "output/docs/test/verification_plan.md",
-                "output/tb/full_function_test_plan.md",
                 "loop1_task_requirement_evidence",
                 "loop1_waveform_blocking",
                 "output/reports/loop1/waveform_gate.json",
@@ -4896,6 +5964,47 @@ def _write_manifest_payload(project: Path, node: str, payload: dict[str, object]
     return manifest
 
 
+def _minimal_project(root: Path, name: str) -> Path:
+    project = root / name
+    project.mkdir(parents=True, exist_ok=True)
+    (project / "output").mkdir(parents=True, exist_ok=True)
+    (project / "project_scaffold.yaml").write_text(
+        "\n".join(
+            [
+                "schema_version: 1",
+                f"project: {name}",
+                "created_by: env/tool/scripts/New-HdlProject.ps1",
+                "creation_mode: script_only",
+                "template_source: env/rule/scaffold",
+                "created_at: 2026-07-01 00:00:00",
+                "manual_project_directory_creation: forbidden",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return project
+
+
+def _write_semantic_policy(project: Path, gate_name: str) -> None:
+    path = project / "work/config/semantic_gate_policy.yaml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                "schema_version: 1",
+                "default_mode: advisory",
+                "release_default_mode: blocking",
+                "gates:",
+                f"  {gate_name}:",
+                "    mode: advisory",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def _write_valid_state_manifest(project: Path, node: str, stamp: str = "20260517000001") -> Path:
     return _write_manifest_payload(project, node, {})
 
@@ -4939,6 +6048,7 @@ def _write_docset_source_inputs(project: Path) -> Path:
             [
                 "criteria:",
                 "  - id: AC-UNIT-001",
+                "    requirement_id: REQ-UNIT-001",
                 "    description: Loop1 directed test passes",
                 "    evidence: output/reports/loop1/loop1_report.json",
                 "",

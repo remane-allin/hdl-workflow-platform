@@ -328,7 +328,7 @@ try {
     while ($normalizedCommand.Contains("//")) {
         $normalizedCommand = $normalizedCommand.Replace("//", "/")
     }
-    $writePattern = "apply_patch|set-content|add-content|out-file|new-item|remove-item|move-item|copy-item|\bni\b|\bdel\b|\brm\b|\bmkdir\b|>>|>\s*['""]?[^|]|prototype-preflight|validate-prototype-plan|generate-xdc|generate-ps-pl-bd|generate-vitis-boot|loop1-refresh-reports|loop1-waveform-gate|loop2-refresh-reports|loop2-build-bindings|loop2-database-preflight|invoke-hdlmodelsim\.ps1|invoke-hdlvivado\.ps1|invoke-hdlvitis\.ps1|build-bootimage\.ps1|\bxsct(\.bat|\.exe)?\b|\bvitis(\.bat|\.exe)?\b|\bbootgen(\.bat|\.exe)?\b|\bvsim\b|\bvlog\b"
+    $writePattern = "apply_patch|set-content|add-content|out-file|new-item|remove-item|move-item|copy-item|\bni\b|\bdel\b|\brm\b|\bmkdir\b|>>|>\s*['""]?[^|]|prototype-preflight|validate-prototype-plan|generate-xdc|generate-ps-pl-bd|generate-vitis-boot|loop1-refresh-reports|loop1-waveform-gate|loop1-waveform-semantic|loop2-refresh-reports|loop2-build-bindings|loop2-database-preflight|invoke-hdlmodelsim\.ps1|invoke-hdlvivado\.ps1|invoke-hdlvitis\.ps1|build-bootimage\.ps1|\bxsct(\.bat|\.exe)?\b|\bvitis(\.bat|\.exe)?\b|\bbootgen(\.bat|\.exe)?\b|\bvsim\b|\bvlog\b"
     $sourceEditPattern = "apply_patch|set-content|add-content|out-file|new-item|remove-item|move-item|copy-item|\bni\b|\bdel\b|\brm\b|\bmkdir\b|>>|>\s*['""]?[^|]"
     $frontdoorPattern = "requirements-frontdoor-init|requirements-frontdoor-check|run-gate.*\b(spec|input|docparse|work/docparse|00|01)\b"
     $changeControlPattern = "change-open|change-impact|change-approve|change-close|change-check"
@@ -375,7 +375,7 @@ try {
     }
     if (($normalizedCommand -match $writePattern) -and
         (($normalizedCommand -match "invoke-hdlmodelsim\.ps1") -and ($normalizedCommand -match "\bloop1\b") -or
-         ($normalizedCommand -match "loop1-refresh-reports|loop1-waveform-gate"))) {
+         ($normalizedCommand -match "loop1-refresh-reports|loop1-waveform-gate|loop1-waveform-semantic"))) {
         if (-not (Test-HdlNodeBaseline -ProjectRoot $projectRoot -Node "work/docparse")) {
             Write-HdlHookDecision -Decision block -Continue $false -Reason "Loop1 tool entry requires a passed DocParse gate manifest first"
             exit 0

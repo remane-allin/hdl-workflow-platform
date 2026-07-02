@@ -17,6 +17,7 @@ def build_report_payload(definition: StageReportDefinition, project: str, parsed
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "change_id": change_id,
         "summary": parsed.get("summary", {}),
+        "semantic_summary": parsed.get("semantic_summary", {}),
         "transactions": parsed.get("transactions", []),
         "failed_checks": parsed.get("failed_checks", []),
         "parser_errors": parsed.get("parser_errors", []),
@@ -34,6 +35,7 @@ def render_report_markdown(definition: StageReportDefinition, payload: dict[str,
     result = str(payload.get("result", "BLOCKED")).upper()
     summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
     transactions = payload.get("transactions", []) if isinstance(payload.get("transactions"), list) else []
+    semantic_summary = payload.get("semantic_summary", {}) if isinstance(payload.get("semantic_summary"), dict) else {}
     failed_checks = payload.get("failed_checks", []) if isinstance(payload.get("failed_checks"), list) else []
     parser_errors = payload.get("parser_errors", []) if isinstance(payload.get("parser_errors"), list) else []
     blocked_reason = payload.get("blocked_reason") if isinstance(payload.get("blocked_reason"), dict) else {}
@@ -72,6 +74,8 @@ def render_report_markdown(definition: StageReportDefinition, payload: dict[str,
     lines.extend(["", "```text", banner, "```", ""])
     lines.extend(["## 1. Summary", _summary_text(result, definition.report_type), ""])
     lines.extend(["## 2. Main Results", _transactions_table(transactions), ""])
+    if semantic_summary:
+        lines.extend(["## 2.1 Semantic Coverage", _semantic_summary_table(semantic_summary), ""])
     lines.extend(["## 3. Failed Items", _failed_table(failed_checks, parser_errors), ""])
     lines.extend(["## 4. Notes", "Generated from structured HDLFLOW events.", ""])
     return "\n".join(lines)
@@ -151,6 +155,18 @@ def _failed_table(failed_checks: list[Any], parser_errors: list[Any]) -> str:
                 reason=item.get("reason", "check_failed"),
             )
         )
+    return "\n".join(lines)
+
+
+def _semantic_summary_table(summary: dict[str, Any]) -> str:
+    lines = ["| Field | Value |", "| --- | --- |"]
+    if not summary:
+        lines.append("| none | none |")
+        return "\n".join(lines)
+    for key, value in summary.items():
+        if isinstance(value, list):
+            value = ", ".join(str(item) for item in value) if value else "none"
+        lines.append(f"| {_label(str(key))} | {value} |")
     return "\n".join(lines)
 
 

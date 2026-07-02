@@ -1,66 +1,179 @@
 schema_version: 1
+generated_by: hdlflow.semantic_closure
+generated_at: 2026-07-02T15:07:52
 project: Hi3593_v2
 status: READY
 owner_role: sim
 stage: docparse
 target: test_intent
 links:
-  - requirement_id: REQ-SPI-001
-    test_intent: T-SPI-PARTIAL
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-SPI-002
-    test_intent: T-OPCODE-MATRIX
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-RST-001
-    test_intent: T-MR-SHARED
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-RST-002
-    test_intent: T-SWRESET-44
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-FIFO-001
-    test_intent: rx_location32_overwrite
-    artifact: work/docparse/verification/verification_plan.yaml
-  - requirement_id: REQ-ARINC-001
-    test_intent: WAVE-TX
-    artifact: work/docparse/verification/verification_plan.yaml
-  - requirement_id: REQ-RX-001
-    test_intent: arinc_filter_test
-    artifact: work/docparse/verification/uvm_plan.yaml
-  - requirement_id: REQ-TX-001
-    test_intent: fifo_pressure_test
-    artifact: work/docparse/verification/uvm_plan.yaml
-  - requirement_id: REQ-STATUS-001
-    test_intent: status_polling
-    artifact: work/docparse/verification/verification_plan.yaml
-  - requirement_id: REQ-LABEL-001
-    test_intent: T-LABEL-MEMORY
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-PLABEL-001
-    test_intent: T-PRIORITY-MAILBOX
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-MAILBOX-001
-    test_intent: T-PRIORITY-MAILBOX
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-FLAGINT-001
-    test_intent: T-FLAG-INT
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-MB-PINS-001
-    test_intent: T-PRIORITY-MAILBOX
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-ACLK-001
-    test_intent: T-FLAG-INT
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-TX-FULL-001
-    test_intent: T-TX-FULL
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-RX-FILTER-001
-    test_intent: T-RX-FILTER
-    artifact: work/docparse/structured_spec/test_intent.yaml
-  - requirement_id: REQ-PROTO-001
-    test_intent: ps_pl_sanity_test
-    artifact: work/docparse/prototype/prototype_plan.yaml
-  - requirement_id: REQ-PROTO-001
-    test_intent: ps_pl_wrapper_toolchain_bringup
-    artifact: work/docparse/frontdoor/intake/merged/PROTO-SUP-TOOL-FPGA-001.yaml
+  -
+    requirement_id: ASM-BOUNDARY-001
+    test_intent: OP_ASM_BOUNDARY_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_asm_boundary_001_nominal
+      - op_asm_boundary_001_reset_interaction
+      - op_asm_boundary_001_negative_or_boundary
+  -
+    requirement_id: BASELINE-SEED-001
+    test_intent: OP_BASELINE_SEED_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_baseline_seed_001_nominal
+      - op_baseline_seed_001_reset_interaction
+      - op_baseline_seed_001_negative_or_boundary
+  -
+    requirement_id: REQ-ACLK-001
+    test_intent: OP_REQ_ACLK_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_aclk_001_nominal
+      - op_req_aclk_001_reset_interaction
+      - op_req_aclk_001_negative_or_boundary
+  -
+    requirement_id: REQ-ARINC-001
+    test_intent: OP_REQ_ARINC_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_arinc_001_nominal
+      - op_req_arinc_001_reset_interaction
+      - op_req_arinc_001_negative_or_boundary
+  -
+    requirement_id: REQ-FIFO-001
+    test_intent: OP_REQ_FIFO_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_fifo_001_nominal
+      - op_req_fifo_001_reset_interaction
+      - op_req_fifo_001_negative_or_boundary
+  -
+    requirement_id: REQ-FLAGINT-001
+    test_intent: OP_REQ_FLAGINT_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_flagint_001_nominal
+      - op_req_flagint_001_reset_interaction
+      - op_req_flagint_001_negative_or_boundary
+  -
+    requirement_id: REQ-INST-001
+    test_intent: OP_REQ_INST_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_inst_001_nominal
+      - op_req_inst_001_reset_interaction
+      - op_req_inst_001_negative_or_boundary
+  -
+    requirement_id: REQ-LABEL-001
+    test_intent: OP_REQ_LABEL_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_label_001_nominal
+      - op_req_label_001_reset_interaction
+      - op_req_label_001_negative_or_boundary
+  -
+    requirement_id: REQ-MAILBOX-001
+    test_intent: OP_REQ_MAILBOX_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_mailbox_001_nominal
+      - op_req_mailbox_001_reset_interaction
+      - op_req_mailbox_001_negative_or_boundary
+  -
+    requirement_id: REQ-MB-PINS-001
+    test_intent: OP_REQ_MB_PINS_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_mb_pins_001_nominal
+      - op_req_mb_pins_001_reset_interaction
+      - op_req_mb_pins_001_negative_or_boundary
+  -
+    requirement_id: REQ-PLABEL-001
+    test_intent: OP_REQ_PLABEL_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_plabel_001_nominal
+      - op_req_plabel_001_reset_interaction
+      - op_req_plabel_001_negative_or_boundary
+  -
+    requirement_id: REQ-PROTO-001
+    test_intent: OP_REQ_PROTO_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_proto_001_nominal
+      - op_req_proto_001_reset_interaction
+      - op_req_proto_001_negative_or_boundary
+  -
+    requirement_id: REQ-RST-001
+    test_intent: OP_REQ_RST_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_rst_001_nominal
+      - op_req_rst_001_reset_interaction
+      - op_req_rst_001_negative_or_boundary
+  -
+    requirement_id: REQ-RST-002
+    test_intent: OP_REQ_RST_002
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_rst_002_nominal
+      - op_req_rst_002_reset_interaction
+      - op_req_rst_002_negative_or_boundary
+  -
+    requirement_id: REQ-RX-001
+    test_intent: OP_REQ_RX_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_rx_001_nominal
+      - op_req_rx_001_reset_interaction
+      - op_req_rx_001_negative_or_boundary
+  -
+    requirement_id: REQ-RX-FILTER-001
+    test_intent: OP_REQ_RX_FILTER_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_rx_filter_001_nominal
+      - op_req_rx_filter_001_reset_interaction
+      - op_req_rx_filter_001_negative_or_boundary
+  -
+    requirement_id: REQ-SPI-001
+    test_intent: OP_REQ_SPI_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_spi_001_nominal
+      - op_req_spi_001_reset_interaction
+      - op_req_spi_001_negative_or_boundary
+  -
+    requirement_id: REQ-SPI-002
+    test_intent: OP_REQ_SPI_002
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_spi_002_nominal
+      - op_req_spi_002_reset_interaction
+      - op_req_spi_002_negative_or_boundary
+  -
+    requirement_id: REQ-STATUS-001
+    test_intent: OP_REQ_STATUS_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_status_001_nominal
+      - op_req_status_001_reset_interaction
+      - op_req_status_001_negative_or_boundary
+  -
+    requirement_id: REQ-TX-001
+    test_intent: OP_REQ_TX_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_tx_001_nominal
+      - op_req_tx_001_reset_interaction
+      - op_req_tx_001_negative_or_boundary
+  -
+    requirement_id: REQ-TX-FULL-001
+    test_intent: OP_REQ_TX_FULL_001
+    artifact: work/docparse/verification/operation_model.yaml
+    coverage_bins:
+      - op_req_tx_full_001_nominal
+      - op_req_tx_full_001_reset_interaction
+      - op_req_tx_full_001_negative_or_boundary
 unmapped_requirements: []
 assumptions: []

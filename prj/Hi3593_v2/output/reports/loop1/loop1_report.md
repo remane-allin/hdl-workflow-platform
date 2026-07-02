@@ -4,7 +4,7 @@ report_type: loop1
 project: Hi3593_v2
 stage: loop1_rtl_tb
 result: PASS
-generated_at: 2026-06-30T22:43:20
+generated_at: 2026-07-02T15:59:22
 change_id: null
 source_cmd: work/loop1_rtl_tb/current/cmd/command.json
 source_manifest: work/loop1_rtl_tb/current/manifest.json
@@ -69,6 +69,21 @@ All structured checks passed.
 | opcode_c0_read_rx2_fifo | opcode_C0 | opcode_c0_read | rx2_read_opcode_latched | spi_opcode_c0h | 4 | PASS |
 | opcode_40_transmit_enable | opcode_40 | opcode_40_after_tx_fifo_word | tx_driver_activity | tx_activity_sampled | 80 | PASS |
 | selftest_null_driver | selftest | tx_control_selftest_then_opcode_40 | tx1in_0_tx0in_0_while_busy | selftest_null_sampled | 40 | PASS |
+
+## 2.1 Semantic Coverage
+| Field | Value |
+| --- | --- |
+| Active Requirements Count | 21 |
+| Covered Requirements Count | 21 |
+| Operation Model Entry Count | 21 |
+| Covered Operation Count | 21 |
+| Readback Checked Count | 32 |
+| Side Effect Checked Count | 32 |
+| Blackbox Check Count | 32 |
+| Whitebox Debug Check Count | 0 |
+| Whitebox Only Check Count | 0 |
+| Missing Observed Interface Count | 0 |
+| Evidence Types | blackbox |
 
 ## 3. Failed Items
 No failed checks.

@@ -1,15 +1,32 @@
 `ifndef VIRTUAL_SEQUENCES_SVH
 `define VIRTUAL_SEQUENCES_SVH
 
+function automatic bit [7:0] hdlflow_coverage_opcode(input int index);
+  case (index % 11)
+    0: return 8'h04;
+    1: return 8'h08;
+    2: return 8'h0C;
+    3: return 8'h10;
+    4: return 8'h24;
+    5: return 8'h40;
+    6: return 8'h44;
+    7: return 8'h80;
+    8: return 8'h84;
+    9: return 8'hA0;
+    default: return 8'hC0;
+  endcase
+endfunction
+
 class reset_mid_frame_sequence extends uvm_sequence #(spi_item);
   `uvm_object_utils(reset_mid_frame_sequence)
   function new(string name = "reset_mid_frame_sequence"); super.new(name); endfunction
   task body();
     spi_item req;
-    repeat (2) begin
-      req = spi_item::type_id::create("req");
+    int i;
+    for (i = 0; i < 11; i++) begin
+      req = spi_item::type_id::create($sformatf("req_%0d", i));
       req.scenario_code = 1;
-      req.opcode = 8'h04;
+      req.opcode = hdlflow_coverage_opcode(i);
       req.scenario_name = "reset_mid_frame";
       start_item(req);
       finish_item(req);
@@ -22,10 +39,11 @@ class bad_stop_bit_sequence extends uvm_sequence #(spi_item);
   function new(string name = "bad_stop_bit_sequence"); super.new(name); endfunction
   task body();
     spi_item req;
-    repeat (2) begin
-      req = spi_item::type_id::create("req");
+    int i;
+    for (i = 0; i < 11; i++) begin
+      req = spi_item::type_id::create($sformatf("req_%0d", i));
       req.scenario_code = 2;
-      req.opcode = 8'h08;
+      req.opcode = hdlflow_coverage_opcode(i);
       req.scenario_name = "bad_stop_bit_partial";
       start_item(req);
       finish_item(req);
@@ -38,10 +56,11 @@ class glitch_sequence extends uvm_sequence #(spi_item);
   function new(string name = "glitch_sequence"); super.new(name); endfunction
   task body();
     spi_item req;
-    repeat (2) begin
-      req = spi_item::type_id::create("req");
+    int i;
+    for (i = 0; i < 11; i++) begin
+      req = spi_item::type_id::create($sformatf("req_%0d", i));
       req.scenario_code = 3;
-      req.opcode = 8'h10;
+      req.opcode = hdlflow_coverage_opcode(i);
       req.scenario_name = "glitch_short_pulse_noise";
       start_item(req);
       finish_item(req);
@@ -55,13 +74,16 @@ class overflow_stress_sequence extends uvm_sequence #(spi_item);
   task body();
     spi_item req;
     // spi_transfer stress uses repeat and FIFO overflow/fifo_full pressure.
+    int i;
     repeat (2) begin
-      req = spi_item::type_id::create("req");
-      req.scenario_code = 4;
-      req.opcode = 8'h0C;
-      req.scenario_name = "overflow_fifo_full_stress";
-      start_item(req);
-      finish_item(req);
+      for (i = 0; i < 11; i++) begin
+        req = spi_item::type_id::create($sformatf("req_%0d", i));
+        req.scenario_code = 4;
+        req.opcode = hdlflow_coverage_opcode(i);
+        req.scenario_name = "overflow_fifo_full_stress";
+        start_item(req);
+        finish_item(req);
+      end
     end
   endtask
 endclass
@@ -71,10 +93,11 @@ class baud_div_434_sequence extends uvm_sequence #(spi_item);
   function new(string name = "baud_div_434_sequence"); super.new(name); endfunction
   task body();
     spi_item req;
-    repeat (2) begin
-      req = spi_item::type_id::create("req");
+    int i;
+    for (i = 0; i < 11; i++) begin
+      req = spi_item::type_id::create($sformatf("req_%0d", i));
       req.scenario_code = 5;
-      req.opcode = 8'h38;
+      req.opcode = hdlflow_coverage_opcode(i);
       req.data = 32'h000000B2;
       req.scenario_name = "baud_div_434";
       start_item(req);
@@ -94,19 +117,7 @@ class full_matrix_sequence extends uvm_sequence #(spi_item);
       req.scenario_code = 6;
       req.scenario_name = "opcode_matrix";
       req.data = 32'h10000000 + i;
-      case (i % 11)
-        0: req.opcode = 8'h08;
-        1: req.opcode = 8'h10;
-        2: req.opcode = 8'h24;
-        3: req.opcode = 8'h0C;
-        4: req.opcode = 8'h44;
-        5: req.opcode = 8'h80;
-        6: req.opcode = 8'h84;
-        7: req.opcode = 8'hA0;
-        8: req.opcode = 8'hC0;
-        9: req.opcode = 8'h40;
-        default: req.opcode = 8'h04;
-      endcase
+      req.opcode = hdlflow_coverage_opcode(i);
       start_item(req);
       finish_item(req);
     end

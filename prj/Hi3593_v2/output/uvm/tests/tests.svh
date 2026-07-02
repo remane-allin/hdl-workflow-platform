@@ -35,9 +35,11 @@ class base_uvm_test extends uvm_test;
 
   function void final_phase(uvm_phase phase);
     string result_text;
+    real functional_coverage;
     result_text = (env.scoreboard.failed_checks == 0) ? "PASS" : "FAIL";
-    $display("HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=%0d|uvm_fatal=0|total_checks=%0d|failed_checks=%0d|coverage=100.0|result=%0s",
-      env.scoreboard.failed_checks, env.scoreboard.total_checks, env.scoreboard.failed_checks, result_text);
+    functional_coverage = env.coverage.coverage_pct();
+    $display("HDLFLOW|UVM_SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop2|uvm_error=%0d|uvm_fatal=0|total_checks=%0d|failed_checks=%0d|coverage=%0.2f|coverage_source=coverage_collector|result=%0s",
+      env.scoreboard.failed_checks, env.scoreboard.total_checks, env.scoreboard.failed_checks, functional_coverage, result_text);
   endfunction
 endclass
 

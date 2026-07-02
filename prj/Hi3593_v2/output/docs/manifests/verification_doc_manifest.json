@@ -1,9 +1,9 @@
 {
-  "change_id": null,
+  "change_id": "CR-20260702155634-forbid-directed-tb-markdown-sidecar",
   "doc_path": "output/docs/test/verification_plan.md",
-  "doc_sha256": "f1ea6c86fefb30546e4ed6d237c511c8f8ef711c366756bdb161c833ad6a4704",
+  "doc_sha256": "6d3e16c9ad17bca2dbe8c76c6aaf3b0f724189c3ca5c3f5c6f05e7424804f288",
   "doc_type": "verification_plan",
-  "generated_at": "2026-06-30T22:42:50",
+  "generated_at": "2026-07-02T15:57:21",
   "generator": "hdlflow.docgen.verification_plan",
   "markers": [
     "HDL-VERIF-DOC START",
@@ -13,23 +13,31 @@
   "projection_sha256": "37f76df9adb60b8530248cc9de5e34b3206c3f136ff523b28a6bb1c7998209f1",
   "schema_version": 1,
   "snapshot_path": "work/docgen/snapshots/verification_doc_snapshot.json",
-  "snapshot_sha256": "77a1198905c6da1bd975dcab0625d987c67ea11307e7b00a08d7be1a93df4fc4",
+  "snapshot_sha256": "5c10ba46d0d1815841d0370e0db2cbde4bf353492fc3e40a7b1ccda80a85b263",
   "source_hashes": [
     {
-      "path": "output/manifest.yaml",
-      "sha256": "adc5c9e3ea080692f36da0f39aa5ccc613e027de4332094aeb7f9a8192e7dd71"
-    },
-    {
       "path": "work/config/project_config.yaml",
-      "sha256": "ef14a15075d80481b7be742e769d384c64a72dbceeec75044eae18101a441e90"
+      "sha256": "2e2badbfd63d5940d165cc0517d0a44a885e53d856a6849cfe89035e84a6d748"
     },
     {
       "path": "work/docparse/architecture/dataflow.yaml",
       "sha256": "f91ae6a05cb03f33b421c20cb79cb8dc70371c87548fd18ca178cc4be835084a"
     },
     {
+      "path": "work/docparse/architecture/design_routing.yaml",
+      "sha256": "587e19f171a2e071ef85d7b1e255bcbd48174bba358c0b340df445f5b0007ef6"
+    },
+    {
+      "path": "work/docparse/architecture/functional_domain_model.yaml",
+      "sha256": "97384b6bbafd4871e8a6deabeb4aedf0e58a1e437ee69d952896ccc1449a3258"
+    },
+    {
       "path": "work/docparse/architecture/interface_contracts.yaml",
       "sha256": "386fde3b9d0defca0e90f8e8c5040e12052ac14bfb09ada943ada29635666f38"
+    },
+    {
+      "path": "work/docparse/architecture/module_ownership_matrix.yaml",
+      "sha256": "915076faa97af7be6e30f6163dbfd41b719326447f829e3fd20083072b00fd21"
     },
     {
       "path": "work/docparse/architecture/module_plan.yaml",
@@ -50,6 +58,18 @@
     {
       "path": "work/docparse/frontdoor/acceptance_criteria.yaml",
       "sha256": "6fbea7948954a55c25a2c8c8458745709cac428f5e9794663f99dbb8ebe46536"
+    },
+    {
+      "path": "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml",
+      "sha256": "a601829fd19b94c50765d333c0df051cd8ae901ecd629376c939fe60c90fa1ca"
+    },
+    {
+      "path": "work/docparse/frontdoor/baseline/active_requirements.yaml",
+      "sha256": "36de11e03354ba2e52b58e64a51d194d07a90810093b0a54d085c53644decabc"
+    },
+    {
+      "path": "work/docparse/frontdoor/baseline/evidence_index.yaml",
+      "sha256": "db6bc9291de5da31fc8f92236ee519e3c4c2862e0071dfd9c9931e56e3f2f3ff"
     },
     {
       "path": "work/docparse/frontdoor/srs.yaml",
@@ -77,11 +97,11 @@
     },
     {
       "path": "work/docparse/trace_matrix/req_to_design_intent.yaml",
-      "sha256": "120b4140d04b8c02ef04e6c58413ef4dda2139f8b614b510b1a5f1bc988f304c"
+      "sha256": "4b21ba656ffc7ba4d1be7202dc5d4ee38a9614bcbe4f2ec7182770dc633026e9"
     },
     {
       "path": "work/docparse/trace_matrix/req_to_test_intent.yaml",
-      "sha256": "e6301ad1824c5b868e23e489eeb4ca629bacf19f2a1ce76ac284c76531b325ef"
+      "sha256": "f2717ffa04250e186a0a2872591c754e37c6a40ebdaa8905596c4a29665f5b3c"
     },
     {
       "path": "work/docparse/trace_matrix/req_to_uvm_intent.yaml",
@@ -96,6 +116,10 @@
       "sha256": "bc52a83d5f74e5349772b2b8e9fe0ad81996820b56f7b6233f413c3729768f1b"
     },
     {
+      "path": "work/docparse/verification/operation_model.yaml",
+      "sha256": "c46d039531f046acc8853960aa3ab56ac127ead4f83d7864046dfea2e1f0bfc0"
+    },
+    {
       "path": "work/docparse/verification/uvm_plan.yaml",
       "sha256": "6bc0d9ae2809f5cfa6a74ba6942ab42011c7628e41a7f812779fc1a72545c415"
     },
@@ -104,8 +128,28 @@
       "sha256": "0813324b7042cc18f30e2d6fb0e60a1240bf575e08f1a1bb685c8334b4c62946"
     },
     {
-      "path": "work/gates/gate_status.json",
-      "sha256": "edbde8c891d430c96698c77e79935a09b19dc69ab77b83c783e936e5ba1147dd"
+      "path": "work/loop1_rtl_tb/config/interface_contract.yaml",
+      "sha256": "b26cedb5584975eb3613e24dd36cb55ebe644bd68fe7b39e3907372d36950db7"
+    },
+    {
+      "path": "work/loop1_rtl_tb/config/tb_obligations.yaml",
+      "sha256": "acf25234abda08e1791a35cd02bc495c5efb4afc1cdb202517deb7da663fef91"
+    },
+    {
+      "path": "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml",
+      "sha256": "78c28f0450de02e8b64b1d674f257e299bda0ed4fdfde4eabc766937fc775bf2"
+    },
+    {
+      "path": "work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml",
+      "sha256": "e61c58529ae1930d27441989b01aeda2c3bd80f82484a6450da193a52d85329c"
+    },
+    {
+      "path": "work/loop2_uvm/config/uvm_obligations.yaml",
+      "sha256": "10e99e1192b13a901e9049f966294f2ff54fcff3737c893ac899733f74cdc2af"
+    },
+    {
+      "path": "work/loop3_fpga_proto/config/fpga_validation_matrix.yaml",
+      "sha256": "b4bd5683e0d00afc58025faac5ed85c365c7137dfdc9692a5ae805c6af5b118c"
     }
   ],
   "status": "DRAFT",

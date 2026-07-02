@@ -9,6 +9,7 @@ from ..project import require_project_instance
 from .constants import LOOP2_REPORT
 from .manifest import ensure_command_record, write_current_manifest, write_report_manifest
 from .parser_hdlflow_events import parse_loop2_events
+from .report_semantics import enrich_loop2_payload
 from .render_report import build_report_payload, render_report_markdown
 
 
@@ -21,6 +22,7 @@ def generate_loop2_report(project_path: Path, *, change_id: str | None = None) -
     coverage_text = coverage_path.read_text(encoding="utf-8", errors="ignore") if coverage_path.is_file() else ""
     parsed = parse_loop2_events(log_path.read_text(encoding="utf-8", errors="ignore"), coverage_text=coverage_text)
     payload = build_report_payload(LOOP2_REPORT, project.name, parsed, change_id=change_id)
+    payload = enrich_loop2_payload(project, payload)
     report_md = project / LOOP2_REPORT.report_md
     report_json = project / LOOP2_REPORT.report_json
     report_md.parent.mkdir(parents=True, exist_ok=True)

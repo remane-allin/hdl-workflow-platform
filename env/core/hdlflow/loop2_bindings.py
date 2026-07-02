@@ -566,7 +566,32 @@ def _collect_requirement_bindings(project: Path) -> dict[str, set[str]]:
         else:
             continue
         _collect_loop2_paths_from_trace_items(items, result)
+    _collect_loop2_paths_from_obligations(project, result)
     return result
+
+
+def _collect_loop2_paths_from_obligations(project: Path, result: dict[str, set[str]]) -> None:
+    paths = {
+        "output/uvm/tests/tests.svh",
+        "output/uvm/seq_lib/virtual_sequences.svh",
+        "output/uvm/env/scoreboard.sv",
+        "output/uvm/cov/coverage.sv",
+        "output/uvm/assertions/dut_assertions.sv",
+        "output/uvm/tb/tb_uvm.sv",
+        "output/reports/loop2/loop2_report.json",
+        "output/reports/loop2/loop2_report.md",
+        "work/loop2_uvm/current/log/modelsim.log",
+    }
+    obligations = _load_yaml_items(project / "work/loop2_uvm/config/uvm_obligations.yaml", "obligations")
+    for obligation in obligations:
+        req_id = str(obligation.get("requirement_id") or "").strip()
+        if req_id:
+            result.setdefault(req_id, set()).update(paths)
+    operations = _load_yaml_items(project / "work/docparse/verification/operation_model.yaml", "operations")
+    for operation in operations:
+        for req_id in _as_list(operation.get("requirement_ids")):
+            if req_id:
+                result.setdefault(req_id, set()).update(paths)
 
 
 def _collect_loop2_paths_from_trace_items(items: Any, result: dict[str, set[str]]) -> None:
@@ -628,6 +653,7 @@ def _collect_evidence(project: Path) -> list[dict[str, str]]:
             payload = {}
         if isinstance(payload, dict):
             summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+            semantic = payload.get("semantic_summary", {}) if isinstance(payload.get("semantic_summary"), dict) else {}
             evidence.append(
                 {
                     "evidence_type": "loop2_report_json",
@@ -637,6 +663,47 @@ def _collect_evidence(project: Path) -> list[dict[str, str]]:
                     "value": str(summary.get("total_checks", "")),
                 }
             )
+            if str(payload.get("result") or "").upper() == "PASS":
+                if int(semantic.get("reference_model_check_count") or 0) > 0 and int(semantic.get("monitor_observed_check_count") or 0) > 0:
+                    evidence.append(
+                        {
+                            "evidence_type": "scoreboard_pass",
+                            "path": _normalize_rel_path(report_json.relative_to(project)),
+                            "marker": "reference_model_scoreboard",
+                            "status": "PASS",
+                            "value": str(semantic.get("reference_model_check_count") or ""),
+                        }
+                    )
+                if str(summary.get("coverage") or "").lower() not in {"", "not_reported", "none"} and str(semantic.get("coverage_source") or "") == "coverage_collector":
+                    evidence.append(
+                        {
+                            "evidence_type": "coverage_reported",
+                            "path": _normalize_rel_path(report_json.relative_to(project)),
+                            "marker": "coverage_collector",
+                            "status": "PASS",
+                            "value": str(summary.get("coverage") or ""),
+                        }
+                    )
+                if int(summary.get("uvm_error") or 0) == 0:
+                    evidence.append(
+                        {
+                            "evidence_type": "uvm_error_zero",
+                            "path": _normalize_rel_path(report_json.relative_to(project)),
+                            "marker": "uvm_error",
+                            "status": "PASS",
+                            "value": "0",
+                        }
+                    )
+                if int(summary.get("uvm_fatal") or 0) == 0:
+                    evidence.append(
+                        {
+                            "evidence_type": "uvm_fatal_zero",
+                            "path": _normalize_rel_path(report_json.relative_to(project)),
+                            "marker": "uvm_fatal",
+                            "status": "PASS",
+                            "value": "0",
+                        }
+                    )
 
     for report_name in [
         "loop2_report.md",
@@ -746,6 +813,17 @@ def _loop2_intents(project: Path) -> dict[str, str]:
             for req_id in _as_list(line.split(":", 1)[1].strip()):
                 intent_by_req[req_id] = active_id
     return intent_by_req
+
+
+def _load_yaml_items(path: Path, key: str) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    try:
+        data = load_yaml(path)
+    except Exception:
+        return []
+    rows = data.get(key) if isinstance(data, dict) else None
+    return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
 
 
 def _all_bound_paths(req_bindings: dict[str, set[str]]) -> set[str]:

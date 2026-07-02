@@ -1,7 +1,7 @@
 # Review Check
 
 - project: Hi3593_v2
-- generated_at: 2026-06-30T22:43:20
+- generated_at: 2026-07-02T16:03:10
 - level: develop
 - result: PASS
 - finding_count: 10

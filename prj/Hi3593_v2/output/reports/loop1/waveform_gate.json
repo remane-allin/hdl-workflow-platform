@@ -135,7 +135,7 @@
   "dut_scope": "/loop1_tb/dut",
   "errors": [],
   "gate_policy": "blocking",
-  "generated_at": "2026-06-30T22:29:08",
+  "generated_at": "2026-07-02T15:08:13",
   "llm_decision_source": false,
   "log": "work/loop1_rtl_tb/current/log/modelsim.log",
   "manifest": "work/loop1_rtl_tb/config/top_wave_manifest.yaml",

@@ -16,6 +16,11 @@ Primary inputs:
 - `work/docparse/structured_spec/timing_rules.yaml`
 - `work/docparse/architecture/module_plan.yaml`
 - `work/docparse/architecture/*.yaml`
+- `work/docparse/verification/operation_model.yaml`
+- `work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml`
+- `work/loop1_rtl_tb/config/interface_contract.yaml`
+- `work/loop1_rtl_tb/config/tb_obligations.yaml`
+- `work/loop1_rtl_tb/config/wave_semantic_manifest.yaml`
 - existing files in `output/rtl/`
 - `output/reports/` or triage output when fixing existing RTL
 
@@ -28,7 +33,7 @@ Primary inputs:
 5. Generate or patch synthesizable Verilog-2001 `.v` files in `output/rtl/`.
 6. Keep register logic aligned with `register_map.yaml`; if the register plane is substantial, route or coordinate with `$register-spec-and-ral`.
 7. After every `.v` file is generated or edited, run `python -m hdlflow.cli rtl-skill-audit --project <project>`; the platform-generated `output/reports/loop1/rtl_skill_audit.md` is the only valid per-file PASS/FAIL evidence.
-8. Update `work/loop1_rtl_tb/trace_matrix/req_to_rtl.yaml` and `work/loop1_rtl_tb/trace_matrix/req_to_directed_tb.yaml` after RTL/TB artifacts exist. Do not put implementation trace in the DocParse intent trace files.
+8. Update `work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml` after RTL artifacts exist, and update `work/loop1_rtl_tb/config/tb_obligations.yaml` plus `work/loop1_rtl_tb/config/wave_semantic_manifest.yaml` after TB artifacts exist. Do not put implementation trace in the DocParse intent trace files.
 9. If the changes imply TB or UVM updates, hand off to `$uvm-env-and-test-build`.
 
 ## Rules
@@ -40,9 +45,9 @@ Primary inputs:
 - Directed TB `.v` files under `output/tb/` may use Verilog `task` helpers for stimulus, waits, score checks, and log formatting; this allowance does not apply to design RTL.
 - The complete directed full-function test plan belongs in `work/docparse/verification/verification_plan.yaml` and must be rendered into `output/docs/test/verification_plan.md`. Do not create a sidecar Markdown plan under `output/tb/`.
 - Do not implement protocol requirements as event-level injection, placeholder logic, accept-all filters, always-hit comparators, or fixed prototype words unless the active baseline explicitly downgrades the claim. The `rtl_semantic_stub_absent` gate blocks these patterns for normal signoff.
-- Directed Loop1 TB must print one structured `HDLFLOW|CHECK|...` event for every checked item.
+- Directed Loop1 TB must print one structured `HDLFLOW|CHECK|...` event for every checked item
 - Directed Loop1 TB must print one structured `HDLFLOW|CHECK|schema=hdlflow_event_v1|version=1|stage=loop1|...` event for every checked item, with `test_id`, `txn_id`, `sent`, `expected`, `actual`, `latency_cycles`, and `result` fields, plus one `HDLFLOW|SUMMARY|schema=hdlflow_event_v1|version=1|stage=loop1|...` event for the run. `loop1-refresh-reports` uses those real log events to generate the final report.
-- Directed Loop1 TB must also print `HDLFLOW_WAVE_BEGIN`/`HDLFLOW_WAVE_END` or `HDLFLOW_WAVE_WINDOW` markers around every functionally checked waveform span. Keep `work/loop1_rtl_tb/config/top_wave_manifest.yaml` aligned to the DUT top ports and intended query windows. `loop1-waveform-gate` extracts the generated top-level VCD through pywellen and writes deterministic signal-rule evidence in `waveform_query_report.md`, `waveform_gate.json`, and `query_transcript.json`; waveform rule failures are advisory verification gaps, while Loop1 pass/fail is decided by `loop1_deterministic_gate`.
+- Directed Loop1 TB must also print `HDLFLOW_WAVE_BEGIN`/`HDLFLOW_WAVE_END` or `HDLFLOW_WAVE_WINDOW` markers around every functionally checked waveform span. Keep `work/loop1_rtl_tb/config/top_wave_manifest.yaml` aligned to the DUT top ports and intended query windows. `loop1-waveform-gate` extracts the generated top-level VCD through pywellen and writes deterministic signal-rule evidence in `waveform_query_report.md`, `waveform_gate.json`, and `query_transcript.json`; waveform rule failures are advisory verification gaps, while Loop1 pass/fail is decided by `loop1_deterministic_gate`. Verification evidence also requires `work/loop1_rtl_tb/config/wave_semantic_manifest.yaml` and `loop1-waveform-semantic`; activity-only VCD evidence must not be counted as requirement closure.
 - Preserve official bus/protocol/IP signal names exactly as written in the vendor UG, protocol specification, or generated IP interface. Do not append local direction suffixes such as `_i` or `_o`, change case, translate, or otherwise rename official protocol boundary signals. If local direction clarity is needed, use a documented adapter or internal alias away from the official boundary.
 - Prefer clear module boundaries over clever coupling.
 - Plan RTL files top-down by cohesive functional domains. Do not over-fragment tiny internal decode, mux, pulse, parity, bit-order, or counter stages into separate files unless they have independent interface, clock/reset, reuse, or verification ownership.

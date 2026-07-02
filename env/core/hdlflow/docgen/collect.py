@@ -15,6 +15,29 @@ from ..simple_yaml import load_yaml
 
 
 SOURCE_SUFFIXES = {".yaml", ".yml", ".json", ".md", ".v", ".sv", ".svh", ".xdc", ".tcl", ".rpt", ".log"}
+RUNTIME_SOURCE_HASH_EXCLUDES = {
+    "output/manifest.yaml",
+    "work/gates/gate_status.json",
+    "work/gates/release_state.json",
+    "work/gates/semantic_gate_status.json",
+    "work/gates/pass_invalidation.json",
+}
+
+SEMANTIC_SOURCE_RELS = (
+    "work/docparse/frontdoor/baseline/active_requirements.yaml",
+    "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml",
+    "work/docparse/frontdoor/baseline/evidence_index.yaml",
+    "work/docparse/architecture/functional_domain_model.yaml",
+    "work/docparse/architecture/design_routing.yaml",
+    "work/docparse/architecture/module_ownership_matrix.yaml",
+    "work/docparse/verification/operation_model.yaml",
+    "work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml",
+    "work/loop1_rtl_tb/config/interface_contract.yaml",
+    "work/loop1_rtl_tb/config/tb_obligations.yaml",
+    "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml",
+    "work/loop2_uvm/config/uvm_obligations.yaml",
+    "work/loop3_fpga_proto/config/fpga_validation_matrix.yaml",
+)
 
 
 def collect_project_data(project_path: Path) -> dict[str, Any]:
@@ -55,6 +78,21 @@ def collect_project_data(project_path: Path) -> dict[str, Any]:
         "trace_req_to_test": projected.get("trace_req_to_directed_tb", {}),
         "trace_req_to_proto": projected.get("trace_req_to_fpga_evidence", {}),
         "gate_status": projected.get("gate_status", {}),
+        "active_requirements": _load_data(project, "work/docparse/frontdoor/baseline/active_requirements.yaml"),
+        "active_acceptance": _load_data(project, "work/docparse/frontdoor/baseline/active_acceptance_criteria.yaml"),
+        "evidence_index": _load_data(project, "work/docparse/frontdoor/baseline/evidence_index.yaml"),
+        "functional_domain_model": _load_data(project, "work/docparse/architecture/functional_domain_model.yaml"),
+        "design_routing": _load_data(project, "work/docparse/architecture/design_routing.yaml"),
+        "module_ownership_matrix": _load_data(project, "work/docparse/architecture/module_ownership_matrix.yaml"),
+        "operation_model": _load_data(project, "work/docparse/verification/operation_model.yaml"),
+        "req_to_rtl_implementation": _load_data(project, "work/loop1_rtl_tb/trace_matrix/req_to_rtl_implementation.yaml"),
+        "interface_contract": _load_data(project, "work/loop1_rtl_tb/config/interface_contract.yaml"),
+        "tb_obligations": _load_data(project, "work/loop1_rtl_tb/config/tb_obligations.yaml"),
+        "wave_semantic_manifest": _load_data(project, "work/loop1_rtl_tb/config/wave_semantic_manifest.yaml"),
+        "uvm_obligations": _load_data(project, "work/loop2_uvm/config/uvm_obligations.yaml"),
+        "fpga_validation_matrix": _load_data(project, "work/loop3_fpga_proto/config/fpga_validation_matrix.yaml"),
+        "semantic_gate_status": _load_data(project, "work/gates/semantic_gate_status.json"),
+        "release_state": _load_data(project, "work/gates/release_state.json"),
         "output_manifest": projected.get("output_manifest", {}),
         "rtl_modules": _scan_rtl(project),
         "tb_files": _scan_files(project, "output/tb", (".v",)),
@@ -72,8 +110,10 @@ def source_hashes(project_path: Path, *, projection: dict[str, Any]) -> list[dic
     paths.append(project / DOC_PROJECTION_REL)
     for source in _projection_sources(projection):
         rel = str(source.get("path") or "").strip()
-        if rel:
+        if rel and rel not in RUNTIME_SOURCE_HASH_EXCLUDES:
             paths.append(project / rel)
+    for rel in SEMANTIC_SOURCE_RELS:
+        paths.append(project / rel)
     try:
         paths.append(load_project(project).config_path)
     except Exception:

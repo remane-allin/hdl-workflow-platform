@@ -13,6 +13,7 @@ set bit_dir [file join $vivado_root bitstream]
 set hw_dir [file join $vivado_root hw_platform]
 set generated_bd_tcl [file join $vivado_root scripts generated_ps_pl_bd.tcl]
 set xdc_file [file join $vivado_root constraints generated_board.xdc]
+set io_timing_xdc [file join $vivado_root constraints io_timing.xdc]
 set proto_src [file join $vivado_root src hi3593_v2_proto_top.v]
 set run_report [file join $report_dir pure_pl_uart_led_proto_run.md]
 
@@ -31,6 +32,10 @@ if {[llength $rtl_files] == 0} {
 add_files -norecurse $rtl_files
 add_files -norecurse $proto_src
 add_files -fileset constrs_1 -norecurse $xdc_file
+if {[file exists $io_timing_xdc]} {
+    add_files -fileset constrs_1 -norecurse $io_timing_xdc
+    set_property PROCESSING_ORDER LATE [get_files $io_timing_xdc]
+}
 update_compile_order -fileset sources_1
 
 source $generated_bd_tcl

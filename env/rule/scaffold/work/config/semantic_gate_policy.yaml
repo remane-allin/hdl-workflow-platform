@@ -1,0 +1,26 @@
+schema_version: 1
+project: change_me
+default_mode: advisory
+release_default_mode: blocking
+description: Semantic gates are advisory by default for backward compatibility. Set individual gates to blocking for release enforcement.
+gates:
+  requirements_consistency_gate:
+    mode: advisory
+  architecture_impact_gate:
+    mode: advisory
+  design_routing_gate:
+    mode: advisory
+  microarchitecture_completeness_gate:
+    mode: advisory
+  rtl_obligation_gate:
+    mode: advisory
+  tb_blackbox_obligation_gate:
+    mode: advisory
+  waveform_semantic_gate:
+    mode: advisory
+  uvm_obligation_gate:
+    mode: advisory
+  fpga_validation_obligation_gate:
+    mode: advisory
+  release_truth_gate:
+    mode: advisory

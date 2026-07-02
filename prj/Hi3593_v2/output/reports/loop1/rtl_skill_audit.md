@@ -2,10 +2,10 @@
 
 - generated_by: hdlflow.rtl_skill_audit
 - project: Hi3593_v2
-- generated_at: 2026-06-30T22:43:20
+- generated_at: 2026-07-02T15:59:22
 - result: PASS
 - skill_path: G:/Codex_Workflow/Test_new/env/rule/skills/rtl-architecture-and-gen/SKILL.md
-- skill_sha256: 847f9dc0ac8e224ad38dfcbaaab4728163bf7a4cca02bfcc923ecd8b7a0c16a4
+- skill_sha256: 95a958744986e9a02fd344b42449c33c9a3f785f2d581d00bd2c663e7d8b82b1
 - style_guide_path: G:/Codex_Workflow/Test_new/env/rule/skills/rtl-architecture-and-gen/references/verilog-rtl-style-guide.md
 - style_guide_sha256: c5c70c35cc5b860a61373acef0ac54b40402052d4f53363805b8f978c7ba0014
 

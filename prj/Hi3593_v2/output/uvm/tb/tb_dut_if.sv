@@ -190,6 +190,7 @@ interface tb_dut_if(input bit ACLK);
       mon_scenario_name = scenario_name;
       mon_valid = 1'b1;
       @(posedge ACLK);
+      @(posedge ACLK);
       mon_valid = 1'b0;
       @(posedge ACLK);
     end

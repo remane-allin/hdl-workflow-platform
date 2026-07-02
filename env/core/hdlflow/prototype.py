@@ -123,22 +123,17 @@ def write_prototype_preflight(
     missing: list[str] = []
 
     for signal in selected_signals:
-        rows = []
-        for variant in _signal_variants(signal):
-            rows = query_fpga_hardware_resources(workspace, signal=variant, limit=8)
-            if rows:
-                break
-            rows = query_fpga_hardware_resources(workspace, keyword=variant, limit=8)
-            if rows:
-                break
+        rows, alias_note = _resolve_hardware_resource_rows(workspace, signal, plan_data)
         if rows:
             lines.append(f"### {signal}")
+            if alias_note:
+                lines.append(f"- alias: {alias_note}")
             for row in rows:
-                pin = row.get("package_pin") or row.get("mio_pin") or ""
+                pin = _resource_pin(row)
                 interface = row.get("interface") or ""
                 description = _one_line(row.get("description"))
                 lines.append(
-                    f"- {row.get('signal_name')} | pin={pin} | interface={interface} | {description}"
+                    f"- {_resource_signal_name(row)} | pin={pin} | interface={interface} | {description}"
                 )
             lines.append("")
         else:
@@ -231,7 +226,7 @@ def generate_xdc_from_database(
         row = _find_hardware_resource(workspace, signal)
         if not row:
             raise ValueError(f"database resource not found for signal: {signal}")
-        pin = str(row.get("package_pin") or "")
+        pin = str(row.get("package_pin") or row.get("pin") or "")
         if not pin:
             raise ValueError(f"resource has no PL package pin: {signal}")
         if pin in used_pins:
@@ -239,8 +234,8 @@ def generate_xdc_from_database(
         used_pins[pin] = port
 
         iostandard = _iostandard_from_row(row)
-        direction = str(row.get("direction") or "").lower()
-        lines.append(f"## {port} <= {signal} ({row.get('signal_name')}, {row.get('interface')})")
+        direction = str(row.get("direction") or row.get("dir") or "").lower()
+        lines.append(f"## {port} <= {signal} ({_resource_signal_name(row)}, {row.get('interface')})")
         lines.append(f"set_property PACKAGE_PIN {pin} [get_ports {port}]")
         lines.append(f"set_property IOSTANDARD {iostandard} [get_ports {port}]")
         if direction == "output":
@@ -253,7 +248,7 @@ def generate_xdc_from_database(
         lines.append("")
         messages.append(f"{port}: {signal} -> {pin}")
 
-    xdc_path.write_text("\n".join(lines), encoding="utf-8")
+    _write_text_if_changed(xdc_path, "\n".join(lines))
     return PrototypeFileResult(path=xdc_path, messages=messages)
 
 
@@ -446,7 +441,7 @@ def generate_ps_pl_bd_tcl(
             f"## first_axi_region={first_region_name}",
         ]
     )
-    bd_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _write_text_if_changed(bd_path, "\n".join(lines) + "\n")
     return PrototypeFileResult(path=bd_path, messages=[f"bd={bd_name}", f"axi_base={base}", *db_messages])
 
 
@@ -463,7 +458,8 @@ def generate_vitis_boot_files(
     root.mkdir(parents=True, exist_ok=True)
     bif = root / "boot_image.bif"
     ps1 = root / "Build-BootImage.ps1"
-    bif.write_text(
+    _write_text_if_changed(
+        bif,
         "\n".join(
             [
                 "the_ROM_image:",
@@ -475,9 +471,9 @@ def generate_vitis_boot_files(
                 "",
             ]
         ),
-        encoding="utf-8",
     )
-    ps1.write_text(
+    _write_text_if_changed(
+        ps1,
         "\n".join(
             [
                 "param(",
@@ -496,7 +492,6 @@ def generate_vitis_boot_files(
                 "",
             ]
         ),
-        encoding="utf-8",
     )
     return PrototypeFileResult(path=root, messages=[f"bif={bif}", f"script={ps1}"])
 
@@ -749,6 +744,14 @@ def _write_lines(path: Path, lines: list[str]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_text_if_changed(path: Path, text: str) -> bool:
+    if path.exists() and path.read_text(encoding="utf-8", errors="ignore") == text:
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return True
+
+
 def _report_has_pass(path: Path) -> bool:
     if not path.exists():
         return False
@@ -899,6 +902,89 @@ def _signal_variants(signal: str) -> list[str]:
     return deduped
 
 
+def _resolve_hardware_resource_rows(workspace: Path, signal: str, plan_data: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
+    rows = _find_resource_rows(workspace, signal)
+    if rows:
+        return rows, ""
+    for alias, reason in _signal_aliases_from_plan(plan_data, signal):
+        rows = _find_resource_rows(workspace, alias)
+        if rows:
+            return rows, f"{signal} -> {alias} ({reason})"
+    return [], ""
+
+
+def _find_resource_rows(workspace: Path, signal: str) -> list[dict[str, Any]]:
+    for variant in _signal_variants(signal):
+        rows = query_fpga_hardware_resources(workspace, signal=variant, limit=8)
+        if rows:
+            return rows
+        rows = query_fpga_hardware_resources(workspace, keyword=variant, limit=8)
+        if rows:
+            return rows
+    return []
+
+
+def _signal_aliases_from_plan(plan_data: dict[str, Any], signal: str) -> list[tuple[str, str]]:
+    external = plan_data.get("external_boundary", {})
+    if not isinstance(external, dict):
+        return []
+    interfaces = external.get("required_external_interfaces", [])
+    if not isinstance(interfaces, list):
+        return []
+    normalized = signal.upper()
+    aliases: list[tuple[str, str]] = []
+    for item in interfaces:
+        if not isinstance(item, dict):
+            continue
+        pins = [str(pin).strip().upper() for pin in _list_value(item.get("pins"))]
+        if normalized not in pins:
+            continue
+        fallback_mode = str(item.get("fallback_mode") or "").strip()
+        if not fallback_mode:
+            continue
+        candidates = _fallback_observation_signals(plan_data, fallback_mode)
+        reason = f"external_boundary.{item.get('name') or signal}.fallback_mode={fallback_mode}"
+        aliases.extend((candidate, reason) for candidate in candidates)
+    return _dedupe_aliases(aliases)
+
+
+def _fallback_observation_signals(plan_data: dict[str, Any], fallback_mode: str) -> list[str]:
+    assignments = plan_data.get("pl_port_assignments", {})
+    if not isinstance(assignments, dict):
+        return []
+    mode = fallback_mode.lower()
+    preferred_ports: list[str]
+    if "sampler" in mode or "readback" in mode:
+        preferred_ports = ["uart_tx", "uart_rx", "pl_led0"]
+    elif "software" in mode or "emulation" in mode:
+        preferred_ports = ["uart_rx", "uart_tx", "pl_led0"]
+    else:
+        return []
+    values: list[str] = []
+    for port in preferred_ports:
+        value = str(assignments.get(port) or "").strip()
+        if value:
+            values.append(value)
+    for port, value in assignments.items():
+        port_name = str(port).strip().lower()
+        signal_name = str(value).strip()
+        if signal_name and "clk" not in port_name:
+            values.append(signal_name)
+    return _dedupe(values)
+
+
+def _dedupe_aliases(values: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    result: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for signal, reason in values:
+        key = signal.upper()
+        if not signal or key in seen:
+            continue
+        seen.add(key)
+        result.append((signal, reason))
+    return result
+
+
 def _find_hardware_resource(workspace: Path, signal: str) -> dict[str, Any] | None:
     candidates: list[dict[str, Any]] = []
     for variant in _signal_variants(signal):
@@ -915,21 +1001,40 @@ def _find_hardware_resource(workspace: Path, signal: str) -> dict[str, Any] | No
 def _best_resource_row(rows: list[dict[str, Any]], signal: str) -> dict[str, Any]:
     needle = signal.upper()
     for row in rows:
-        haystack = " ".join([str(row.get("signal_name") or ""), str(row.get("aliases") or "")]).upper()
-        if needle in haystack and row.get("package_pin"):
+        haystack = _resource_haystack(row)
+        if needle in haystack and _resource_package_pin(row):
             return row
     for row in rows:
-        if row.get("package_pin"):
+        if _resource_package_pin(row):
             return row
     for row in rows:
-        haystack = " ".join([str(row.get("signal_name") or ""), str(row.get("aliases") or "")]).upper()
+        haystack = _resource_haystack(row)
         if needle in haystack:
             return row
     return rows[0]
 
 
+def _resource_signal_name(row: dict[str, Any]) -> str:
+    return str(row.get("signal_name") or row.get("signal") or row.get("net_name") or "")
+
+
+def _resource_package_pin(row: dict[str, Any]) -> str:
+    return str(row.get("package_pin") or row.get("pin") or "")
+
+
+def _resource_pin(row: dict[str, Any]) -> str:
+    return str(row.get("package_pin") or row.get("pin") or row.get("mio_pin") or row.get("zynq_pin") or "")
+
+
+def _resource_haystack(row: dict[str, Any]) -> str:
+    return " ".join(
+        str(row.get(key) or "")
+        for key in ("signal_name", "signal", "net_name", "aliases", "alias", "interface", "description")
+    ).upper()
+
+
 def _iostandard_from_row(row: dict[str, Any]) -> str:
-    text = " ".join(str(row.get(key) or "") for key in ("bank", "description", "io_table_links"))
+    text = " ".join(str(row.get(key) or "") for key in ("bank", "voltage", "description", "io_table_links"))
     if "1.8" in text or "1V8" in text.upper():
         return "LVCMOS18"
     return "LVCMOS33"

@@ -1,7 +1,7 @@
 # Loop1 Waveform Query Gate
 
 - project: Hi3593_v2
-- generated_at: 2026-06-30T22:29:08
+- generated_at: 2026-07-02T15:08:13
 - result: PASS
 - manifest: work/loop1_rtl_tb/config/top_wave_manifest.yaml
 - backend: pywellen

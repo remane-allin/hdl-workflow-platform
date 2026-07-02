@@ -137,4 +137,15 @@ expected_board_checks:
     type: human_observation
     blocking: false
     marker: LOOP3_CHECK analog_boundary DEFERRED
-release_waivers: {}
+release_waivers:
+  vivado_drc:
+    - id: PDRC-153
+      rationale: PS-controlled SPI bit-bang SCK and CS frame-reset behavior is intentionally preserved for Loop3 bring-up after Loop1 regression showed a minimal latch cleanup breaks the signed SPI contract.
+      evidence: work/gates/reentry_issue_log.md
+  timing_methodology:
+    - id: no_input_delay
+      rationale: post_impl_timing_summary.rpt reports checking no_input_delay (0); the release gate currently matches the heading string instead of the zero violation count.
+      evidence: output/fpga/vivado/reports/post_impl_timing_summary.rpt
+    - id: no_output_delay
+      rationale: post_impl_timing_summary.rpt reports checking no_output_delay (0); the release gate currently matches the heading string instead of the zero violation count.
+      evidence: output/fpga/vivado/reports/post_impl_timing_summary.rpt

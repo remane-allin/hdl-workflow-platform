@@ -1,5 +1,5 @@
 {
-  "change_id": null,
+  "change_id": "CR-20260702155634-forbid-directed-tb-markdown-sidecar",
   "docset_version": 1,
   "documents": [
     {
@@ -7,31 +7,31 @@
       "manifest": "output/docs/manifests/application_doc_manifest.json",
       "path": "output/docs/application/application_guide.md",
       "required": true,
-      "sha256": "ba96e6d4fbf1fe03b347a5130efcbf93b99c989195f0c155527a1be59a6d2162"
+      "sha256": "e224d4b623552521edbb8cff29596be0f9b307986c4ef1124f148d8cd314b035"
     },
     {
       "doc_type": "microarchitecture_specification",
       "manifest": "output/docs/manifests/microarchitecture_doc_manifest.json",
       "path": "output/docs/design/microarchitecture_spec.md",
       "required": true,
-      "sha256": "6ec60df56c6db1c40af6b11790dd5604ebdd1b1d9ad77fc2b2ed502015726e3d"
+      "sha256": "ba7dfc85344e4999006b19d17898af97ae669f906f34a0904a0ab4e95b0e299e"
     },
     {
       "doc_type": "verification_plan",
       "manifest": "output/docs/manifests/verification_doc_manifest.json",
       "path": "output/docs/test/verification_plan.md",
       "required": true,
-      "sha256": "f1ea6c86fefb30546e4ed6d237c511c8f8ef711c366756bdb161c833ad6a4704"
+      "sha256": "6d3e16c9ad17bca2dbe8c76c6aaf3b0f724189c3ca5c3f5c6f05e7424804f288"
     },
     {
       "doc_type": "delivery_package",
       "manifest": "output/docs/manifests/delivery_doc_manifest.json",
       "path": "output/docs/delivery/delivery_package.md",
       "required": true,
-      "sha256": "e6f6203e7dc5cc5edfc04e847afe224acc91d073fcf6582ed3d582973ca1d0e7"
+      "sha256": "869ddfdda2ba7e31ebb30fbf7aa2ebf6876a895f9da9eae4a9d44f3a78ae0771"
     }
   ],
-  "generated_at": "2026-06-30T22:42:50",
+  "generated_at": "2026-07-02T15:57:21",
   "ip_name": "Hi3593_v2",
   "project": "Hi3593_v2",
   "schema_version": 1,

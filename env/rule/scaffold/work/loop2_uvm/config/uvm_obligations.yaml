@@ -1,0 +1,14 @@
+schema_version: 1
+required_fields:
+  - requirement_id
+  - operation_id
+  - sequence_id
+  - coverage_bins
+  - cross_coverage
+  - scoreboard_model
+  - assertions
+  - negative_tests
+  - randomized_tests
+  - long_sequence_tests
+  - status
+obligations: []

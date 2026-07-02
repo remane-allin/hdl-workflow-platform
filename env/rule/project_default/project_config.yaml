@@ -232,6 +232,7 @@ nodes:
       rtl:
         language: Verilog-2001
         root: output/rtl
+        enforce_all_extensions: true
         allowed_extensions:
           - .v
         forbidden_extensions:
@@ -241,6 +242,7 @@ nodes:
         language: Verilog-2001
         root: output/tb
         required_plan: output/docs/test/verification_plan.md
+        enforce_all_extensions: true
         allowed_extensions:
           - .v
         forbidden_extensions:
@@ -268,8 +270,10 @@ nodes:
             - "Directed Loop1 TB must print one structured `HDLFLOW|CHECK|...` event for every checked item"
             - "HDLFLOW_WAVE_BEGIN"
             - "loop1-waveform-gate"
+            - "loop1-waveform-semantic"
             - "top_wave_manifest.yaml"
             - "waveform_gate.json"
+            - "waveform_semantic_report.json"
             - "Preserve official bus/protocol/IP signal names exactly"
             - "Do not place all behavior in one file-level FSM."
             - "python -m hdlflow.cli rtl-skill-audit --project <project>"
@@ -282,8 +286,10 @@ nodes:
             - "output/sim/loop1/wave"
             - "HDLFLOW_WAVE_GROUP"
             - "loop1-waveform-gate"
+            - "loop1-waveform-semantic"
             - "top_wave_manifest.yaml"
             - "waveform_gate.json"
+            - "waveform_semantic_report.json"
             - "Do not edit RTL or UVM blindly before classifying the failure."
     evidence:
       reports:
@@ -296,6 +302,9 @@ nodes:
         waveform_query_report: output/reports/loop1/waveform_query_report.md
         waveform_gate: output/reports/loop1/waveform_gate.json
         query_transcript: output/reports/loop1/query_transcript.json
+        interface_transaction_report: output/reports/loop1/interface_transaction_report.json
+        waveform_semantic_report: output/reports/loop1/waveform_semantic_report.json
+        waveform_semantic_report_md: output/reports/loop1/waveform_semantic_report.md
         rtl_skill_audit: output/reports/loop1/rtl_skill_audit.md
       artifacts:
         waveform_dir: output/sim/loop1/wave
@@ -342,6 +351,7 @@ nodes:
       rtl:
         language: Verilog-2001
         root: output/rtl
+        enforce_all_extensions: true
         allowed_extensions:
           - .v
         forbidden_extensions:
@@ -350,6 +360,7 @@ nodes:
       directed_tb:
         language: Verilog-2001
         root: output/tb
+        enforce_all_extensions: true
         allowed_extensions:
           - .v
         forbidden_extensions:
