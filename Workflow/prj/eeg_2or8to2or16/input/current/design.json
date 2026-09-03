@@ -1,0 +1,424 @@
+{
+  "format_version": 1,
+  "design_version": 6,
+  "project": {
+    "project_id": "eeg_2or8to2or16",
+    "display_name": "EEG configurable BCI accelerator",
+    "platform": "navigator_zynq_7020",
+    "part": "xc7z020clg400-1",
+    "rtl_language": "Verilog-2001",
+    "tool_profile": "xilinx-2024.2"
+  },
+  "requirements": {
+    "items": [
+      {
+        "id": "REQ-P1-FUNC",
+        "category": "functional",
+        "statement": "Execute the approved EEG program and return the bit-exact classification result through the PL boundary.",
+        "acceptance": "The formal whole-design case completes without protocol or result mismatch."
+      },
+      {
+        "id": "REQ-P1-PERF",
+        "category": "performance",
+        "statement": "One approved EEG inference completes in no more than 33600 accelerator cycles.",
+        "acceptance": "The formal TB cycle counter reports at most 33600 cycles."
+      },
+      {
+        "id": "REQ-P1-RESOURCE",
+        "category": "resource",
+        "statement": "The routed accelerator and PS/PL integration fit the approved Zynq-7020 resource envelope.",
+        "acceptance": "Post-route LUT, LUTRAM, FF, BRAM and DSP conditions all pass."
+      },
+      {
+        "id": "REQ-P1-TIMING",
+        "category": "timing",
+        "statement": "The 70 MHz PS/PL implementation closes setup and hold timing.",
+        "acceptance": "Post-route setup and hold WNS are non-negative with no DRC error or unrouted net."
+      }
+    ]
+  },
+  "architecture": {
+    "items": [
+      {
+        "id": "ARCH-P1-DATAFLOW",
+        "requirements": [
+          "REQ-P1-FUNC",
+          "REQ-P1-PERF",
+          "REQ-P1-RESOURCE",
+          "REQ-P1-TIMING"
+        ],
+        "blocks": [
+          "PS7 AXI master",
+          "AXI3-to-AXI4 adapter",
+          "AXI control and sample gateway",
+          "instruction scheduler",
+          "feature memory",
+          "shared convolution datapath",
+          "argmax"
+        ],
+        "dataflow": "PS writes ordered parameter, instruction and time-major channel-interleaved EEG sample words; PL schedules convolution, activation, pooling and dense operations over shared arithmetic and feature storage; argmax retires one class result.",
+        "control": "The PS issues one start only after all inputs are committed; ready/valid and AXI responses provide backpressure; infer_done interrupts the PS after the result is stable.",
+        "storage": "Sample BRAM is dual-port PS/PL storage; parameters, instructions and features retain their existing explicit RTL ownership; no runtime source scanning or hidden memory image is allowed.",
+        "reuse": "The datapath is reused across approved program descriptors rather than hard-wiring each network layer."
+      }
+    ]
+  },
+  "interfaces": {
+    "items": [
+      {
+        "id": "IF-P1-AXI",
+        "name": "S_AXI",
+        "endpoints": [
+          "processing_system7_0/M_AXI_GP0",
+          "eeg_bci_ps_axi4_gateway/S_AXI"
+        ],
+        "direction": "PS-to-PL commands and bidirectional responses",
+        "width": 32,
+        "protocol": "AXI4",
+        "clock": "clk_fpga_0",
+        "reset": "active-low peripheral_aresetn",
+        "ordering": "AXI order",
+        "lifecycle": "load then start then read result"
+      },
+      {
+        "id": "IF-P1-RESULT",
+        "name": "classification result",
+        "endpoints": [
+          "argmax_output",
+          "PS interrupt/readback"
+        ],
+        "direction": "PL-to-PS",
+        "width": 32,
+        "protocol": "stable result plus infer_done",
+        "clock": "clk_fpga_0",
+        "reset": "active-low",
+        "ordering": "one result per accepted start",
+        "lifecycle": "valid until next accepted command"
+      }
+    ]
+  },
+  "implementation": {
+    "rtl": {
+      "top": "eeg_bci_ps_pl_system_wrapper",
+      "mode": "top-level",
+      "sources": [
+        "output/rtl/apx_fp16_mul.v",
+        "output/rtl/apx_fp16_add.v",
+        "output/rtl/apx_mac8.v",
+        "output/rtl/apx_mac16.v",
+        "output/rtl/argmax_output.v",
+        "output/rtl/instruction_scheduler.v",
+        "output/rtl/feature_memory_subsystem.v",
+        "output/rtl/stream_tile_buffer.v",
+        "output/rtl/conv_datapath.v",
+        "output/rtl/bci_accel_core.v",
+        "output/rtl/eeg_bci_clock_reset_bridge.v",
+        "output/rtl/axi_lite_control.v",
+        "output/rtl/ps_bram_stream_reader.v",
+        "output/rtl/eeg_bci_accel_top.v",
+        "output/rtl/eeg_bci_ps_axi4_gateway.v",
+        "output/rtl/eeg_bci_fpga_ip_top.v"
+      ],
+      "defines": [],
+      "include_dirs": [],
+      "libraries": []
+    },
+    "constraints": {
+      "set": "constrs_1",
+      "sources": [],
+      "purposes": []
+    },
+    "verification_sources": {
+      "set": "sim_1",
+      "top": "tb_top",
+      "top_file": "output/tb/tb_top.v",
+      "include_dirs": [],
+      "defines": [],
+      "models": [],
+      "data_roots": [
+        "input/sources"
+      ],
+      "initialization_files": [
+        {
+          "path": "input/sources/verification/p1_vectors/reference/input_words.hex",
+          "owner": "input",
+          "purpose": "formal EEG samples"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/parameter_words.hex",
+          "owner": "input",
+          "purpose": "formal parameters"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/v2_instruction_words.hex",
+          "owner": "input",
+          "purpose": "formal program"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op00_temporal_1.hex",
+          "owner": "input",
+          "purpose": "operation 0 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op01_temporal_2.hex",
+          "owner": "input",
+          "purpose": "operation 1 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op02_temporal_3_sum.hex",
+          "owner": "input",
+          "purpose": "operation 2 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op03_temporal_4_bn_relu.hex",
+          "owner": "input",
+          "purpose": "operation 3 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op04_spatial_dw_bn_relu.hex",
+          "owner": "input",
+          "purpose": "operation 4 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op05_avgpool_4.hex",
+          "owner": "input",
+          "purpose": "operation 5 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op06_separable_dw.hex",
+          "owner": "input",
+          "purpose": "operation 6 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op07_pointwise_bn_relu.hex",
+          "owner": "input",
+          "purpose": "operation 7 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op08_avgpool_8.hex",
+          "owner": "input",
+          "purpose": "operation 8 oracle"
+        },
+        {
+          "path": "input/sources/verification/p1_vectors/reference/op09_dense.hex",
+          "owner": "input",
+          "purpose": "operation 9 oracle"
+        }
+      ],
+      "uvm_enabled": false,
+      "uvm_sources": [],
+      "timescale": "1ns/1ps",
+      "seed": 1
+    },
+    "vivado": {
+      "profile": "vivado-2024.2",
+      "project_name": "eeg_bci",
+      "xpr": "output/vivado/eeg_bci.xpr",
+      "part": "xc7z020clg400-1",
+      "fileset": "sources_1",
+      "synth_run": "synth_1",
+      "impl_run": "impl_1",
+      "synthesis_strategy": "Vivado Synthesis Defaults",
+      "synthesis_directive": "AreaOptimized_high",
+      "implementation_strategy": "Vivado Implementation Defaults",
+      "opt_directive": "RuntimeOptimized",
+      "opt_resynth_area": true,
+      "place_directive": "Default",
+      "phys_opt_directive": "AggressiveExplore",
+      "route_directive": "Explore",
+      "seed": 1,
+      "clocks": [
+        {
+          "name": "clk_fpga_0",
+          "period_ns": 14.0,
+          "target": "processing_system7_0/FCLK_CLK0"
+        }
+      ],
+      "board_profile": "navigator_zynq_7020",
+      "board_part": null,
+      "bd": [
+        "eeg_bci_ps_pl_system"
+      ],
+      "ip": [],
+      "project_script": "output/vivado/scripts/project.tcl",
+      "results": {
+        "bitstream": "output/vivado/eeg_bci.runs/impl_1/eeg_bci_ps_pl_system_wrapper.bit",
+        "xsa": "output/vivado/hw/eeg_bci_ps_pl_system_wrapper.xsa"
+      },
+      "xsa_mode": "fixed",
+      "xsa_include_bitstream": true
+    },
+    "vitis": {
+      "enabled": true,
+      "profile": "vitis-2024.2",
+      "workspace": "output/vitis",
+      "platform": "p1_eeg_platform",
+      "domain": "p1_eeg_standalone",
+      "application": "p1_eeg_diag",
+      "processor": "ps7_cortexa9_0",
+      "os": "standalone",
+      "architecture": "32-bit ARM",
+      "compiler_target": "arm-none-eabi",
+      "bsp": {
+        "stdin": "ps7_uart_0",
+        "stdout": "ps7_uart_0",
+        "libraries": []
+      },
+      "macros": [],
+      "optimization": "Debug",
+      "linker_script": "Vitis managed",
+      "source_dir": "output/vitis/app-src",
+      "xsa": "output/vivado/hw/eeg_bci_ps_pl_system_wrapper.xsa",
+      "build_configuration": "Debug",
+      "script": "output/vitis/scripts/vitis_workspace.py",
+      "sync_policy": "Index the current workspace by component name, update an existing platform from the current XSA, synchronize the application source, and rebuild both native components.",
+      "results": {
+        "elf": "output/vitis/p1_eeg_diag/build/p1_eeg_diag.elf"
+      }
+    }
+  },
+  "budgets": {
+    "items": [
+      {
+        "id": "BUD-P1-LUT",
+        "metric": "lut",
+        "unit": "count",
+        "planned": 10256,
+        "maximum": 10666,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P1-LUTRAM",
+        "metric": "lutram",
+        "unit": "count",
+        "planned": 597,
+        "maximum": 600,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P1-FF",
+        "metric": "ff",
+        "unit": "count",
+        "planned": 5082,
+        "maximum": 6000,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P1-BRAM",
+        "metric": "bram_tile",
+        "unit": "tile",
+        "planned": 8,
+        "maximum": 8,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P1-DSP",
+        "metric": "dsp",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P1-SETUP",
+        "metric": "setup_wns",
+        "unit": "ns",
+        "planned": 0.021,
+        "minimum": 0.0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P1-HOLD",
+        "metric": "hold_wns",
+        "unit": "ns",
+        "planned": 0.078,
+        "minimum": 0.0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P1-TIMING"
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "cases": [
+      {
+        "id": "VER-P1-FUNCTION",
+        "stage": "verify",
+        "requirements": [
+          "REQ-P1-FUNC"
+        ],
+        "interfaces": [
+          "IF-P1-AXI",
+          "IF-P1-RESULT"
+        ],
+        "stimulus": "load approved parameter, program and 16-channel frame then issue start",
+        "oracle": "bit-exact external trace and class reference",
+        "expected": "class 0 without protocol error",
+        "key_waves": [
+          "clk",
+          "rst_n",
+          "load_valid/load_ready",
+          "start",
+          "infer_done",
+          "result"
+        ]
+      },
+      {
+        "id": "VER-P1-CYCLES",
+        "stage": "verify",
+        "requirements": [
+          "REQ-P1-PERF"
+        ],
+        "interfaces": [
+          "IF-P1-RESULT"
+        ],
+        "stimulus": "same full inference",
+        "oracle": "TB cycle counter from accepted start to infer_done",
+        "expected": "cycles <= 33600",
+        "key_waves": [
+          "start",
+          "infer_done"
+        ]
+      },
+      {
+        "id": "VER-P1-PHYSICAL",
+        "stage": "route",
+        "requirements": [
+          "REQ-P1-RESOURCE",
+          "REQ-P1-TIMING"
+        ],
+        "interfaces": [],
+        "stimulus": "Vivado 2024.2 route",
+        "oracle": "post-route utilization, timing, DRC and route status",
+        "expected": "all hard budgets pass",
+        "key_waves": []
+      }
+    ]
+  }
+}

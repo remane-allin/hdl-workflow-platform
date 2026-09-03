@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+
+# Workflow runtime state and local staging.
+/work/
+/prj/*/work/
+
+# Local knowledge corpora and generated indexes are not public release assets.
+/knowledge/sources/
+/knowledge/parsed/
+/knowledge/library.sqlite
+
+# EDA transient products. Declared release results are selected explicitly.
+**/.Xil/
+**/*.cache/
+**/xsim.dir/
+*.log
+*.jou
+*.pb
+*.str
+*.wdb
+*.backup.*
+
+# Editor and operating-system noise.
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

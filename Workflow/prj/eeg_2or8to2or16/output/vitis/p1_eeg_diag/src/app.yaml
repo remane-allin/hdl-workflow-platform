@@ -1,0 +1,4 @@
+domain_path: G:\EEG\Workflow\prj\eeg_2or8to2or16\output\vitis\p1_eeg_platform\export\p1_eeg_platform\sw\p1_eeg_standalone
+app_src_dir: E:\VIVADO\Vitis\2024.2\data\embeddedsw\lib\sw_apps\hello_world
+template: hello_world
+lang: c

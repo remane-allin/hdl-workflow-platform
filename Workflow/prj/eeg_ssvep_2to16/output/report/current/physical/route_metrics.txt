@@ -1,0 +1,4 @@
+setup_wns=0.352
+hold_wns=0.029
+drc_errors=0
+drc_critical_warnings=0

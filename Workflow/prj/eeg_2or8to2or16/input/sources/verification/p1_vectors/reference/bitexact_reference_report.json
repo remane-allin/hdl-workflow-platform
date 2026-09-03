@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "profile": "CH16_S128_BASE16_LEGACY_FP16",
+  "input_words": 2048,
+  "parameter_words": 1076,
+  "instruction_words": 264,
+  "arithmetic_probe_vectors": 1024,
+  "argmax_probe_vectors": 64,
+  "layer_word_counts": {
+    "op00_temporal_1": 2048,
+    "op01_temporal_2": 8192,
+    "op02_temporal_3_sum": 2048,
+    "op03_temporal_4_bn_relu": 8192,
+    "op04_spatial_dw_bn_relu": 1024,
+    "op05_avgpool_4": 256,
+    "op06_separable_dw": 256,
+    "op07_pointwise_bn_relu": 256,
+    "op08_avgpool_8": 32,
+    "op09_dense": 16
+  },
+  "logits_hex": [
+    "0x424B",
+    "0xB3D9",
+    "0x3A20",
+    "0xC61C",
+    "0xC576",
+    "0xC843",
+    "0xBF01",
+    "0x392E",
+    "0xC64C",
+    "0xC4CE",
+    "0xC4F4",
+    "0xBE02",
+    "0xC53D",
+    "0xC841",
+    "0xC71A",
+    "0xBD47"
+  ],
+  "classification": 0,
+  "expected_released_label": 0
+}

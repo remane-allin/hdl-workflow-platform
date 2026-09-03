@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "reports": {
+    "xsim": ["WF_INFO", "WF_ERROR", "WF_SUMMARY"],
+    "synth": ["utilization"],
+    "route": ["timing", "utilization", "drc", "route_status"]
+  }
+}

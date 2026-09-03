@@ -1,0 +1,44 @@
+{
+  "format_version": 1,
+  "host": "Windows-PowerShell-7",
+  "python": {"minimum": "3.9"},
+  "dispatch": {"vivado": 1, "xsim": 1, "vitis": 1},
+  "vivado": {
+    "version": "2024.2",
+    "stages": ["rtl", "synth", "route", "release"],
+    "adapter": "tools/xilinx.py",
+    "executables": ["vivado"],
+    "path_env": "XILINX_VIVADO",
+    "install_templates": ["Xilinx/Vivado/{version}", "VIVADO/Vivado/{version}"],
+    "max_jobs": 8,
+    "native_run_timeout_seconds": 3600,
+    "work_directory": "work/tool/<stage>/vivado",
+    "outputs": ["output/vivado", "output/report/current/physical"],
+    "local_ug_query": "Vivado Design Suite Tcl Command Reference"
+  },
+  "xsim": {
+    "version": "2024.2",
+    "stages": ["rtl", "verify"],
+    "adapter": "tools/rtl.py and tools/xilinx.py",
+    "executables": ["xvlog", "xelab", "xsim"],
+    "path_env": "XILINX_VIVADO",
+    "install_templates": ["Xilinx/Vivado/{version}", "VIVADO/Vivado/{version}"],
+    "work_directory": "work/tool/<stage>/xsim",
+    "timeouts_seconds": {"compile": 600, "elaborate": 600, "simulate": 3600},
+    "outputs": ["output/report/current/rtl-tb", "output/report/current/verification"],
+    "local_ug_query": "Vivado Design Suite User Guide Logic Simulation"
+  },
+  "vitis": {
+    "version": "2024.2",
+    "stages": ["release"],
+    "adapter": "tools/vitis.py",
+    "executables": ["vitis"],
+    "path_env": "XILINX_VITIS",
+    "install_templates": ["Xilinx/Vitis/{version}", "Vivado/Vitis/{version}"],
+    "entry": "-s",
+    "timeout_seconds": 3600,
+    "work_directory": "work/tool/release/vitis",
+    "outputs": ["output/vitis", "output/report/current/release"],
+    "local_ug_query": "Vitis Unified Software Platform Documentation"
+  }
+}

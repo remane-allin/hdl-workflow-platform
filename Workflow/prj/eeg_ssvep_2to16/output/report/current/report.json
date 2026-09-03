@@ -1,0 +1,140 @@
+{
+  "context": {
+    "project_id": "eeg_ssvep_2to16",
+    "design_version": 8,
+    "active_sources": [
+      "output/rtl/apx_fp16_add_pipe.v",
+      "output/rtl/apx_fp16_mul_pipe.v",
+      "output/rtl/banked_local_state_2r1w.v",
+      "output/rtl/program_memory_wrapper.v",
+      "output/rtl/parameter_memory_wrapper.v",
+      "output/rtl/feature_memory_subsystem.v",
+      "output/rtl/unified_memory_fabric.v",
+      "output/rtl/frame_ingress_adapter.v",
+      "output/rtl/descriptor_controller.v",
+      "output/rtl/program_control_unit.v",
+      "output/rtl/shared_kernel_step_sequencer.v",
+      "output/rtl/shared_operand_tile_service.v",
+      "output/rtl/shared_window_pipeline.v",
+      "output/rtl/apx_cluster.v",
+      "output/rtl/unified_retire.v",
+      "output/rtl/descriptor_execution_engine.v",
+      "output/rtl/axi_control_loader.v",
+      "output/rtl/shared_bci_accel_core.v",
+      "output/rtl/shared_bci_accel_top.v"
+    ],
+    "tools": "xilinx-2024.2"
+  },
+  "rtl_tb": {
+    "status": "PASS",
+    "source_count": 19,
+    "rule_findings": [],
+    "raw_reports": [
+      "rtl-tb/xvlog.log",
+      "rtl-tb/xvlog-console.log"
+    ],
+    "native_project": {
+      "status": "PASS",
+      "xpr": "output/vivado/shared_bci_accel.xpr"
+    }
+  },
+  "verification": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "VER-P2-EEG",
+        "purpose": "shared_engine_eeg_mode",
+        "input": "approved_eeg_program_parameters_and_frame",
+        "expected": "16_bit_exact_logits",
+        "actual": "16_bit_exact_logits_cycles_41681",
+        "result": "PASS"
+      },
+      {
+        "case": "VER-P2-SSVEP",
+        "purpose": "shared_engine_ssvep_mode",
+        "input": "100_approved_ssvep_trials",
+        "expected": "400_bit_exact_logits_and_predictions",
+        "actual": "400_bit_exact_logits_and_predictions",
+        "result": "PASS"
+      },
+      {
+        "case": "VER-P2-SSVEP-CYCLES",
+        "purpose": "ssvep_single_trial_cycle_budget",
+        "input": "accepted_start_to_done",
+        "expected": "max_cycles_le_20000",
+        "actual": "max_cycles_17967",
+        "result": "PASS"
+      }
+    ],
+    "summary": {
+      "total": 3,
+      "pass": 3,
+      "fail": 0
+    },
+    "raw_reports": [
+      "verification/xsim.log",
+      "verification/waves.wdb"
+    ],
+    "gate_b": "PASS"
+  },
+  "physical": {
+    "synth": {
+      "status": "PASS",
+      "metrics": {
+        "lut": 18995.0,
+        "lutram": 615.0,
+        "ff": 10029.0,
+        "bram_tile": 6.0,
+        "ramb36": 6.0,
+        "ramb18": 0.0,
+        "dsp": 0.0
+      },
+      "reports": [
+        "physical/synth_utilization.rpt"
+      ]
+    },
+    "route": {
+      "status": "PASS",
+      "metrics": {
+        "lut": 19357.0,
+        "lutram": 608.0,
+        "ff": 10000.0,
+        "bram_tile": 6.0,
+        "ramb36": 6.0,
+        "ramb18": 0.0,
+        "dsp": 0.0,
+        "setup_wns": 0.352,
+        "hold_wns": 0.029,
+        "drc_errors": 0.0,
+        "drc_critical_warnings": 0.0,
+        "setup_tns": 0.0,
+        "hold_tns": 0.0,
+        "unrouted": 0.0
+      },
+      "reports": [
+        "physical/route_timing.rpt",
+        "physical/route_utilization.rpt",
+        "physical/route_drc.rpt",
+        "physical/route_status.rpt"
+      ]
+    }
+  },
+  "review": {
+    "gate_a": "PASS",
+    "gate_b": "PASS",
+    "extraction_quality": 1.0
+  },
+  "release": {
+    "status": "PASS",
+    "gui_review": "PENDING_USER_GUI_REVIEW",
+    "hardware": {
+      "status": "PASS",
+      "bitstream": "",
+      "xsa": "",
+      "checkpoint": "output/vivado/shared_bci_accel.runs/impl_1/shared_bci_accel_top_routed.dcp"
+    },
+    "software": {
+      "status": "NOT_APPLICABLE"
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "context": {
+    "project_id": "eeg_2or8to2or16",
+    "design_version": 6,
+    "active_sources": [
+      "output/rtl/apx_fp16_mul.v",
+      "output/rtl/apx_fp16_add.v",
+      "output/rtl/apx_mac8.v",
+      "output/rtl/apx_mac16.v",
+      "output/rtl/argmax_output.v",
+      "output/rtl/instruction_scheduler.v",
+      "output/rtl/feature_memory_subsystem.v",
+      "output/rtl/stream_tile_buffer.v",
+      "output/rtl/conv_datapath.v",
+      "output/rtl/bci_accel_core.v",
+      "output/rtl/eeg_bci_clock_reset_bridge.v",
+      "output/rtl/axi_lite_control.v",
+      "output/rtl/ps_bram_stream_reader.v",
+      "output/rtl/eeg_bci_accel_top.v",
+      "output/rtl/eeg_bci_ps_axi4_gateway.v",
+      "output/rtl/eeg_bci_fpga_ip_top.v"
+    ],
+    "tools": "xilinx-2024.2"
+  },
+  "rtl_tb": {
+    "status": "PASS",
+    "source_count": 16,
+    "rule_findings": [],
+    "raw_reports": [
+      "rtl-tb/xvlog.log",
+      "rtl-tb/xvlog-console.log"
+    ],
+    "native_project": {
+      "status": "PASS",
+      "xpr": "output/vivado/eeg_bci.xpr"
+    }
+  },
+  "verification": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "VER-P1-FUNCTION",
+        "purpose": "full_eeg_inference",
+        "input": "approved_program_parameters_and_16_channel_frame",
+        "expected": "class_0_no_protocol_error",
+        "actual": "class_0_no_protocol_error",
+        "result": "PASS"
+      },
+      {
+        "case": "VER-P1-CYCLES",
+        "purpose": "inference_cycle_budget",
+        "input": "accepted_start_to_infer_done",
+        "expected": "cycles_le_33600",
+        "actual": "cycles_33425",
+        "result": "PASS"
+      }
+    ],
+    "summary": {
+      "total": 2,
+      "pass": 2,
+      "fail": 0
+    },
+    "raw_reports": [
+      "verification/xsim.log",
+      "verification/waves.wdb"
+    ],
+    "gate_b": "PASS"
+  },
+  "physical": {
+    "synth": {
+      "status": "PASS",
+      "metrics": {
+        "lut": 10293.0,
+        "lutram": 597.0,
+        "ff": 5102.0,
+        "bram_tile": 8.0,
+        "ramb36": 4.0,
+        "ramb18": 8.0,
+        "dsp": 0.0
+      },
+      "reports": [
+        "physical/synth_utilization.rpt"
+      ]
+    },
+    "route": {
+      "status": "PASS",
+      "metrics": {
+        "lut": 10256.0,
+        "lutram": 597.0,
+        "ff": 5082.0,
+        "bram_tile": 8.0,
+        "ramb36": 4.0,
+        "ramb18": 8.0,
+        "dsp": 0.0,
+        "setup_wns": 0.021,
+        "hold_wns": 0.078,
+        "drc_errors": 0.0,
+        "drc_critical_warnings": 0.0,
+        "setup_tns": 0.0,
+        "hold_tns": 0.0,
+        "unrouted": 0.0
+      },
+      "reports": [
+        "physical/route_timing.rpt",
+        "physical/route_utilization.rpt",
+        "physical/route_drc.rpt",
+        "physical/route_status.rpt"
+      ]
+    }
+  },
+  "review": {
+    "gate_a": "PASS",
+    "gate_b": "PASS",
+    "extraction_quality": 1.0
+  },
+  "release": {
+    "status": "PASS",
+    "gui_review": "PENDING_USER_GUI_REVIEW",
+    "hardware": {
+      "status": "PASS",
+      "bitstream": "output/vivado/eeg_bci.runs/impl_1/eeg_bci_ps_pl_system_wrapper.bit",
+      "xsa": "output/vivado/hw/eeg_bci_ps_pl_system_wrapper.xsa"
+    },
+    "software": {
+      "status": "PASS",
+      "workspace": "output/vitis",
+      "elf": "output/vitis/p1_eeg_diag/build/p1_eeg_diag.elf"
+    }
+  }
+}

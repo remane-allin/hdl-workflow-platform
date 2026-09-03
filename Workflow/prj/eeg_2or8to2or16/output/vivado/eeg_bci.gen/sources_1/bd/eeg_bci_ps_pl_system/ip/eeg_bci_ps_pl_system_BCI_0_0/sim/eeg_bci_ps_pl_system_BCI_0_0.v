@@ -1,0 +1,268 @@
+// (c) Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+// (c) Copyright 2022-2026 Advanced Micro Devices, Inc. All rights reserved.
+// 
+// This file contains confidential and proprietary information
+// of AMD and is protected under U.S. and international copyright
+// and other intellectual property laws.
+// 
+// DISCLAIMER
+// This disclaimer is not a license and does not grant any
+// rights to the materials distributed herewith. Except as
+// otherwise provided in a valid license issued to you by
+// AMD, and to the maximum extent permitted by applicable
+// law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
+// WITH ALL FAULTS, AND AMD HEREBY DISCLAIMS ALL WARRANTIES
+// AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
+// BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
+// INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
+// (2) AMD shall not be liable (whether in contract or tort,
+// including negligence, or under any other theory of
+// liability) for any loss or damage of any kind or nature
+// related to, arising under or in connection with these
+// materials, including for any direct, or any indirect,
+// special, incidental, or consequential loss or damage
+// (including loss of data, profits, goodwill, or any type of
+// loss or damage suffered as a result of any action brought
+// by a third party) even if such damage or loss was
+// reasonably foreseeable or AMD had been advised of the
+// possibility of the same.
+// 
+// CRITICAL APPLICATIONS
+// AMD products are not designed or intended to be fail-
+// safe, or for use in any application requiring fail-safe
+// performance, such as life-support or safety devices or
+// systems, Class III medical devices, nuclear facilities,
+// applications related to the deployment of airbags, or any
+// other applications that could lead to death, personal
+// injury, or severe property or environmental damage
+// (individually and collectively, "Critical
+// Applications"). Customer assumes the sole risk and
+// liability of any use of AMD products in Critical
+// Applications, subject only to applicable laws and
+// regulations governing limitations on product liability.
+// 
+// THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
+// PART OF THIS FILE AT ALL TIMES.
+// 
+// DO NOT MODIFY THIS FILE.
+
+
+// IP VLNV: xilinx.com:module_ref:eeg_bci_ps_axi4_gateway:1.0
+// IP Revision: 1
+
+`timescale 1ns/1ps
+
+(* IP_DEFINITION_SOURCE = "module_ref" *)
+(* DowngradeIPIdentifiedWarnings = "yes" *)
+module eeg_bci_ps_pl_system_BCI_0_0 (
+  s_axi_aclk,
+  s_axi_aresetn,
+  s_axi_awid,
+  s_axi_awaddr,
+  s_axi_awlen,
+  s_axi_awsize,
+  s_axi_awburst,
+  s_axi_awlock,
+  s_axi_awcache,
+  s_axi_awprot,
+  s_axi_awqos,
+  s_axi_awvalid,
+  s_axi_awready,
+  s_axi_wdata,
+  s_axi_wstrb,
+  s_axi_wlast,
+  s_axi_wvalid,
+  s_axi_wready,
+  s_axi_bid,
+  s_axi_bresp,
+  s_axi_bvalid,
+  s_axi_bready,
+  s_axi_arid,
+  s_axi_araddr,
+  s_axi_arlen,
+  s_axi_arsize,
+  s_axi_arburst,
+  s_axi_arlock,
+  s_axi_arcache,
+  s_axi_arprot,
+  s_axi_arqos,
+  s_axi_arvalid,
+  s_axi_arready,
+  s_axi_rid,
+  s_axi_rdata,
+  s_axi_rresp,
+  s_axi_rlast,
+  s_axi_rvalid,
+  s_axi_rready,
+  sample_bram_clka,
+  sample_bram_ena,
+  sample_bram_wea,
+  sample_bram_addra,
+  sample_bram_dina,
+  sample_bram_douta,
+  sample_bram_clkb,
+  sample_bram_enb,
+  sample_bram_web,
+  sample_bram_addrb,
+  sample_bram_dinb,
+  sample_bram_doutb,
+  infer_done,
+  class_led
+);
+
+(* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.S_AXI_ACLK CLK" *)
+(* X_INTERFACE_MODE = "slave" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.S_AXI_ACLK, ASSOCIATED_BUSIF S_AXI, ASSOCIATED_RESET s_axi_aresetn, FREQ_HZ 71428566, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN eeg_bci_ps_pl_system_processing_system7_0_0_FCLK_CLK0, INSERT_VIP 0" *)
+input wire s_axi_aclk;
+(* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 RST.S_AXI_ARESETN RST" *)
+(* X_INTERFACE_MODE = "slave" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME RST.S_AXI_ARESETN, POLARITY ACTIVE_LOW, INSERT_VIP 0" *)
+input wire s_axi_aresetn;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWID" *)
+(* X_INTERFACE_MODE = "slave" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME S_AXI, PROTOCOL AXI4, DATA_WIDTH 32, ADDR_WIDTH 32, ID_WIDTH 12, READ_WRITE_MODE READ_WRITE, HAS_BURST 1, HAS_LOCK 1, HAS_PROT 1, HAS_CACHE 1, HAS_QOS 1, HAS_REGION 0, HAS_WSTRB 1, HAS_BRESP 1, HAS_RRESP 1, SUPPORTS_NARROW_BURST 0, NUM_READ_OUTSTANDING 1, NUM_WRITE_OUTSTANDING 1, MAX_BURST_LENGTH 256, FREQ_HZ 71428566, AWUSER_WIDTH 0, ARUSER_WIDTH 0, WUSER_WIDTH 0, RUSER_WIDTH 0, BUSER_WIDTH 0, PHASE 0.0, CLK_DOMAIN eeg_bci_ps_pl_system_processing_system7_0_0_FCLK_CLK0, NUM_REA\
+D_THREADS 4, NUM_WRITE_THREADS 4, RUSER_BITS_PER_BYTE 0, WUSER_BITS_PER_BYTE 0, INSERT_VIP 0" *)
+input wire [11 : 0] s_axi_awid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWADDR" *)
+input wire [31 : 0] s_axi_awaddr;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWLEN" *)
+input wire [7 : 0] s_axi_awlen;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWSIZE" *)
+input wire [2 : 0] s_axi_awsize;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWBURST" *)
+input wire [1 : 0] s_axi_awburst;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWLOCK" *)
+input wire s_axi_awlock;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWCACHE" *)
+input wire [3 : 0] s_axi_awcache;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWPROT" *)
+input wire [2 : 0] s_axi_awprot;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWQOS" *)
+input wire [3 : 0] s_axi_awqos;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWVALID" *)
+input wire s_axi_awvalid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI AWREADY" *)
+output wire s_axi_awready;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI WDATA" *)
+input wire [31 : 0] s_axi_wdata;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI WSTRB" *)
+input wire [3 : 0] s_axi_wstrb;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI WLAST" *)
+input wire s_axi_wlast;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI WVALID" *)
+input wire s_axi_wvalid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI WREADY" *)
+output wire s_axi_wready;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI BID" *)
+output wire [11 : 0] s_axi_bid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI BRESP" *)
+output wire [1 : 0] s_axi_bresp;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI BVALID" *)
+output wire s_axi_bvalid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI BREADY" *)
+input wire s_axi_bready;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARID" *)
+input wire [11 : 0] s_axi_arid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARADDR" *)
+input wire [31 : 0] s_axi_araddr;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARLEN" *)
+input wire [7 : 0] s_axi_arlen;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARSIZE" *)
+input wire [2 : 0] s_axi_arsize;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARBURST" *)
+input wire [1 : 0] s_axi_arburst;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARLOCK" *)
+input wire s_axi_arlock;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARCACHE" *)
+input wire [3 : 0] s_axi_arcache;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARPROT" *)
+input wire [2 : 0] s_axi_arprot;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARQOS" *)
+input wire [3 : 0] s_axi_arqos;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARVALID" *)
+input wire s_axi_arvalid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI ARREADY" *)
+output wire s_axi_arready;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RID" *)
+output wire [11 : 0] s_axi_rid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RDATA" *)
+output wire [31 : 0] s_axi_rdata;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RRESP" *)
+output wire [1 : 0] s_axi_rresp;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RLAST" *)
+output wire s_axi_rlast;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RVALID" *)
+output wire s_axi_rvalid;
+(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI RREADY" *)
+input wire s_axi_rready;
+output wire sample_bram_clka;
+output wire sample_bram_ena;
+output wire [3 : 0] sample_bram_wea;
+output wire [31 : 0] sample_bram_addra;
+output wire [31 : 0] sample_bram_dina;
+input wire [31 : 0] sample_bram_douta;
+output wire sample_bram_clkb;
+output wire sample_bram_enb;
+output wire [3 : 0] sample_bram_web;
+output wire [31 : 0] sample_bram_addrb;
+output wire [31 : 0] sample_bram_dinb;
+input wire [31 : 0] sample_bram_doutb;
+output wire infer_done;
+output wire [3 : 0] class_led;
+
+  eeg_bci_ps_axi4_gateway inst (
+    .s_axi_aclk(s_axi_aclk),
+    .s_axi_aresetn(s_axi_aresetn),
+    .s_axi_awid(s_axi_awid),
+    .s_axi_awaddr(s_axi_awaddr),
+    .s_axi_awlen(s_axi_awlen),
+    .s_axi_awsize(s_axi_awsize),
+    .s_axi_awburst(s_axi_awburst),
+    .s_axi_awlock(s_axi_awlock),
+    .s_axi_awcache(s_axi_awcache),
+    .s_axi_awprot(s_axi_awprot),
+    .s_axi_awqos(s_axi_awqos),
+    .s_axi_awvalid(s_axi_awvalid),
+    .s_axi_awready(s_axi_awready),
+    .s_axi_wdata(s_axi_wdata),
+    .s_axi_wstrb(s_axi_wstrb),
+    .s_axi_wlast(s_axi_wlast),
+    .s_axi_wvalid(s_axi_wvalid),
+    .s_axi_wready(s_axi_wready),
+    .s_axi_bid(s_axi_bid),
+    .s_axi_bresp(s_axi_bresp),
+    .s_axi_bvalid(s_axi_bvalid),
+    .s_axi_bready(s_axi_bready),
+    .s_axi_arid(s_axi_arid),
+    .s_axi_araddr(s_axi_araddr),
+    .s_axi_arlen(s_axi_arlen),
+    .s_axi_arsize(s_axi_arsize),
+    .s_axi_arburst(s_axi_arburst),
+    .s_axi_arlock(s_axi_arlock),
+    .s_axi_arcache(s_axi_arcache),
+    .s_axi_arprot(s_axi_arprot),
+    .s_axi_arqos(s_axi_arqos),
+    .s_axi_arvalid(s_axi_arvalid),
+    .s_axi_arready(s_axi_arready),
+    .s_axi_rid(s_axi_rid),
+    .s_axi_rdata(s_axi_rdata),
+    .s_axi_rresp(s_axi_rresp),
+    .s_axi_rlast(s_axi_rlast),
+    .s_axi_rvalid(s_axi_rvalid),
+    .s_axi_rready(s_axi_rready),
+    .sample_bram_clka(sample_bram_clka),
+    .sample_bram_ena(sample_bram_ena),
+    .sample_bram_wea(sample_bram_wea),
+    .sample_bram_addra(sample_bram_addra),
+    .sample_bram_dina(sample_bram_dina),
+    .sample_bram_douta(sample_bram_douta),
+    .sample_bram_clkb(sample_bram_clkb),
+    .sample_bram_enb(sample_bram_enb),
+    .sample_bram_web(sample_bram_web),
+    .sample_bram_addrb(sample_bram_addrb),
+    .sample_bram_dinb(sample_bram_dinb),
+    .sample_bram_doutb(sample_bram_doutb),
+    .infer_done(infer_done),
+    .class_led(class_led)
+  );
+endmodule

@@ -1,0 +1,141 @@
+{
+  "status": "SYNTHETIC_FUNCTIONAL_ONLY",
+  "accuracy_claim_allowed": false,
+  "profiles": [
+    {
+      "channels": 2,
+      "sample_words": 256,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 4400,
+      "classification": 8,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 3,
+      "sample_words": 384,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 5680,
+      "classification": 8,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 4,
+      "sample_words": 512,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 6960,
+      "classification": 8,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 5,
+      "sample_words": 640,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 8240,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 6,
+      "sample_words": 768,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 9520,
+      "classification": 8,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 7,
+      "sample_words": 896,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 10800,
+      "classification": 8,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 8,
+      "sample_words": 1024,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 12080,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 9,
+      "sample_words": 1152,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 13360,
+      "classification": 3,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 10,
+      "sample_words": 1280,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 14640,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 11,
+      "sample_words": 1408,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 15920,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 12,
+      "sample_words": 1536,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 17200,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 13,
+      "sample_words": 1664,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 18480,
+      "classification": 10,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 14,
+      "sample_words": 1792,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 19760,
+      "classification": 0,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 15,
+      "sample_words": 1920,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 21040,
+      "classification": 0,
+      "artifact_kind": "synthetic_functional_only"
+    },
+    {
+      "channels": 16,
+      "sample_words": 2048,
+      "parameter_words": 1076,
+      "instruction_words": 264,
+      "trace_words": 22320,
+      "classification": 0,
+      "artifact_kind": "synthetic_functional_only"
+    }
+  ]
+}

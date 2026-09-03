@@ -1,0 +1,4 @@
+domain_path: G:\EEG\Workflow\prj\eeg_2or8to2or16\output\vitis\p1_eeg_platform\zynq_fsbl\zynq_fsbl_bsp
+app_src_dir: E:\VIVADO\Vitis\2024.2\data\embeddedsw\lib\sw_apps\zynq_fsbl
+template: zynq_fsbl
+lang: c

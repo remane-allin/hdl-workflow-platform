@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "profile": "ssvep_resonator_v2",
+  "program_rows": 47,
+  "parameter_words": 544,
+  "parameter_rows": 136,
+  "trials": 100,
+  "frame_words_per_trial": 2048,
+  "frame_rows_per_trial": 512,
+  "total_frame_rows": 51200,
+  "logits": 400,
+  "predictions": 100,
+  "labels": 100,
+  "checkpoint_trial": 0,
+  "checkpoint_words": {
+    "ingress_scale": 1536,
+    "pc002_covariance": 42,
+    "pc006_factor_inverse": 42,
+    "pc010_white": 1536,
+    "pc014_rec": 144,
+    "pc018_projection": 96,
+    "pc030_energy": 48,
+    "pc034_logits": 4
+  },
+  "input_order_at_rtl_boundary": "time-major, channel-interleaved",
+  "row_word_order": "word0 in bits 15:0"
+}

@@ -1,0 +1,14 @@
+{
+  "format_version": 1,
+  "project_id": "eeg_2or8to2or16",
+  "design_version": 6,
+  "platform": "navigator_zynq_7020",
+  "part": "xc7z020clg400-1",
+  "assets": [
+    {
+      "id": "vivado.xsa",
+      "kind": "platform",
+      "path": "output/release/assets/vivado-xsa.xsa"
+    }
+  ]
+}

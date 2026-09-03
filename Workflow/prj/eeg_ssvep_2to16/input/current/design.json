@@ -1,0 +1,556 @@
+{
+  "format_version": 1,
+  "design_version": 8,
+  "project": {
+    "project_id": "eeg_ssvep_2to16",
+    "display_name": "Instruction-configured shared EEG and SSVEP accelerator",
+    "platform": "navigator_zynq_7020",
+    "part": "xc7z020clg400-1",
+    "rtl_language": "Verilog-2001",
+    "tool_profile": "xilinx-2024.2"
+  },
+  "requirements": {
+    "items": [
+      {
+        "id": "REQ-P2-EEG",
+        "category": "functional",
+        "statement": "Execute the approved EEG program on the shared engine and return sixteen bit-exact logits.",
+        "acceptance": "The formal whole-design EEG case completes with all logits and protocol checks passing."
+      },
+      {
+        "id": "REQ-P2-SSVEP",
+        "category": "functional",
+        "statement": "Execute the approved SSVEP program on the same mutually exclusive shared engine.",
+        "acceptance": "All one hundred formal SSVEP trials return bit-exact logits and predictions."
+      },
+      {
+        "id": "REQ-P2-PERF",
+        "category": "performance",
+        "statement": "Every approved SSVEP trial completes in no more than 20000 accelerator cycles.",
+        "acceptance": "The maximum accepted-start to done interval reported by the formal TB is at most 20000 cycles."
+      },
+      {
+        "id": "REQ-P2-RESOURCE",
+        "category": "resource",
+        "statement": "The routed shared accelerator fits the approved Zynq-7020 OOC resource envelope.",
+        "acceptance": "Post-route LUT, FF, RAMB36, RAMB18 and DSP conditions all pass."
+      },
+      {
+        "id": "REQ-P2-TIMING",
+        "category": "timing",
+        "statement": "The OOC accelerator closes the 70 MHz implementation with more than 0.300 ns setup slack.",
+        "acceptance": "Post-route timing, route status and DRC conditions all pass."
+      },
+      {
+        "id": "REQ-P2-REUSE",
+        "category": "architecture",
+        "statement": "EEG and SSVEP use program and parameter images over one compute, memory and retire fabric rather than parallel mode-specific pipelines.",
+        "acceptance": "Both formal modes pass through the same shared_bci_accel_top hierarchy and the routed design contains the approved six memory macros."
+      }
+    ]
+  },
+  "architecture": {
+    "items": [
+      {
+        "id": "ARCH-P2-SHARED",
+        "requirements": [
+          "REQ-P2-EEG",
+          "REQ-P2-SSVEP",
+          "REQ-P2-PERF",
+          "REQ-P2-RESOURCE",
+          "REQ-P2-TIMING",
+          "REQ-P2-REUSE"
+        ],
+        "blocks": [
+          "AXI control loader",
+          "program and descriptor controller",
+          "shared kernel step sequencer",
+          "shared operand and address services",
+          "six native block memories",
+          "sixteen-lane FP16 APX cluster",
+          "unified retire"
+        ],
+        "dataflow": "A 64-bit AXI-facing loader accepts one selected mode program, parameters and time-major frame. Registered descriptors sequence shared memory operands through the APX cluster and unified retire path. EEG and SSVEP are separate runs and never execute concurrently. Triangular scratch rows preload into the existing scalar bank before retirement. APX issue latency remains unchanged; source and modifier controls are registered as four local quadrant copies so each copy drives only four arithmetic lanes.",
+        "control": "Program descriptors select convolution, pooling, covariance, whitening, projection, energy and classification primitives. Ready/valid boundaries provide backpressure and one done closes each accepted start. The window issue FSM observes registered return-active state instead of a same-cycle return comparator. APX operand selection is structurally partitioned into four 64-bit quadrants while preserving the proven dispatch-to-arithmetic timing.",
+        "storage": "Program and parameter stores are 64x512 simple dual-port BRAMs. Four feature banks are 16x2048 true dual-port BRAMs. The native Vivado XCI files are the sole IP configuration authority. Existing collision-only APX pending operands remain unchanged; only compact quadrant control registers are replicated.",
+        "reuse": "A future signal mode is added with reviewed program, parameter and profile images when current primitives suffice; a missing generic primitive requires an architecture review rather than a mode-specific pipeline."
+      }
+    ]
+  },
+  "interfaces": {
+    "items": [
+      {
+        "id": "IF-P2-AXI",
+        "name": "S_AXI",
+        "endpoints": [
+          "PS or verification master",
+          "axi_control_loader"
+        ],
+        "direction": "configuration, program, parameter and frame writes plus result reads",
+        "width": 64,
+        "protocol": "AXI4-Lite style independent channels",
+        "clock": "clk",
+        "reset": "active-low reset_n",
+        "ordering": "program and parameters before frame and start",
+        "lifecycle": "one mutually exclusive mode per accepted start"
+      },
+      {
+        "id": "IF-P2-DESCRIPTOR",
+        "name": "descriptor execution boundary",
+        "endpoints": [
+          "descriptor_controller",
+          "descriptor_execution_engine"
+        ],
+        "direction": "command, operand request and completion",
+        "width": 128,
+        "protocol": "registered ready/valid descriptors",
+        "clock": "clk",
+        "reset": "active-low reset_n",
+        "ordering": "program-counter order",
+        "lifecycle": "issue, execute, retire, advance"
+      },
+      {
+        "id": "IF-P2-RESULT",
+        "name": "classification stream",
+        "endpoints": [
+          "unified_retire",
+          "axi_control_loader"
+        ],
+        "direction": "PL-to-consumer",
+        "width": 16,
+        "protocol": "ready/valid with result_last",
+        "clock": "clk",
+        "reset": "active-low reset_n",
+        "ordering": "class index order",
+        "lifecycle": "terminates exactly once before done"
+      }
+    ]
+  },
+  "implementation": {
+    "rtl": {
+      "top": "shared_bci_accel_top",
+      "mode": "out-of-context",
+      "sources": [
+        "output/rtl/apx_fp16_add_pipe.v",
+        "output/rtl/apx_fp16_mul_pipe.v",
+        "output/rtl/banked_local_state_2r1w.v",
+        "output/rtl/program_memory_wrapper.v",
+        "output/rtl/parameter_memory_wrapper.v",
+        "output/rtl/feature_memory_subsystem.v",
+        "output/rtl/unified_memory_fabric.v",
+        "output/rtl/frame_ingress_adapter.v",
+        "output/rtl/descriptor_controller.v",
+        "output/rtl/program_control_unit.v",
+        "output/rtl/shared_kernel_step_sequencer.v",
+        "output/rtl/shared_operand_tile_service.v",
+        "output/rtl/shared_window_pipeline.v",
+        "output/rtl/apx_cluster.v",
+        "output/rtl/unified_retire.v",
+        "output/rtl/descriptor_execution_engine.v",
+        "output/rtl/axi_control_loader.v",
+        "output/rtl/shared_bci_accel_core.v",
+        "output/rtl/shared_bci_accel_top.v"
+      ],
+      "defines": [],
+      "include_dirs": [],
+      "libraries": []
+    },
+    "constraints": {
+      "set": "constrs_1",
+      "sources": [
+        "output/constraints/shared_bci_accel.xdc"
+      ],
+      "purposes": [
+        "70 MHz primary clock and OOC clock placement source"
+      ]
+    },
+    "verification_sources": {
+      "set": "sim_1",
+      "top": "tb_top",
+      "top_file": "output/tb/tb_top.v",
+      "include_dirs": [],
+      "defines": [],
+      "models": [
+        "output/vivado/ip/simulation/bmg_sim_models.v"
+      ],
+      "data_roots": [
+        "input/sources/verification_data"
+      ],
+      "initialization_files": [
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r5/eeg_bank_aware_program.hex",
+          "owner": "input",
+          "purpose": "EEG program"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r5/eeg_bank_aware_parameter_rows.hex",
+          "owner": "input",
+          "purpose": "EEG parameters"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r5/eeg_frame_rows.hex",
+          "owner": "input",
+          "purpose": "EEG frame"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r5/eeg_expected_logits.hex",
+          "owner": "input",
+          "purpose": "EEG logits"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_program.hex",
+          "owner": "input",
+          "purpose": "SSVEP program"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_parameter_rows.hex",
+          "owner": "input",
+          "purpose": "SSVEP parameters"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_frame_rows.hex",
+          "owner": "input",
+          "purpose": "one hundred SSVEP frames"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_expected_logits.hex",
+          "owner": "input",
+          "purpose": "SSVEP logits"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_expected_predictions.hex",
+          "owner": "input",
+          "purpose": "SSVEP predictions"
+        },
+        {
+          "path": "input/sources/verification_data/loop1/vectors/r7/ssvep_labels.hex",
+          "owner": "input",
+          "purpose": "SSVEP labels"
+        }
+      ],
+      "uvm_enabled": false,
+      "uvm_sources": [],
+      "timescale": "1ns/1ps",
+      "seed": 1
+    },
+    "vivado": {
+      "profile": "vivado-2024.2",
+      "project_name": "shared_bci_accel",
+      "xpr": "output/vivado/shared_bci_accel.xpr",
+      "part": "xc7z020clg400-1",
+      "fileset": "sources_1",
+      "synth_run": "synth_1",
+      "impl_run": "impl_1",
+      "synthesis_mode": "out_of_context",
+      "constraints_used_in_synthesis": false,
+      "synthesis_strategy": "Vivado Synthesis Defaults",
+      "synthesis_directive": "AreaOptimized_high",
+      "implementation_strategy": "Vivado Implementation Defaults",
+      "opt_directive": "Default",
+      "opt_resynth_area": false,
+      "place_directive": "ExtraTimingOpt",
+      "phys_opt_directive": "AggressiveExplore",
+      "route_directive": "AggressiveExplore",
+      "seed": 1,
+      "clocks": [
+        {
+          "name": "clk",
+          "period_ns": 14.285714,
+          "target": "shared_bci_accel_top/clk"
+        }
+      ],
+      "board_profile": "navigator_zynq_7020",
+      "board_part": null,
+      "bd": [],
+      "ip": [
+        "output/vivado/ip/program_store_bmg/program_store_bmg.xci",
+        "output/vivado/ip/parameter_store_bmg/parameter_store_bmg.xci",
+        "output/vivado/ip/feature_bank0_bmg/feature_bank0_bmg.xci",
+        "output/vivado/ip/feature_bank1_bmg/feature_bank1_bmg.xci",
+        "output/vivado/ip/feature_bank2_bmg/feature_bank2_bmg.xci",
+        "output/vivado/ip/feature_bank3_bmg/feature_bank3_bmg.xci"
+      ],
+      "ip_configuration": [
+        {
+          "names": [
+            "program_store_bmg",
+            "parameter_store_bmg"
+          ],
+          "type": "blk_mem_gen:8.4",
+          "memory": "simple_dual_port",
+          "width": 64,
+          "depth": 512,
+          "read_register": "port_b_primitive"
+        },
+        {
+          "names": [
+            "feature_bank0_bmg",
+            "feature_bank1_bmg",
+            "feature_bank2_bmg",
+            "feature_bank3_bmg"
+          ],
+          "type": "blk_mem_gen:8.4",
+          "memory": "true_dual_port",
+          "width": 16,
+          "depth": 2048,
+          "read_register": "both_port_primitives"
+        }
+      ],
+      "project_script": "output/vivado/scripts/project.tcl",
+      "release_mode": "routed_ooc_checkpoint",
+      "results": {
+        "bitstream": "",
+        "xsa": "",
+        "checkpoint": "output/vivado/shared_bci_accel.runs/impl_1/shared_bci_accel_top_routed.dcp"
+      }
+    },
+    "vitis": {
+      "enabled": false,
+      "reason": "This project is the reusable OOC PL accelerator and has no approved PS software consumer."
+    }
+  },
+  "budgets": {
+    "items": [
+      {
+        "id": "BUD-P2-SSVEP-CYCLES",
+        "metric": "ssvep_max_cycles",
+        "unit": "cycles",
+        "planned": 18000,
+        "maximum": 20000,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "verify",
+        "requirements": [
+          "REQ-P2-PERF"
+        ]
+      },
+      {
+        "id": "BUD-P2-LUT",
+        "metric": "lut",
+        "unit": "count",
+        "planned": 20309,
+        "maximum": 24000,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P2-FF",
+        "metric": "ff",
+        "unit": "count",
+        "planned": 10020,
+        "maximum": 11000,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P2-RAMB36",
+        "metric": "ramb36",
+        "unit": "count",
+        "planned": 6,
+        "equals": 6,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE",
+          "REQ-P2-REUSE"
+        ]
+      },
+      {
+        "id": "BUD-P2-RAMB18",
+        "metric": "ramb18",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P2-DSP",
+        "metric": "dsp",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE"
+        ]
+      },
+      {
+        "id": "BUD-P2-SETUP",
+        "metric": "setup_wns",
+        "unit": "ns",
+        "planned": 0.45,
+        "exclusive_minimum": 0.3,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-SETUP-TNS",
+        "metric": "setup_tns",
+        "unit": "ns",
+        "planned": 0.0,
+        "equals": 0.0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-HOLD",
+        "metric": "hold_wns",
+        "unit": "ns",
+        "planned": 0.024,
+        "minimum": 0.0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-HOLD-TNS",
+        "metric": "hold_tns",
+        "unit": "ns",
+        "planned": 0.0,
+        "equals": 0.0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-UNROUTED",
+        "metric": "unrouted",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-DRC",
+        "metric": "drc_errors",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      },
+      {
+        "id": "BUD-P2-DRC-CRITICAL",
+        "metric": "drc_critical_warnings",
+        "unit": "count",
+        "planned": 0,
+        "equals": 0,
+        "estimate_tolerance_percent": 10,
+        "evidence_stage": "route",
+        "requirements": [
+          "REQ-P2-TIMING"
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "cases": [
+      {
+        "id": "VER-P2-EEG",
+        "stage": "verify",
+        "requirements": [
+          "REQ-P2-EEG",
+          "REQ-P2-REUSE"
+        ],
+        "interfaces": [
+          "IF-P2-AXI",
+          "IF-P2-DESCRIPTOR",
+          "IF-P2-RESULT"
+        ],
+        "stimulus": "load the approved EEG program, parameters and one 512-row frame then start",
+        "oracle": "bit-exact EEG checkpoint and sixteen-logit references",
+        "expected": "all checkpoints and sixteen logits pass",
+        "key_waves": [
+          "clk",
+          "reset_n",
+          "start_valid/start_ready",
+          "descriptor_pc",
+          "result_valid/result_ready/result_last",
+          "done"
+        ]
+      },
+      {
+        "id": "VER-P2-SSVEP",
+        "stage": "verify",
+        "requirements": [
+          "REQ-P2-SSVEP",
+          "REQ-P2-REUSE"
+        ],
+        "interfaces": [
+          "IF-P2-AXI",
+          "IF-P2-DESCRIPTOR",
+          "IF-P2-RESULT"
+        ],
+        "stimulus": "load the approved SSVEP program and parameters then stream one hundred 512-row trials",
+        "oracle": "bit-exact logits, predictions and selected intermediate checkpoints",
+        "expected": "all one hundred trials pass",
+        "key_waves": [
+          "clk",
+          "reset_n",
+          "frame_begin",
+          "frame_valid/frame_ready",
+          "descriptor_pc",
+          "result_last",
+          "done"
+        ]
+      },
+      {
+        "id": "VER-P2-SSVEP-CYCLES",
+        "stage": "verify",
+        "requirements": [
+          "REQ-P2-PERF"
+        ],
+        "interfaces": [
+          "IF-P2-RESULT"
+        ],
+        "stimulus": "the same one hundred SSVEP trials",
+        "oracle": "maximum formal TB cycle counter from accepted start to done",
+        "expected": "maximum cycles no more than 20000",
+        "key_waves": [
+          "start_valid/start_ready",
+          "done"
+        ]
+      },
+      {
+        "id": "VER-P2-PHYSICAL",
+        "stage": "route",
+        "requirements": [
+          "REQ-P2-RESOURCE",
+          "REQ-P2-TIMING"
+        ],
+        "interfaces": [],
+        "stimulus": "Vivado 2024.2 OOC place and route",
+        "oracle": "post-route utilization, setup and hold timing, route status and DRC",
+        "expected": "all hard physical budgets pass",
+        "key_waves": []
+      }
+    ]
+  }
+}

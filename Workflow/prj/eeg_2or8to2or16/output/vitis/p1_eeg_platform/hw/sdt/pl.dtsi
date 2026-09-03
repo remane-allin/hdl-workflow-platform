@@ -1,0 +1,28 @@
+/ {
+	amba_pl: amba_pl {
+		ranges;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		firmware-name = "eeg_bci_ps_pl_system_wrapper.bit.bin";
+		clocking0: clocking0 {
+			compatible = "xlnx,fclk";
+			assigned-clocks = <&clkc 15>;
+			assigned-clock-rates = <70000000>;
+			#clock-cells = <0>;
+			clock-output-names = "fabric_clk";
+			clocks = <&clkc 15>;
+		};
+		BCI_0: eeg_bci_ps_axi4_gateway@40000000 {
+			xlnx,rable = <0>;
+			compatible = "xlnx,eeg-bci-ps-axi4-gateway-1.0";
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,ip-name = "eeg_bci_ps_axi4_gateway";
+			xlnx,edk-iptype = "PERIPHERAL";
+			reg = <0x40000000 0x4000000>;
+			clocks = <&clkc 15>;
+			xlnx,name = "BCI_0";
+		};
+	};
+};

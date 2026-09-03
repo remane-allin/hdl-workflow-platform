@@ -1,0 +1,9 @@
+{
+  "channels": 8,
+  "sample_words": 1024,
+  "parameter_words": 1076,
+  "instruction_words": 264,
+  "trace_words": 12080,
+  "classification": 10,
+  "artifact_kind": "synthetic_functional_only"
+}
