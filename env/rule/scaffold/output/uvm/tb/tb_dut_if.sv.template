@@ -1,3 +1,0 @@
-interface PROJECT_dut_if(input logic clk, input logic rst_n);
-  // Declare DUT pins and clocking blocks here.
-endinterface

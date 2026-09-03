@@ -1,9 +1,0 @@
-schema_version: 1
-project: change_me
-status: DRAFT
-owner_role: spec
-source_refs: []
-forbidden_designs: []
-illegal_assumptions: []
-out_of_scope_behaviors: []
-rationale: []

@@ -1,6 +1,0 @@
-the_ROM_image:
-{
-  [bootloader] ../workspace/<platform>/zynq_fsbl/fsbl.elf
-  ../../vivado/bitstream/<design>.bit
-  ../workspace/<app>/Debug/<app>.elf
-}
